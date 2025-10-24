@@ -1,20 +1,20 @@
-<script setup></script>
+<script setup>
+import SignUp from './views/member/SignupPage.vue/SignUp.vue'; '@/views/member/SignupPage.vue/SignUp.vue';
+import Header from '@/common/header/NonLoginHeader.vue'
+import Footer from '@/common/footer/Footer.vue'
+
+</script>
 
 <template>
-  <footer class="footer">
-    <div class="footer-wrap">
-      <a class="brand" href="/">
-          <img src="@/assets/images/logo.png" alt="오늘 뭐랑?" />
-          <span>오늘 뭐랑?</span>
-      </a>
+  <div>
+    <Header />   <!-- 헤더 (비로그인) -->
+    <SignUp />   <!-- 회원가입 페이지 -->
+    <Footer />   <!-- 공통 푸터 -->
 
+  </div>
 
-
-
-
-    </div>
-  </footer>
 </template>
+
 
 <style scoped>
 

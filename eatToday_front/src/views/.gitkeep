@@ -1,0 +1,249 @@
+<template>
+  <v-container class="signup-page py-12">
+    <v-row justify="center">
+      <v-col cols="12" md="7" lg="5">
+        <div class="hero">
+          <v-img src="/signup-hero.png" width="96" height="96" contain class="mb-4" />
+          <h1 class="title">회원가입</h1>
+        </div>
+
+        <v-card class="signup-card" elevation="0">
+          <v-form v-model="formValid" validate-on="input" @submit.prevent="onSubmit">
+            <!-- 이메일 -->
+            <div class="group mt-4">
+              <div class="label">이메일</div>
+              <v-row no-gutters align="center">
+                <v-col>
+                  <v-text-field
+                    v-model="form.email"
+                    variant="solo-filled"
+                    :rules="[rules.required, rules.email]"
+                    placeholder="아이디로 사용할 이메일을 입력해 주세요"
+                    density="comfortable"
+                    class="rounded-input"
+                    :readonly="emailVerified"
+                  />
+                </v-col>
+              </v-row>
+
+              <v-btn
+                class="email-verify-btn"
+                size="large"
+                :disabled="!rules.email(form.email) || emailVerified || isVerifying"
+                :loading="isVerifying"
+                @click="verifyEmail"
+              >
+                {{ emailVerified ? '인증 완료' : '이메일 인증' }}
+              </v-btn>
+            </div>
+
+            <!-- 닉네임 -->
+            <div class="group mt-8">
+              <div class="label">닉네임</div>
+              <v-text-field
+                v-model="form.nickname"
+                variant="solo-filled"
+                density="comfortable"
+                :counter="20"
+                :maxlength="20"
+                placeholder="한글, 영문, 숫자 2~20자"
+                class="rounded-input"
+                :rules="[rules.required, rules.nickname]"
+              />
+              <v-checkbox
+                v-model="useEmailLocalAsNickname"
+                density="comfortable"
+                hide-details
+              >
+                <template #label>
+                  <span>이메일 앞자리 사용</span>
+                </template>
+              </v-checkbox>
+            </div>
+
+            <!-- 비밀번호 -->
+            <div class="group mt-8">
+              <div class="label">비밀번호</div>
+              <v-text-field
+                v-model="form.password"
+                :append-inner-icon="showPw ? 'mdi-eye-off' : 'mdi-eye'"
+                :type="showPw ? 'text' : 'password'"
+                @click:append-inner="showPw = !showPw"
+                variant="solo-filled"
+                density="comfortable"
+                class="rounded-input"
+                :counter="20"
+                :maxlength="20"
+                placeholder="영문, 숫자, 특수문자가 모두 들어간 8~20자"
+                :rules="[rules.required, rules.password]"
+              />
+              <v-text-field
+                v-model="form.password2"
+                :append-inner-icon="showPw2 ? 'mdi-eye-off' : 'mdi-eye'"
+                :type="showPw2 ? 'text' : 'password'"
+                @click:append-inner="showPw2 = !showPw2"
+                variant="solo-filled"
+                density="comfortable"
+                class="rounded-input"
+                placeholder="비밀번호를 한 번 더 입력해주세요."
+                :rules="[rules.required, rules.passwordMatch]"
+              />
+            </div>
+
+            <!-- 가입 버튼 -->
+            <v-btn
+              class="submit-btn mt-6"
+              size="large"
+              type="submit"
+              :disabled="!formValid || !emailVerified || isSubmitting"
+              :loading="isSubmitting"
+              block
+            >
+              가입
+            </v-btn>
+          </v-form>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- 알림 -->
+    <v-snackbar v-model="snack.show" :timeout="2000">
+      {{ snack.msg }}
+    </v-snackbar>
+  </v-container>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+
+const formValid = ref(false)
+const isSubmitting = ref(false)
+const isVerifying = ref(false)
+const emailVerified = ref(false)
+const showPw = ref(false)
+const showPw2 = ref(false)
+const useEmailLocalAsNickname = ref(false)
+
+const form = ref({
+  email: '',
+  nickname: '',
+  password: '',
+  password2: ''
+})
+
+const snack = ref({ show: false, msg: '' })
+
+// 규칙
+const rules = {
+  required: v => (!!v && String(v).trim().length > 0) || '필수 항목입니다.',
+  email: v => {
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || ''))
+    return ok || '올바른 이메일 형식을 입력해 주세요.'
+  },
+  nickname: v => {
+    const s = String(v || '')
+    const ok = /^[A-Za-z0-9가-힣]{2,20}$/.test(s)
+    return ok || '한글/영문/숫자 2~20자만 사용 가능합니다.'
+  },
+  password: v => {
+    const s = String(v || '')
+    const len = s.length >= 8 && s.length <= 20
+    const combo = /[A-Za-z]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9]/.test(s)
+    return (len && combo) || '영문·숫자·특수문자 포함 8~20자'
+  },
+  passwordMatch: v => v === form.value.password || '비밀번호가 일치하지 않습니다.'
+}
+
+// 이메일 앞자리로 닉네임 자동 세팅
+watch([() => form.value.email, useEmailLocalAsNickname], ([email, use]) => {
+  if (!use) return
+  const local = String(email || '').split('@')[0]
+  if (local) form.value.nickname = local.slice(0, 20)
+})
+
+// 이메일 인증 (모의)
+const verifyEmail = async () => {
+  isVerifying.value = true
+  try {
+    // 실제로는 API 요청/토큰 확인 로직이 들어갑니다.
+    await new Promise(r => setTimeout(r, 800))
+    emailVerified.value = true
+    snack.value = { show: true, msg: '이메일 인증이 완료되었습니다.' }
+  } finally {
+    isVerifying.value = false
+  }
+}
+
+const onSubmit = async () => {
+  if (!formValid.value || !emailVerified.value) return
+  isSubmitting.value = true
+  try {
+    // 실제 가입 API 호출
+    await new Promise(r => setTimeout(r, 900))
+    snack.value = { show: true, msg: '가입이 완료되었습니다.' }
+    // 라우팅 예: router.push('/welcome')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>
+
+<style scoped>
+.signup-page {
+  background: #faf3e5; /* 아이보리 톤 */
+  min-height: calc(100vh - 160px); /* 헤더/푸터 제외 여백 감안 */
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.title {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 0;
+  font-size: 28px;
+  color: #2c1a0b;
+}
+
+.signup-card {
+  background: transparent;
+}
+
+/* 공통 그룹 라벨 */
+.label {
+  font-weight: 700;
+  color: #2c1a0b;
+  margin-bottom: 8px;
+}
+
+/* 채워진 느낌의 부드러운 입력창 */
+.rounded-input :deep(.v-field) {
+  border-radius: 12px;
+  background: #f0e3cf !important;
+}
+.rounded-input :deep(.v-field__input) {
+  min-height: 48px;
+}
+
+/* 이메일 인증 버튼 */
+.email-verify-btn {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 10px;
+  background: #cfa972;
+  color: #2c1a0b;
+  font-weight: 700;
+}
+
+/* 제출 버튼: 검정 */
+.submit-btn {
+  border-radius: 12px;
+  font-weight: 800;
+  background: #111;
+  color: #fff;
+}
+.submit-btn:disabled {
+  opacity: 0.6;
+}
+</style>

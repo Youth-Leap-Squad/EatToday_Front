@@ -1,4 +1,4 @@
-<!-- 비로그인 상태에서 헤더 부분 ->  헤더에 로그인만 떠야함 -->
+
 <template>
   <header class="header">
     <div class="header-container">
@@ -9,11 +9,19 @@
 
 
       <!-- 네비게이션 -->
-      <nav class="nav">
+      <!-- <nav class="nav">
         <a href="#" class="nav-item">Home</a>
         <a href="#" class="nav-item">Rounge</a>
         <a href="#" class="nav-item">Event</a>
+      </nav> -->
+
+      <nav class="nav">
+        <router-link to="/" class="nav-item">Home</router-link>
+        <router-link to="/rounge" class="nav-item">Rounge</router-link>
+        <router-link to="/event" class="nav-item">Event</router-link>
       </nav>
+    
+
       </div>
       
       <!-- 로그인 버튼 -->

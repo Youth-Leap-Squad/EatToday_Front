@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="signup-container">
       <img src="@/assets/images/logo.png" alt="로고" width="150" height="150">
         <h2 class="signup-title">회원가입</h2>
 
@@ -12,11 +12,11 @@
         >
           <button class="email-button">이메일 인증</button>
 
-        <!-- 비밀번호   -->        
+        <!-- 닉네임 -->
         <h3 class="signup-instruction">닉네임</h3>
 
         <input 
-          type="email"
+          type="text"
           placeholder="한글,영문,숫자 2~20자"
           class="signup-input"
         >
@@ -29,20 +29,19 @@
         <!-- 비밀번호   -->
         <h3 class="signup-instruction">비밀번호</h3>
         <input 
-          type="email"
+          type="password"
           placeholder="한글,영문,숫자,특수문자가 모두 들어간 8~20자"
           class="signup-input"
         >        
         <input 
-          type="email"
+          type="password"
           placeholder="비밀번호를 한 번 더 입력해주세요."
           class="signup-input"
         >
 
-      
-      
-        
+        <button class="signup-submit-button">가입</button>
 
+      
 
     </div>
 
@@ -53,6 +52,15 @@
 </script>
 
 <style scoped>
+
+.signup-container {
+  max-width: 480px; /* 화면 너비 제한 */
+  margin: 0 auto; /* 가운데 정렬 */
+  padding: 40px 20px; /* 위아래 + 좌우 여백 */
+  text-align: center;
+  background-color: #FFF7E9; /* 배경색 (선택사항) */
+  border-radius: 12px;
+}
 .signup-title {
   font-size: 1.5rem;
   font-weight: bold;
@@ -60,6 +68,7 @@
 }
 
 .signup-instruction {
+  float: left ;
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -69,16 +78,31 @@
   width: 100%;
   padding: 10px;
   border: none;
-  background-color: #FFF7E9;
+  background-color: #F9EEDA;
   border-radius: 6px;
   margin-bottom: 10px;
 }
 
 .email-button {
   display: block;
-  width: 100%;
+  width: 104%;
   padding: 10px;
   background-color: #DABB8B; 
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.email-option {
+  text-align: left
+}
+.signup-submit-button {
+  display: block;
+  width: 104%;
+  padding: 10px;
+  background-color: #4C0707; 
   border: none;
   border-radius: 6px;
   color: white;

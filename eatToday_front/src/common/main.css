@@ -1,10 +1,9 @@
-/* 우리 프로젝트 기본 폰트  Ownglyph PDH 인데 이걸 기본적으로 디폴트 값으로 하게 한것
-   만약 컴포넌트에서 다른 폰트 적용 할 때는 각자 적용하면 됨.
+/* 전역 css 파일 (폰트,배경 디폴트 색 등등 저장해놓는 곳)
 */
 
 @font-face {
   font-family: 'Ownglyph PDH';
-  src: url('@/assets/fonts/Ownglyph_PDH.ttf') format('truetype');
+  src: url('/assets/fonts/Ownglyph_PDH.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -13,6 +12,15 @@
 /* 전역 기본 폰트 적용 */
 html, body {
   font-family: 'Ownglyph PDH';
+}
+
+
+html, body {
+  font-family: 'Ownglyph PDH';
+  background-color: #FFF7E9; /* 배경색  */
+  margin: 0; /* 여백 제거 (기본 브라우저 여백 방지) */
+  padding: 0;
+  min-height: 100vh; /* 화면 전체 채우기 */
 }
 
 /* 모든 요소가 상속받게 */

@@ -6,6 +6,7 @@ import HomePage from '@/views/Home.vue'
 import SignUpPage from '@/views/member/SignUp.vue';
 import LoginPage from '@/views/member/Login.vue';
 import UpdateProfilePage from '@/views/member/UpdateProfilePage.vue'
+import RoungePage from '@/views/rounge/Rounge.vue';
 
 // event 파트
 import EventHome from "@/views/event/EventHome.vue";
@@ -15,6 +16,13 @@ import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select.vue"; 
 import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play.vue";     // World 진행 화면
 import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week.vue"; // World 주간 순위 조회 화면
 
+import MyPage from '@/views/mypage/Mypage.vue'; // 마이페이지
+
+//Qna
+import MainQna from '@/views/report_dm_qna/MainQna.vue';
+import MyQna from '@/views/report_dm_qna/MyQna.vue';
+import QnaComment from '@/views/report_dm_qna/QnaComment.vue';
+import QnaCreate from '@/views/report_dm_qna/QnaCreate.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -22,11 +30,17 @@ const router = createRouter({
         {path: '/', component: HomePage},  // 메인화면
         {path: '/login', component: LoginPage},  //로그인
         {path: '/signup', component: SignUpPage},  //회원가입
+        {path: '/rounge', component: RoungePage }, // 라운지 화면 
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정
         // {path: '/', redirect: '/login' },   //로그인 창에서 회원가입 누르면 회원가입 페이지로 리다이렉트
 
+        {path: "/mypage", component: MyPage }, // 마이페이지
+        // QnA
+        { path: "/qna", component: MainQna },
+        { path: "/qna/my", component: MyQna },
+        { path: "/qna/comment", component: QnaComment },
+        { path: "/qna/create", component: QnaCreate },
 
-        {path: '/', component: EventHome},
         {path: "/event", component: EventHome },    // 이벤트 메인화면
         {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면
         {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면

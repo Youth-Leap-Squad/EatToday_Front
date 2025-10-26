@@ -24,7 +24,7 @@
         <div class="board">
           <div class="board-head">
             <div class="board-head-inner">
-              <button class="my-btn">
+              <button class="my-btn" @click="goToMyQna">
                 내 문의 사항
                 <img class="arrow-img" :src="nextBtn" alt="next" />
               </button>
@@ -66,12 +66,17 @@
   </template>
   
   <script setup>
+  import { useRouter } from 'vue-router'
   import { computed, ref } from 'vue'
   import searchImg from '@/assets/images/search.png'
   import leftBtn from '@/assets/images/leftbutton.png'
   import rightBtn from '@/assets/images/rightbutton.png'
   import nextBtn from '@/assets/images/nextbutton.png'
   
+  const router = useRouter()
+  function goToMyQna() {
+    router.push('/qna/my')
+  }
   const categories = [
     { key: 'notice', label: '공지' },
     { key: 'event', label: '이벤트' },

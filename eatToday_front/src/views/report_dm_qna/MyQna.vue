@@ -5,7 +5,7 @@
       <hr class="title-line" />
 
       <div class="write-wrap">
-        <button class="write-btn">
+        <button class="write-btn" @click="goToCreate">
           <img :src="plusBtn" alt="plus" class="plus-img" />
           문의사항 작성하기
         </button>
@@ -13,7 +13,12 @@
 
       <div class="board">
         <ul class="rows">
-          <li v-for="q in qnas" :key="q.id" class="row">
+          <li
+            v-for="q in qnas"
+            :key="q.id"
+            class="row"
+            @click="goToComment(q.id)"
+          >
             <div class="row-inner">
               <div class="left">
                 <img :src="editBtn" alt="edit" class="edit-img" />
@@ -31,8 +36,20 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
 import plusBtn from '@/assets/images/plusbutton.png'
 import editBtn from '@/assets/images/editbutton.png'
+
+const router = useRouter()
+
+function goToComment(id) {
+  router.push(`/qna/comment?id=${id}`)
+}
+
+function goToCreate() {
+  router.push('/qna/create')
+}
 
 const qnas = ref([
   { id: 1, category: '이벤트 문제', subject: '이벤트 시작이 제대로 안되네요.. 조치 부탁드립니다.', date: '2025-10-20' },
@@ -113,6 +130,11 @@ const qnas = ref([
   column-gap: 20px;
   padding: 28px 0;
   position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.row-inner:hover {
+  background-color: #e9ddcc;
 }
 .row-inner::after {
   content: "";

@@ -19,7 +19,7 @@
       <div class="header-right">
         <!-- 비로그인 상태 -->
         <template v-if="!loginStatus">
-          <button class="login-btn" @click="toggleLogin">로그인</button>
+          <router-link to="/login" class="login-btn link-btn">로그인</router-link>
         </template>
 
         <!-- 로그인 상태 -->

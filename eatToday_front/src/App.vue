@@ -1,7 +1,7 @@
 <script setup>
 import Header from '@/common/header/NonLoginHeader.vue'
-import SignUp from '@/views/member/SignupPage.vue/SignUp.vue';
-import Header from '@/common/header/Header.vue'
+import SignUp from '@/views/member/SignUp.vue';
+// import Header from '@/common/header/Header.vue'
 import Footer from '@/common/footer/Footer.vue'
 </script>
 

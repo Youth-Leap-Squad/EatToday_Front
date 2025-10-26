@@ -9,7 +9,7 @@
         type="text"
         v-model="keywordLocal"
         placeholder="검색하고 싶은 내용을 입력해주세요."
-        @keyup.enter="emit('search')"
+        @keyup.enter="onSearchEnter"
       />
     </div>
 
@@ -21,7 +21,13 @@
         @click="toggleAlcohol(c.no)"
       >
         <span class="alcohol-element" :class="{ active: selectedAlcoholNo === c.no }">
-          <img :src="c.icon" :alt="c.label" />
+          <img
+            :src="c.icon"
+            :alt="c.label"
+            loading="lazy"
+            draggable="false"
+            @error="onIconError($event)"
+          />
         </span>
         <span class="alcohol-label">{{ c.label }}</span>
       </button>
@@ -48,8 +54,8 @@ const props = defineProps({
 const emit = defineEmits(['update:keyword', 'update:alcoholNo', 'search'])
 
 const keywordLocal = ref(props.keyword)
+watch(() => props.keyword, v => { if (v !== keywordLocal.value) keywordLocal.value = v })
 watch(keywordLocal, v => emit('update:keyword', v))
-watch(() => props.keyword, v => { keywordLocal.value = v })
 
 const selectedAlcoholNo = ref(props.alcoholNo)
 watch(() => props.alcoholNo, v => { selectedAlcoholNo.value = v })
@@ -71,6 +77,14 @@ function toggleAlcohol(no) {
   emit('update:alcoholNo', selectedAlcoholNo.value)
   emit('search')
 }
+
+function onSearchEnter() {
+  emit('search')
+}
+
+function onIconError(e) {
+  e.target.src = etc
+}
 </script>
 
 <style scoped>
@@ -81,9 +95,9 @@ h1 { font-size: 36px; margin: 0 0 18px; color: #2b1f14; }
 .search-input { width: 100%; height: 100%; border: none; outline: none; background: transparent; font-size: 16px; color: #333; padding-left: 60px; padding-right: 16px; }
 .search-input::placeholder { color: #8e8e8e; }
 .category-row { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; margin: 18px auto 10px; padding: 0 12px; }
-.alcohol-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; background: transparent; border: none; padding: 0; cursor: pointer; }
-.alcohol-element { width: 90px; height: 90px; border-radius: 9999px; border: 1px solid #bfbfbf; display: grid; place-items: center; background: #fff4e3; }
-.alcohol-element img { width: 70px; height: 70px; object-fit: contain; }
+.alcohol-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: transparent; border: none; padding: 0; cursor: pointer; }
+.alcohol-element { width: 90px; height: 90px; border-radius: 9999px; border: 1px solid #bfbfbf; display: grid; place-items: center; background: #fff4e3; overflow: hidden; }
+.alcohol-element img { width: 72px; height: 72px; object-fit: contain; image-rendering: auto; display: block; }
 .alcohol-element.active { background-color: #f2dcb9; border-color: #bfbfbf; }
 .alcohol-btn:hover .alcohol-element { background-color: #f2dcb9; }
 .alcohol-label { font-size: 14px; font-weight: 400; color: #2d2d2f; }

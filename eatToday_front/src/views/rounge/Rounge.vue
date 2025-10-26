@@ -2,8 +2,8 @@
   <div class="rounge-page">
     <RoungeHeader
       v-model:keyword="inputValue"
+      v-model:alcoholNo="alcoholNo"
       @search="onSearch"
-      @select-alcohol="onSelectAlcohol"
     />
     <hr class="boundary" />
 
@@ -25,13 +25,16 @@
       />
     </section>
 
-    <p v-if="loading" style="text-align:center; margin:8px 0;">불러오는 중…</p>
-    <p v-else-if="!loading && items.length === 0" style="text-align:center; margin:8px 0;">검색 결과가 없습니다.</p>
+    <div ref="sentinel" class="sentinel"></div>
+
+    <p v-if="loading && items.length === 0" class="center">불러오는 중…</p>
+    <p v-else-if="!loading && items.length === 0" class="center">검색 결과가 없습니다.</p>
+    <p v-if="loadingMore" class="center">더 불러오는 중…</p>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import RoungeHeader from '@/components/rounge/RoungeHeader.vue'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
 import {
@@ -43,14 +46,17 @@ import {
 } from '@/api/photoReview'
 
 const sort = ref('latest')
-const keyword = ref('')
 const inputValue = ref('')
-const selectedAlcohol = ref(null)
+const searchKeyword = ref('')
+const alcoholNo = ref(null)
 const page = ref(0)
 const size = ref(6)
-const loading = ref(false)
 const items = ref([])
+const loading = ref(false)
+const loadingMore = ref(false)
 const hasNext = ref(true)
+let observer = null
+let reqSeq = 0
 
 const normalize = r => ({
   id: r.reviewNo,
@@ -63,69 +69,83 @@ const normalize = r => ({
 })
 
 async function fetchPage({ append = false } = {}) {
-  loading.value = true
+  const mySeq = ++reqSeq
+  if (append) {
+    if (!hasNext.value || loadingMore.value) return
+    loadingMore.value = true
+  } else {
+    loading.value = true
+    items.value = []
+    page.value = 0
+    hasNext.value = true
+  }
+
   try {
     let res
-    const kw = keyword.value.trim()
+    const kw = searchKeyword.value.trim()
+    const al = alcoholNo.value
+
     if (kw) {
       res = await searchPhotoReviews({ keyword: kw, page: page.value, size: size.value })
-    } else if (selectedAlcohol.value) {
+    } else if (al) {
       if (sort.value === 'likes') {
-        res = await fetchPhotoReviewsByAlcoholLike({ alcoholNo: selectedAlcohol.value, page: page.value, size: size.value })
+        res = await fetchPhotoReviewsByAlcoholLike({ alcoholNo: al, page: page.value, size: size.value })
       } else {
-        res = await fetchPhotoReviewsByAlcohol({ alcoholNo: selectedAlcohol.value, page: page.value, size: size.value })
+        res = await fetchPhotoReviewsByAlcohol({ alcoholNo: al, page: page.value, size: size.value })
       }
-    } else if (sort.value === 'likes') {
-      res = await fetchPhotoReviewsByLike({ page: page.value, size: size.value })
     } else {
-      res = await fetchPhotoReviewsByDate({ page: page.value, size: size.value })
+      if (sort.value === 'likes') {
+        res = await fetchPhotoReviewsByLike({ page: page.value, size: size.value })
+      } else {
+        res = await fetchPhotoReviewsByDate({ page: page.value, size: size.value })
+      }
     }
 
-    const rows = Array.isArray(res?.content) ? res.content : []
-    if (append) items.value.push(...rows.map(normalize))
-    else items.value = rows.map(normalize)
+    if (mySeq !== reqSeq) return
+
+    const rows = Array.isArray(res?.content) ? res.content.map(normalize) : []
+    items.value = append ? items.value.concat(rows) : rows
     hasNext.value = res?.hasNext ?? false
+    if (hasNext.value) page.value += 1
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
 }
 
 function onSearch() {
-  keyword.value = inputValue.value.trim()
-  page.value = 0
-  fetchPage()
+  searchKeyword.value = inputValue.value.trim()
+  fetchPage({ append: false })
   inputValue.value = ''
 }
 
 function onClickLatest() {
   sort.value = 'latest'
-  page.value = 0
-  fetchPage()
+  fetchPage({ append: false })
 }
 
 function onClickLikes() {
   sort.value = 'likes'
-  page.value = 0
-  fetchPage()
+  fetchPage({ append: false })
 }
 
-function onSelectAlcohol(no) {
-  selectedAlcohol.value = selectedAlcohol.value === no ? null : no
-  page.value = 0
-  fetchPage()
-}
+onMounted(() => {
+  observer = new IntersectionObserver(
+    entries => {
+      if (entries[0].isIntersecting) fetchPage({ append: true })
+    },
+    { root: null, rootMargin: '300px', threshold: 0.1 }
+  )
+  const el = sentinel.value
+  if (el) observer.observe(el)
+  fetchPage({ append: false })
+})
 
-function onScroll() {
-  if (!hasNext.value || loading.value) return
-  if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 10) {
-    page.value++
-    fetchPage({ append: true })
-  }
-}
+onBeforeUnmount(() => {
+  if (observer && sentinel.value) observer.unobserve(sentinel.value)
+})
 
-window.addEventListener('scroll', onScroll)
-
-fetchPage()
+const sentinel = ref(null)
 </script>
 
 <style scoped>
@@ -134,5 +154,7 @@ fetchPage()
 .sort-bar { width: 85%; margin: 20px auto 0; display: flex; justify-content: flex-end; gap: 24px; }
 .sort-btn { border: none; background: transparent; font-size: 16px; font-weight: 600; color: #2D2D2F; cursor: pointer; }
 .sort-btn.active { color: #D2B382; }
-.card-grid { width: 85%; margin: 16px auto 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 28px; }
+.card-grid { width: 85%; margin: 16px auto 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px 28px; }
+.center { text-align: center; margin: 8px 0; }
+.sentinel { height: 1px; }
 </style>

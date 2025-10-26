@@ -4,7 +4,8 @@
       <img src="@/assets/images/logo.png" alt="오늘 뭐랑 로고" class="footer-logo" />
 
       <div class="footer-links">
-        <a href="#">회사 소개</a>
+        <a href="#">프로젝트 소개</a>
+        <a href="#">용어 설명</a>
         <a href="#">이용약관</a>
         <a href="#">개인정보 처리방침</a>
       </div>

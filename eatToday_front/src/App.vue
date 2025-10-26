@@ -1,14 +1,15 @@
 <script setup>
 import Header from '@/common/header/NonLoginHeader.vue'
+import SignUp from '@/views/member/SignupPage.vue/SignUp.vue';
+import Header from '@/common/header/Header.vue'
 import Footer from '@/common/footer/Footer.vue'
 </script>
 
 <template>
-  <div>
-    <Header /> <!-- 공통 헤더 -->
-    <router-view /> <!-- 여기서 모든 페이지(Post, SignUp 등)를 렌더링 -->
-    <Footer /> <!-- 공통 푸터 -->
-  </div>
+    <Header />   <!-- 헤더 (비로그인) -->
+    <!-- <SignUp />   회원가입 페이지 -->
+     <router-view />          
+    <Footer />   <!-- 공통 푸터 -->
 </template>
 
 <style scoped>

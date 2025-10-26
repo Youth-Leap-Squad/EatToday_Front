@@ -1,6 +1,7 @@
+<!-- 관리자용 페이지 푸터 -->
 <template>
-  <footer class="footer">
-    <div class="footer-container">
+  <footer class="admin-footer">
+    <div class="admin-footer-container">
       <img src="@/assets/images/logo.png" alt="오늘 뭐랑 로고" class="footer-logo" />
 
       <div class="footer-links">
@@ -11,29 +12,28 @@
       </div>
 
       <p class="footer-copy">
-        ⓒ 2025 오늘 뭐랑? All rights reserved.
+        ⓒ 2025 오늘 뭐랑? All rights reserved. | 관리자 전용 페이지
       </p>
     </div>
   </footer>
 </template>
 
 <script setup>
-
-
+// 푸터 컴포넌트는 별도 로직이 필요 없음
 </script>
 
 <style scoped>
-.footer {
+.admin-footer {
   background-color: #fff7e6;
   border-top: 1px solid #e0cda9;
   padding: 20px 0;
   text-align: center;
-
   font-size: 14px;
   color: #5a4632;
+  margin-top: 40px;
 }
 
-.footer-container {
+.admin-footer-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,6 +49,7 @@
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .footer-links a,

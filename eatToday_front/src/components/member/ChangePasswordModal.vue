@@ -115,7 +115,7 @@ function close() {
 .ok{ color:#256b2f; }
 .err{ color:#a01818; }
 
-/* Confirm button (피그마 톤) */
+
 .btn-confirm{
   width: 100%; padding: 12px; margin-top: 6px;
   border:none; border-radius: 10px; cursor:pointer;

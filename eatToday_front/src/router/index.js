@@ -43,6 +43,13 @@ import TermsDefinition from '@/views/TermsDefinition.vue';
 import TermsOfService from '@/views/TermsOfService.vue';
 import PrivacyPolicy from '@/views/PrivacyPolicy.vue';
 
+// message
+import Dm from '@/views/message/Dm.vue';
+// PhotoReview
+import PhotoReviewList from '@/views/review/PhotoReviewList.vue';
+import PhotoReviewDetail from '@/views/review/PhotoReviewDetail.vue';
+import PhotoReviewCreate from '@/views/review/PhotoReviewCreate.vue';
+
 const router = createRouter({
 
     history: createWebHistory(),
@@ -99,6 +106,14 @@ const router = createRouter({
     { path: '/admin/event/worldcup', component: WorldCupGameDetails },
     { path: '/admin/event/albti', component: AlbtiStatistics },
 
+    // Dm
+    { path: '/dm', component: Dm },
+    // 사진 리뷰
+    { path: '/reviews', component: PhotoReviewList },
+    { path: '/reviews/new', component: PhotoReviewCreate },
+    { path: '/reviews/:id', component: PhotoReviewDetail, props: true },
+
+
     // Footer pages
     { path: '/about', component: AboutProject },
     { path: '/terms', component: TermsDefinition },
@@ -107,6 +122,7 @@ const router = createRouter({
 
     // ✅ catch-all 은 항상 맨 마지막
     { path: '/:pathMatch(.*)*', redirect: '/event' },
+    { path: '/:pathMatch(.*)*', redirect: '/reviews' },
   ]
 });
 

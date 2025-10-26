@@ -64,7 +64,7 @@
   gap: 30px;
   margin-left: 50px;
   
-}
+}         
 
 .nav-item {
   font-size: 16px;

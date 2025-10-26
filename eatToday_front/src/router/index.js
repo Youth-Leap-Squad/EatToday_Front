@@ -55,7 +55,7 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [  
         
-    //    {path: '/', component: HomePage},  // 메인화면
+        {path: '/', component: HomePage},  // 메인화면
         {path: '/login', component: LoginPage},  //로그인
         {path: '/signup', component: SignUpPage},  //회원가입
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정
@@ -79,8 +79,9 @@ const router = createRouter({
     // 게시글
     { path: '/', redirect: '/post' },
     { path: '/post', name: 'PostList', component: PostList },
-    { path: "/post/food", name: "PostDetail", component: PostDetail },
-    { path: "/post/new", component: PostCreate },
+    { path: "/post/food", name: "PostDetail",   component: () => import('@/views/post/PostDetail.vue'), props: true },
+    {  path: '/posts/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
+    { meta: { requiresAuth: true  }},
     { path: "/post/scrap", component: ScrapPage },
   
     // QnA

@@ -1,5 +1,12 @@
 <template>
   <div class="container">
+    <!-- 상단 타이틀+작성 버튼 -->
+    <div class="topbar">
+      <h2 class="page-title">소주: 한국인의 소울 드링크</h2>
+      <!-- ✅ 작성 페이지로 이동 -->
+      <RouterLink to="/posts/new" class="write-btn">📝 게시글 작성하기</RouterLink>
+    </div>
+
     <!-- 술 소개 -->
     <section class="drink-info">
       <img :src="drink.image" alt="soju" class="drink-img" />
@@ -20,15 +27,21 @@
     <!-- 안주 카드 -->
     <section class="card-section">
       <div class="card-grid">
-        <PostCard
+        <!-- ✅ 카드 클릭 → /post/food, 데이터는 localStorage로 전달 -->
+        <div
           v-for="p in sortedPosts"
           :key="p.id"
-          :image="p.image"
-          :author="p.author"
-          :avatar="p.avatar"
-          :text="p.text"
-          :likes="p.likes"
-        />
+          class="click-card"
+          @click="openPost(p)"
+        >
+          <PostCard
+            :image="p.image"
+            :author="p.author"
+            :avatar="p.avatar"
+            :text="p.text"
+            :likes="p.likes"
+          />
+        </div>
       </div>
     </section>
   </div>
@@ -39,7 +52,7 @@ import PostTabs from "@/components/post/PostTabs.vue";
 import PostCard from "@/components/post/PostCard.vue";
 
 // 이미지 임포트
-import sojuImg from "@/assets/images/soju.png";
+import sojuImg from "@/assets/images/소주-Photoroom.png";
 import dakbalImg from "@/assets/images/dakbal.jpg";
 import samImg from "@/assets/images/samgyeopsal.jpg";
 import sashimiImg from "@/assets/images/sashimi.jpg";
@@ -107,32 +120,48 @@ export default {
       return [...this.posts].sort((a, b) => b[key] - a[key]);
     },
   },
+  methods: {
+    openPost(post) {
+      // ✅ 상세에서 사용할 현재 게시글 저장
+      localStorage.setItem("current_post", JSON.stringify(post));
+      // ✅ 고정 라우트로 이동
+      this.$router.push("/post/food");
+    },
+  },
 };
 </script>
 
 <style scoped>
-.container {
-  width: 85%;
-  margin: 0 auto;
-  font-family: "Pretendard", sans-serif;
-  color: #2b2b2b;
-}
-.drink-info {
+.container { width: 85%; margin: 0 auto; font-family: "Pretendard", sans-serif; color: #2b2b2b; }
+
+/* 상단바: 타이틀 + 작성 버튼 */
+.topbar {
   display: flex;
-  gap: 40px;
-  margin-top: 40px;
-  margin-bottom: 40px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
 }
-.drink-img {
-  width: 150px;
-  height: auto;
+.page-title { font-size: 22px; font-weight: 800; }
+
+/* 작성 버튼 스타일 */
+.write-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  background: #f7f2e8;
+  border: 1px solid #e7decc;
+  color: #222;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
 }
-.card-section {
-  margin-top: 20px;
-}
-.card-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 25px;
-}
+.write-btn:hover { filter: brightness(0.96); }
+
+.drink-info { display: flex; gap: 40px; margin-top: 20px; margin-bottom: 40px; }
+.drink-img { width: 150px; height: auto; }
+.card-section { margin-top: 20px; }
+.card-grid { display: flex; flex-wrap: wrap; gap: 25px; }
+.click-card { cursor: pointer; }
 </style>

@@ -1,7 +1,6 @@
 <script setup>
-import Header from '@/common/header/NonLoginHeader.vue'
 import SignUp from '@/views/member/SignUp.vue';
-// import Header from '@/common/header/Header.vue'
+import Header from '@/common/header/Header.vue'
 import Footer from '@/common/footer/Footer.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'

@@ -103,15 +103,8 @@ export default {
     },
   },
   mounted() {
-    try { this.scraps = JSON.parse(localStorage.getItem(SCRAPS_KEY)  || "[]"); } catch {}
-    try {
-      const stored = JSON.parse(localStorage.getItem(FOLDERS_KEY) || "[]");
-      this.folders = Array.isArray(stored) && stored.length
-        ? stored
-        : ["기본"];
-    } catch { this.folders = ["기본"]; }
-
-    // (선택) 레거시 키가 있다면 마이그레이션
+    this.load();
+    // (선택) 레거시 마이그레이션
     try {
       const legacy = JSON.parse(localStorage.getItem('food_scraps') || '[]');
       if (Array.isArray(legacy) && legacy.length) {
@@ -126,6 +119,7 @@ export default {
       }
     } catch {}
 
+    // UI 상태 복원
     try {
       const ui = JSON.parse(localStorage.getItem(UIKEY) || "{}");
       this.q = ui.q || "";
@@ -134,6 +128,15 @@ export default {
     } catch {}
   },
   methods: {
+    load() {
+      try { this.scraps  = JSON.parse(localStorage.getItem(SCRAPS_KEY)  || "[]"); } catch { this.scraps=[]; }
+      try {
+        const stored = JSON.parse(localStorage.getItem(FOLDERS_KEY) || "[]");
+        this.folders = Array.isArray(stored) && stored.length
+          ? stored
+          : ["기본","소주 관련","내 취향 정리!!","인생조합!!"];
+      } catch { this.folders = ["기본"]; }
+    },
     persistUi() {
       localStorage.setItem(UIKEY, JSON.stringify({
         q: this.q, activeFolder: this.activeFolder, expanded: this.expanded
@@ -141,6 +144,9 @@ export default {
     },
     persistFolders() {
       localStorage.setItem(FOLDERS_KEY, JSON.stringify(this.folders));
+    },
+    persistScraps() {
+      localStorage.setItem(SCRAPS_KEY, JSON.stringify(this.scraps));
     },
 
     selectFromPill(name) {
@@ -184,14 +190,31 @@ export default {
       this.persistFolders();
       this.persistUi();
     },
+
+    /** ✅ 폴더 삭제: 폴더 자체 + 폴더 내 스크랩 전부 삭제(스크랩 취소) */
     removeFolder(name) {
-      if (name === "전체" || name === "기본") return;
-      if (!confirm(`'${name}' 폴더를 삭제할까요? (스크랩은 유지)`)) return;
+      if (name === "전체") return;
+      // 안전 정책: '기본' 삭제 방지 (원하면 주석 해제)
+      if (name === "기본") { alert("'기본' 폴더는 삭제할 수 없습니다."); return; }
+
+      const countInFolder = this.scraps.filter(s => (s.folder || "기본") === name).length;
+      const ok = confirm(`'${name}' 폴더를 삭제할까요?\n해당 폴더 안의 ${countInFolder}개 스크랩도 모두 삭제됩니다.`);
+      if (!ok) return;
+
+      // 1) 폴더 목록에서 제거
       this.folders = this.folders.filter(n => n !== name);
+
+      // 2) 폴더 내 스크랩 모두 제거 (= 스크랩 취소)
+      this.scraps = this.scraps.filter(s => (s.folder || "기본") !== name);
+
+      // 3) UI 상태 정리
       const { [name]: _, ...rest } = this.expanded;
       this.expanded = rest;
       if (this.activeFolder === name) this.activeFolder = "전체";
+
+      // 4) 저장
       this.persistFolders();
+      this.persistScraps();
       this.persistUi();
     },
 

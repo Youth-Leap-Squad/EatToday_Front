@@ -3,13 +3,15 @@
     <div class="header-container">
       <!-- 왼쪽: 로고 + 내비 -->
       <div class="header-left">
-        <img src="@/assets/images/logo.png" alt="로고" class="logo" />
-        <span class="logo-text">오늘 뭐랑?</span>
+        <router-link to="/" class="logo-wrap">
+          <img src="@/assets/images/logo.png" alt="로고" class="logo" />
+          <span class="logo-text">오늘 뭐랑?</span>
+        </router-link>
 
         <nav class="nav">
-          <router-link to="/" class="nav-item">Home</router-link>
-          <router-link to="/rounge" class="nav-item">Rounge</router-link>
-          <router-link to="/event" class="nav-item">Event</router-link>
+          <router-link to="/" class="nav-item" active-class="active-link">Home</router-link>
+          <router-link to="/rounge" class="nav-item" active-class="active-link">Rounge</router-link>
+          <router-link to="/event" class="nav-item" active-class="active-link">Event</router-link>
         </nav>
       </div>
 
@@ -22,8 +24,8 @@
 
         <!-- 로그인 상태 -->
         <template v-else>
-          <button class="cs-btn">고객센터</button>
-          <button class="mypage-btn">마이페이지</button>
+          <router-link to="/qna" class="cs-btn link-btn" active-class="active-link">고객센터</router-link>
+          <router-link to="/mypage" class="mypage-btn link-btn" active-class="active-link">마이페이지</router-link>
           <button class="scrap-btn">스크랩</button>
           <button class="logout-btn" @click="toggleLogin">로그아웃</button>  <!--로그아웃 버튼 누르면 로그아웃 -> 
                                                                                나중에 진짜 로그아웃 되게 변경
@@ -69,6 +71,12 @@ function toggleLogin() {
   width: 40px;
   height: auto;
 }
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
 
 .logo-text {
   font-weight: 700;
@@ -105,6 +113,25 @@ button {
   color: #3b2e1e;
   cursor: pointer;
   transition: color 0.2s ease;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #3b2e1e;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;           
+}
+
+.link-btn:hover {
+  color: #c7a468;
+}
+
+.active-link {
+  color: #c7a468;
+  font-weight: 700;
 }
 
 button:hover {

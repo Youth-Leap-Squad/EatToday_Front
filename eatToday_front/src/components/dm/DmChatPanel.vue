@@ -10,7 +10,7 @@ const emit = defineEmits(['send','send-file','toggle-follow']);
 
 const text = ref('');
 const fileInput = ref(null);
-const bottomAnchor = ref(null); // ✅ 자동 스크롤용
+const bottomAnchor = ref(null);
 
 function send() {
   const t = text.value?.trim();

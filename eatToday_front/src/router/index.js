@@ -20,11 +20,11 @@ import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select.vue"; 
 import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play.vue";     // World 진행 화면
 import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week.vue"; // World 주간 순위 조회 화면
 // message
-import Dm from '@/components/dm/Dm.vue';
+import Dm from '@/views/message/Dm.vue';
 // PhotoReview
-import PhotoReviewList from '@/components/photo_review/PhotoReviewList.vue';
-import PhotoReviewDetail from '@/components/photo_review/PhotoReviewDetail.vue';
-import PhotoReviewCreate from '@/components/photo_review/PhotoReviewCreate.vue';
+import PhotoReviewList from '@/views/review/PhotoReviewList.vue';
+import PhotoReviewDetail from '@/views/review/PhotoReviewDetail.vue';
+import PhotoReviewCreate from '@/views/review/PhotoReviewCreate.vue';
 
 
 const router = createRouter({
@@ -38,7 +38,7 @@ const router = createRouter({
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정
         // { path: '/', redirect: '/login' },   //로그인 창에서 회원가입 누르면 회원가입 페이지로 리다이렉트
         // Dm
-        {path: '/', component: Dm},
+        // {path: '/', component: PhotoReviewList},
         { path: '/dm', component: Dm },
         { path: '/reviews', component: PhotoReviewList },
         { path: '/reviews/new', component: PhotoReviewCreate },

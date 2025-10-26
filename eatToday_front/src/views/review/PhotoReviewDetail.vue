@@ -14,10 +14,12 @@ const input = ref('');
 const editingId = ref(null);
 const editText = ref('');
 
-function timeAgo(ts){
-  const diff = Math.max(1, Math.floor((Date.now()-ts)/3600000));
-  return `${diff}시간 전`;
-}
+// ✅ 메뉴 상태/참조
+const menuOpen = ref(false);
+const menuRef = ref(null);
+const moreBtnRef = ref(null);
+
+function timeAgo(ts){ const h = Math.max(1, Math.floor((Date.now()-ts)/3600000)); return `${h}시간 전`; }
 
 onMounted(() => {
   const r = getReview(route.params.id);
@@ -31,6 +33,25 @@ function onLike(){ review.value.likeCount = likeReview(review.value.id); }
 function toggleFollowBtn(){
   const next = !review.value.following;
   review.value.following = toggleFollow(review.value.id, next);
+}
+
+
+// ✅ 메뉴 토글
+function toggleMenu(){ menuOpen.value = !menuOpen.value; }
+
+// ✅ 메뉴 동작 1: 메시지 보내기 (DM 페이지로 이동, 쿼리 전달)
+function sendMessage(){
+  menuOpen.value = false;
+  router.push({ path: '/dm', query: { to: review.value.authorName } });
+}
+
+// ✅ 메뉴 동작 2: 신고
+function report(){
+  menuOpen.value = false;
+  const ok = confirm('이 리뷰를 신고하시겠습니까?');
+  if(!ok) return;
+  reportReview(review.value.id, { reporter: 'user', reason: '부적절한 콘텐츠' });
+  alert('신고가 접수되었습니다.');
 }
 
 function submitComment(){
@@ -79,7 +100,22 @@ function removeComment(c){
         >
           {{ review.following ? '팔로잉' : '팔로우' }}
         </button>
-        <button class="more">⋯</button>
+
+      <!-- ✅ 점 3개 버튼 -->
+        <button ref="moreBtnRef" class="more" @click.stop="toggleMenu" aria-haspopup="true" aria-expanded="menuOpen">⋯</button>
+
+        <!-- ✅ 말풍선 메뉴 -->
+        <div v-if="menuOpen" ref="menuRef" class="popover" role="menu">
+          <button class="row" role="menuitem" @click.stop="sendMessage">
+            <!-- 종이비행기 아이콘 대체 -->
+            <span class="ico">🕊️</span>
+            <span>메시지 보내기</span>
+          </button>
+          <button class="row warn" role="menuitem" @click.stop="report">
+            <span class="ico">🚫</span>
+            <span>신고</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -137,7 +173,7 @@ function removeComment(c){
 
 <style scoped>
 .page{max-width:860px;margin:12px auto 60px;padding:0 10px;color:#2e2318}
-.top{display:flex;align-items:center;gap:12px;margin:8px 0 16px}
+.top{display:flex;align-items:center;gap:12px;margin:8px 0 16px; position:relative;}
 .back{border:none;background:transparent;font-size:28px;cursor:pointer}
 .mini{width:60px;height:60px;object-fit:cover;border-radius:10px;background:#ece5dc}
 .titlebox h1{margin:2px 0 8px;font-size:22px;font-weight:900}
@@ -145,12 +181,12 @@ function removeComment(c){
 .avatar{width:34px;height:34px;border-radius:50%;background:#f0eadf;display:grid;place-items:center}
 .name-time .name{font-weight:900}
 .name-time .time{font-size:12px;color:#8a7a6a}
-.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px; position:relative;}
 .follow{border:none;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
 .follow[data-state="off"]{background:#d2b382;color:#2a1f16}
 .follow[data-state="on"]{
   background:#f6e8c6;color:#2a1f16;
-  text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:4px;text-decoration-color:#7a4bff;
+  text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:4px;text-decoration-color:#f6e8c6;
 }
 .more{border:none;background:transparent;font-size:22px;cursor:pointer}
 
@@ -183,4 +219,26 @@ function removeComment(c){
 .edit-row{display:flex;gap:8px;align-items:center}
 .edit-row input{flex:1;background:#fff;border:1px solid #d5c9ba;border-radius:8px;padding:8px}
 .edit-actions button{margin-left:4px;border:1px solid #d5c9ba;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+
+/* ✅ 말풍선 메뉴 */
+.popover{
+  position:absolute;
+  top:42px; right:0;
+  background:#fff; border:2px solid #1f1a1411; border-radius:12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  padding:8px; width:180px; z-index:10;
+}
+.popover::after{
+  content:""; position:absolute; top:-10px; right:18px; width:14px; height:14px;
+  background:#fff; border-left:2px solid #1f1a1411; border-top:2px solid #1f1a1411;
+  transform: rotate(45deg);
+}
+.row{
+  width:100%; display:flex; align-items:center; gap:10px;
+  padding:10px 8px; background:transparent; border:none; text-align:left;
+  border-radius:10px; cursor:pointer; font-weight:800; color:#2e2318;
+}
+.row:hover{ background:#f6f0e6; }
+.row.warn{ color:#b01212; }
+.ico{ width:20px; text-align:center; }
 </style>

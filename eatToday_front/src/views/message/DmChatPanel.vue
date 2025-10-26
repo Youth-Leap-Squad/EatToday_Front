@@ -91,7 +91,7 @@ watch(() => props.messages.length, async () => {
             <div class="time">{{ m.time }}</div>
           </div>
         </div>
-        <!-- ✅ 스크롤 앵커 -->
+        <!-- 스크롤 앵커 -->
         <div ref="bottomAnchor"></div>
       </div>
 
@@ -116,27 +116,45 @@ watch(() => props.messages.length, async () => {
   </section>
 </template>
 
+<!-- @/components/dm/DmChatPanel.vue -->
 <style scoped>
 :root{ --panel:#f4ecdf; --line:#e7ddcf; --btn:#d2b382; --btnOn:#f6e8c6; --ink:#2a1f16; }
-.panel{ background:var(--panel); border-radius:18px; padding:14px; min-height:600px; display:flex; }
-.empty{ margin:auto; color:#9a8b7a; }
-.chat{ display:flex; flex-direction:column; width:100%; }
 
-.chat-head{ display:flex; align-items:center; justify-content:space-between;
-  padding:10px 16px; border-bottom:1px solid var(--line); background:#fff; border-radius:12px; }
-.who{ display:flex; align-items:center; gap:10px; }
-.avatar{ width:46px; height:46px; border-radius:50%; background:#f0eadf; display:grid; place-items:center; }
-.names .name{ font-weight:900; }
-.names .sub{ font-size:12px; color:#8a7a6a; }
-
-.follow{ border:none; border-radius:999px; padding:10px 18px; font-weight:900; cursor:pointer; }
-.follow[data-state="off"]{ background:var(--btn); color:var(--ink); }
-.follow[data-state="on"]{
-  background:var(--btnOn); color:var(--ink);
-  text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 4px; text-decoration-color:#7a4bff;
+/* ✅ 패널 자체 높이를 뷰포트 기준으로 고정 */
+.panel{
+  background:var(--panel);
+  border-radius:18px;
+  padding:14px;
+  /* 기존: min-height:600px;  →  고정 높이로 전환 */
+  height: calc(100vh - 160px); /* 상단 헤더/여백에 맞춰 필요시 숫자 조정 */
+  display:flex;
 }
 
-.messages{ flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+/* ✅ flex 컨테이너에서 내부 영역이 커져도 부모가 늘어나지 않게 */
+.chat{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  min-height:0;   /* 중요! 자식 flex가 부모 높이를 넘지 않게 */
+}
+
+/* 헤더/푸터는 줄어들지 않게 고정 */
+.chat-head{ 
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px; border-bottom:1px solid var(--line); background:#fff; border-radius:12px;
+  flex-shrink:0;     /* ✅ 헤더가 줄어들지 않도록 */
+}
+
+.messages{
+  /* ✅ 가운데 영역만 내부 스크롤 */
+  flex:1;
+  min-height:0;              /* 중요! */
+  overflow:auto;
+  padding:16px;
+  display:flex; flex-direction:column; gap:12px;
+  overscroll-behavior: contain; /* 윈도우/바디 스크롤 전파 방지 */
+}
+
 .msg{ display:flex; }
 .msg.me{ justify-content:flex-end; }
 .bubble{ max-width:65%; background:#fff; border-radius:16px; padding:10px 14px; box-shadow:0 1px 2px rgba(0,0,0,.06); }
@@ -146,15 +164,24 @@ watch(() => props.messages.length, async () => {
 .img-msg{ max-width:260px; border-radius:10px; display:block; }
 .file-msg{ color:#2a1f16; text-decoration:underline; }
 
-/* ✅ 👍 이모티콘을 스티커처럼 크게 보여주기 */
+/* 👍 스티커 */
 .bubble.sticker .text{ font-size:28px; line-height:1; text-align:center; }
+
+/* ✅ 푸터(작성창)는 고정 높이 + 줄어들지 않게 */
 .composer{
   display:flex; align-items:center; gap:8px; background:#fff; border-radius:12px;
   padding:10px; border:1px solid var(--line); margin-top:10px;
+  flex-shrink:0;  /* 중요! */
 }
 .icon{ background:transparent; border:none; cursor:pointer; font-size:16px; color:#7a6957; }
 .composer textarea{
-  flex:1; border:none; outline:none; background:#f5efe7; padding:8px 10px; border-radius:10px; resize:none; height:38px;
+  flex:1; border:none; outline:none; background:#f5efe7; padding:8px 10px; border-radius:10px;
+  resize:none; height:38px;  /* ✅ 한 줄 고정 (길어져도 스크롤은 messages가 담당) */
 }
 .send{ background:var(--btn); color:#2a1f16; border:none; border-radius:10px; padding:8px 14px; font-weight:900; cursor:pointer; }
+
+/* 모바일에서 높이 조금 더 확보하고 싶으면 */
+@media (max-width: 960px){
+  .panel{ height: calc(100vh - 120px); }
+}
 </style>

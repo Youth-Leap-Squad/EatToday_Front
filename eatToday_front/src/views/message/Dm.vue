@@ -2,8 +2,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import DmSidebar from '@/components/dm/DmSidebar.vue';
-import DmChatPanel from '@/components/dm/DmChatPanel.vue';
+import DmSidebar from '@/views/message/DmSidebar.vue';
+import DmChatPanel from '@/views/message//DmChatPanel.vue';
 
 const rooms = ref([]);
 const selected = ref(null);

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import ReviewCard from '@/components/photo_review/ReviewCard.vue';
+import ReviewCard from '@/views/review/ReviewCard.vue';
 import { listReviews } from '@/mock/review.js';
 
 const router = useRouter();

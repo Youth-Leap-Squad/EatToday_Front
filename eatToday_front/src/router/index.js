@@ -55,7 +55,7 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [  
         
-    //    {path: '/', component: HomePage},  // 메인화면
+       {path: '/', component: HomePage},  // 메인화면
         {path: '/login', component: LoginPage},  //로그인
         {path: '/signup', component: SignUpPage},  //회원가입
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정

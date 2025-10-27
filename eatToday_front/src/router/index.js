@@ -5,6 +5,7 @@ import PostList from '@/views/post/PostList.vue';
 import PostDetail from '@/views/post/PostDetail.vue';
 import PostCreate from '@/views/post/PostCreate.vue';
 import ScrapPage from '@/views/post/ScrapPage.vue';
+import AlcoholList from '@/views/post/AlcoholList.vue'
 
 // view 페이지 import 
 import HomePage from '@/views/Home.vue'
@@ -74,12 +75,14 @@ const router = createRouter({
     { path: '/updateprofile', component: UpdateProfilePage}, // 회원정보 수정
     { path: '/mypage', component: MyPage },                  // 마이페이지
 
-    // 게시글 
-    { path: '/post',       name: 'PostList',   component: PostList },
-    { path: '/post/new',   name: 'PostCreate', component: PostCreate },
-    { path: '/post/:id',   name: 'PostDetail', component: PostDetail, props: true },
-    { path: '/post/scrap',                    component: ScrapPage },
-  
+
+    // 게시글
+    { path: '/alcohol/:id', name: 'AlcoholList', component: PostList, props: true },
+    { path: '/post/new', name: 'PostCreate', component: PostCreate },
+    { path: '/post/:id', name: 'PostDetail', component: PostDetail, props: true },
+    { path: '/post/scrap', component: ScrapPage },
+    
+
     // QnA
     { path: '/qna', component: MainQna },
     { path: '/qna/my', component: MyQna },
@@ -117,9 +120,7 @@ const router = createRouter({
     { path: '/service-terms', component: TermsOfService },
     { path: '/privacy', component: PrivacyPolicy },
 
-    // ✅ catch-all 은 항상 맨 마지막
-    { path: '/:pathMatch(.*)*', redirect: '/event' },
-    { path: '/:pathMatch(.*)*', redirect: '/reviews' },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
   ]
 });
 

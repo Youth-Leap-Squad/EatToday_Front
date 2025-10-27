@@ -9,9 +9,9 @@
         </router-link>
 
         <nav class="nav">
-          <router-link to="/" class="nav-item" active-class="active-link">Home</router-link>
-          <router-link to="/rounge" class="nav-item" active-class="active-link">Rounge</router-link>
-          <router-link to="/event" class="nav-item" active-class="active-link">Event</router-link>
+          <router-link to="/" class="nav-item" active-class="router-link-active">Home</router-link>
+          <router-link to="/rounge" class="nav-item" active-class="router-link-active">Rounge</router-link>
+          <router-link to="/event" class="nav-item" active-class="router-link-active">Event</router-link>
         </nav>
       </div>
 
@@ -24,12 +24,10 @@
 
         <!-- 로그인 상태 -->
         <template v-else>
-          <router-link to="/qna" class="cs-btn link-btn" active-class="active-link">고객센터</router-link>
-          <router-link to="/mypage" class="mypage-btn link-btn" active-class="active-link">마이페이지</router-link>
+          <router-link to="/qna" class="cs-btn link-btn" active-class="router-link-active">고객센터</router-link>
+          <router-link to="/mypage" class="mypage-btn link-btn" active-class="router-link-active">마이페이지</router-link>
           <button class="scrap-btn">스크랩</button>
-          <button class="logout-btn" @click="toggleLogin">로그아웃</button>  <!--로그아웃 버튼 누르면 로그아웃 -> 
-                                                                               나중에 진짜 로그아웃 되게 변경
-                                                                            -->
+          <button class="logout-btn" @click="logout">로그아웃</button>
         </template>
       </div>
     </div>
@@ -37,14 +35,68 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-// 로그인 여부 (true면 로그인 상태)
+const router = useRouter()
+const route = useRoute()
+
+// 로그인 여부 (localStorage에서 읽어옴)
 const loginStatus = ref(false)
 
-// 버튼 누를 때 상태 변경 (로그인 <-> 로그아웃) 임시!! 나중에 진짜 로그인 상태 받아와야함
-function toggleLogin() {
-  loginStatus.value = !loginStatus.value
+// 로그인 상태 확인 함수
+const checkLoginStatus = () => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  const token = localStorage.getItem('token')
+  const wasLoggedIn = loginStatus.value
+  loginStatus.value = (isLoggedIn === 'true' && !!token)
+  
+  // 디버깅용 콘솔 로그
+  console.log('로그인 상태 확인:', {
+    isLoggedIn,
+    hasToken: !!token,
+    loginStatus: loginStatus.value,
+    changed: wasLoggedIn !== loginStatus.value
+  })
+}
+
+// 컴포넌트 마운트 시 로그인 상태 확인
+onMounted(() => {
+  checkLoginStatus()
+  
+  // localStorage 변경 감지 (다른 탭에서 로그인/로그아웃 했을 때)
+  window.addEventListener('storage', checkLoginStatus)
+  
+  // 같은 탭에서 localStorage 변경 감지를 위한 커스텀 이벤트
+  window.addEventListener('loginStatusChanged', checkLoginStatus)
+})
+
+// 라우트 변경 시 로그인 상태 확인
+watch(() => route.path, () => {
+  checkLoginStatus()
+})
+
+// 언마운트 시 모든 리스너 제거
+onUnmounted(() => {
+  window.removeEventListener('storage', checkLoginStatus)
+  window.removeEventListener('loginStatusChanged', checkLoginStatus)
+})
+
+// 로그아웃 처리
+const logout = () => {
+  // localStorage에서 토큰 및 로그인 정보 제거
+  localStorage.removeItem('token')
+  localStorage.removeItem('isLoggedIn')
+  localStorage.removeItem('rememberMe')
+  
+  // 로그인 상태 업데이트
+  loginStatus.value = false
+  
+  // 같은 탭 헤더 즉시 갱신
+  window.dispatchEvent(new Event('loginStatusChanged'))
+  
+  // 메인 페이지로 이동
+  router.push('/')
 }
 </script>
 
@@ -129,7 +181,8 @@ button {
   color: #c7a468;
 }
 
-.active-link {
+.nav-item.router-link-active,
+.link-btn.router-link-active {
   color: #c7a468;
   font-weight: 700;
 }

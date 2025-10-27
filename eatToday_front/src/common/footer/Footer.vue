@@ -4,10 +4,10 @@
       <img src="@/assets/images/logo.png" alt="오늘 뭐랑 로고" class="footer-logo" />
 
       <div class="footer-links">
-        <a href="#">프로젝트 소개</a>
-        <a href="#">용어 설명</a>
-        <a href="#">이용약관</a>
-        <a href="#">개인정보 처리방침</a>
+        <router-link to="/about">프로젝트 소개</router-link>
+        <router-link to="/terms">용어 설명</router-link>
+        <router-link to="/service-terms">이용약관</router-link>
+        <router-link to="/privacy">개인정보 처리방침</router-link>
       </div>
 
       <p class="footer-copy">
@@ -51,13 +51,15 @@
   flex-wrap: wrap;
 }
 
-.footer-links a {
+.footer-links a,
+.footer-links router-link {
   text-decoration: none;
   color: #5a4632;
   transition: color 0.2s ease;
 }
 
-.footer-links a:hover {
+.footer-links a:hover,
+.footer-links router-link:hover {
   color: #c7a468; 
 }
 

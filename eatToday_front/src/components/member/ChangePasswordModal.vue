@@ -16,6 +16,9 @@
 
       <!-- 폼 -->
       <div class="form">
+        <label class="label" for="currentPw">현재 비밀번호</label>
+        <input id="currentPw" type="password" v-model.trim="currentPw" class="input" placeholder="현재 비밀번호를 입력하세요" />
+
         <label class="label" for="pw">새로운 비밀번호</label>
         <input id="pw" type="password" v-model.trim="pw" class="input" placeholder="새로운 비밀번호" />
 
@@ -39,29 +42,34 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'submit']) // submit 시 새 비밀번호 전달
 
+const currentPw = ref('')
 const pw = ref('')
 const pw2 = ref('')
 const msg = ref('')
 const ok = ref(false)
 
 const rule = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\w\s]).{8,20}$/  // 영문+숫자+특수문자 8~20
-const canSubmit = computed(() => rule.test(pw.value) && pw.value === pw2.value)
+const canSubmit = computed(() => 
+  currentPw.value.length > 0 && 
+  rule.test(pw.value) && 
+  pw.value === pw2.value
+)
 
 function submit() {
   if (!canSubmit.value) {
     ok.value = false
-    msg.value = '비밀번호 형식 또는 일치 여부를 확인해 주세요.'
+    msg.value = '모든 항목을 정확히 입력해 주세요.'
     return
   }
   ok.value = true
   msg.value = '사용 가능한 비밀번호입니다.'
-  emit('submit', pw.value)     
-  // 부모에서 API 호출
-  // 필요 시 즉시 닫고 싶다면 아래 주석 해제
-  // close()
+  console.log('현재 비밀번호:', currentPw.value)
+  console.log('새 비밀번호:', pw.value)
+  emit('submit', currentPw.value, pw.value)  // 현재 비밀번호와 새 비밀번호 전달
 }
 
 function close() {
+  currentPw.value = ''
   pw.value = ''
   pw2.value = ''
   msg.value = ''
@@ -115,7 +123,7 @@ function close() {
 .ok{ color:#256b2f; }
 .err{ color:#a01818; }
 
-/* Confirm button (피그마 톤) */
+
 .btn-confirm{
   width: 100%; padding: 12px; margin-top: 6px;
   border:none; border-radius: 10px; cursor:pointer;

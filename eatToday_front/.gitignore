@@ -23,7 +23,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-
+*package.json
+*package-lock.json
 *.tsbuildinfo
 
 .eslintcache

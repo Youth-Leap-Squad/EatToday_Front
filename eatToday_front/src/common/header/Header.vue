@@ -3,13 +3,15 @@
     <div class="header-container">
       <!-- 왼쪽: 로고 + 내비 -->
       <div class="header-left">
-        <img src="@/assets/images/logo.png" alt="로고" class="logo" />
-        <span class="logo-text">오늘 뭐랑?</span>
+        <router-link to="/" class="logo-wrap">
+          <img src="@/assets/images/logo.png" alt="로고" class="logo" />
+          <span class="logo-text">오늘 뭐랑?</span>
+        </router-link>
 
         <nav class="nav">
-          <router-link to="/" class="nav-item">Home</router-link>
-          <router-link to="/rounge" class="nav-item">Rounge</router-link>
-          <router-link to="/event" class="nav-item">Event</router-link>
+          <router-link to="/" class="nav-item" active-class="router-link-active">Home</router-link>
+          <router-link to="/rounge" class="nav-item" active-class="router-link-active">Rounge</router-link>
+          <router-link to="/event" class="nav-item" active-class="router-link-active">Event</router-link>
         </nav>
       </div>
 
@@ -17,17 +19,15 @@
       <div class="header-right">
         <!-- 비로그인 상태 -->
         <template v-if="!loginStatus">
-          <button class="login-btn" @click="toggleLogin">로그인</button>
+          <router-link to="/login" class="login-btn link-btn">로그인</router-link>
         </template>
 
         <!-- 로그인 상태 -->
         <template v-else>
-          <button class="cs-btn">고객센터</button>
-          <button class="mypage-btn">마이페이지</button>
+          <router-link to="/qna" class="cs-btn link-btn" active-class="router-link-active">고객센터</router-link>
+          <router-link to="/mypage" class="mypage-btn link-btn" active-class="router-link-active">마이페이지</router-link>
           <button class="scrap-btn">스크랩</button>
-          <button class="logout-btn" @click="toggleLogin">로그아웃</button>  <!--로그아웃 버튼 누르면 로그아웃 -> 
-                                                                               나중에 진짜 로그아웃 되게 변경
-                                                                            -->
+          <button class="logout-btn" @click="logout">로그아웃</button>
         </template>
       </div>
     </div>
@@ -35,14 +35,60 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-// 로그인 여부 (true면 로그인 상태)
+const router = useRouter()
+const route = useRoute()
+
+// 로그인 여부 (localStorage에서 읽어옴)
 const loginStatus = ref(false)
 
-// 버튼 누를 때 상태 변경 (로그인 <-> 로그아웃) 임시!! 나중에 진짜 로그인 상태 받아와야함
-function toggleLogin() {
-  loginStatus.value = !loginStatus.value
+// 로그인 상태 확인 함수
+const checkLoginStatus = () => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  const token = localStorage.getItem('token')
+  const wasLoggedIn = loginStatus.value
+  loginStatus.value = (isLoggedIn === 'true' && !!token)
+}
+
+// 컴포넌트 마운트 시 로그인 상태 확인
+onMounted(() => {
+  checkLoginStatus()
+  
+  // localStorage 변경 감지 (다른 탭에서 로그인/로그아웃 했을 때)
+  window.addEventListener('storage', checkLoginStatus)
+  
+  // 같은 탭에서 localStorage 변경 감지를 위한 커스텀 이벤트
+  window.addEventListener('loginStatusChanged', checkLoginStatus)
+})
+
+// 라우트 변경 시 로그인 상태 확인
+watch(() => route.path, () => {
+  checkLoginStatus()
+})
+
+// 언마운트 시 모든 리스너 제거
+onUnmounted(() => {
+  window.removeEventListener('storage', checkLoginStatus)
+  window.removeEventListener('loginStatusChanged', checkLoginStatus)
+})
+
+// 로그아웃 처리
+const logout = () => {
+  // localStorage에서 토큰 및 로그인 정보 제거
+  localStorage.removeItem('token')
+  localStorage.removeItem('isLoggedIn')
+  localStorage.removeItem('rememberMe')
+  
+  // 로그인 상태 업데이트
+  loginStatus.value = false
+  
+  // 같은 탭 헤더 즉시 갱신
+  window.dispatchEvent(new Event('loginStatusChanged'))
+  
+  // 메인 페이지로 이동
+  router.push('/')
 }
 </script>
 
@@ -68,6 +114,12 @@ function toggleLogin() {
 .logo {
   width: 40px;
   height: auto;
+}
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
 }
 
 .logo-text {
@@ -105,6 +157,26 @@ button {
   color: #3b2e1e;
   cursor: pointer;
   transition: color 0.2s ease;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #3b2e1e;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;           
+}
+
+.link-btn:hover {
+  color: #c7a468;
+}
+
+.nav-item.router-link-active,
+.link-btn.router-link-active {
+  color: #c7a468;
+  font-weight: 700;
 }
 
 button:hover {

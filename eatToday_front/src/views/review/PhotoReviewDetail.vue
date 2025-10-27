@@ -1,138 +1,176 @@
+<!-- src/views/review/PhotoReviewDetail.vue -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
-  getReview, likeReview, toggleFollow,
-  listComments, addComment, updateComment, deleteComment
-} from '@/mock/review.js';
+  fetchReviewDetail,
+  listComments,
+  addComment,
+  updateComment,
+  deleteComment
+} from '@/api/photoReviewAnju'
 
-const route = useRoute();
-const router = useRouter();
-const review = ref(null);
-const comments = ref([]);
-const input = ref('');
-const editingId = ref(null);
-const editText = ref('');
+const route = useRoute()
+const router = useRouter()
+const reviewNo = Number(route.params.id || route.params.reviewNo)
 
-// ✅ 메뉴 상태/참조
-const menuOpen = ref(false);
-const menuRef = ref(null);
-const moreBtnRef = ref(null);
+const review = ref(null)
+const comments = ref([])
+const input = ref('')
+const editingId = ref(null)
+const editText = ref('')
 
-function timeAgo(ts){ const h = Math.max(1, Math.floor((Date.now()-ts)/3600000)); return `${h}시간 전`; }
-
-onMounted(() => {
-  const r = getReview(route.params.id);
-  if(!r){ alert('리뷰를 찾을 수 없어요.'); router.replace('/reviews'); return; }
-  review.value = {...r};
-  comments.value = listComments(r.id);
-});
-
-function onLike(){ review.value.likeCount = likeReview(review.value.id); }
-
-function toggleFollowBtn(){
-  const next = !review.value.following;
-  review.value.following = toggleFollow(review.value.id, next);
+/** ✅ 로그인 체크 */
+function requireLogin() {
+  const token =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('Authorization')
+  if (!token || token === 'null' || token === 'undefined') {
+    alert('로그인이 필요합니다.')
+    router.replace('/login')
+    return false
+  }
+  return true
 }
 
-
-// ✅ 메뉴 토글
-function toggleMenu(){ menuOpen.value = !menuOpen.value; }
-
-// ✅ 메뉴 동작 1: 메시지 보내기 (DM 페이지로 이동, 쿼리 전달)
-function sendMessage(){
-  menuOpen.value = false;
-  router.push({ path: '/dm', query: { to: review.value.authorName } });
+/** ✅ 시간 표시 */
+function timeAgo(isoOrTs) {
+  const ts = typeof isoOrTs === 'number' ? isoOrTs : Date.parse(isoOrTs)
+  const h = Math.max(1, Math.floor((Date.now() - ts) / 3600000))
+  return `${h}시간 전`
 }
 
-// ✅ 메뉴 동작 2: 신고
-function report(){
-  menuOpen.value = false;
-  const ok = confirm('이 리뷰를 신고하시겠습니까?');
-  if(!ok) return;
-  reportReview(review.value.id, { reporter: 'user', reason: '부적절한 콘텐츠' });
-  alert('신고가 접수되었습니다.');
+/** ✅ 데이터 로드 */
+async function load() {
+  try {
+    const r = await fetchReviewDetail(reviewNo)
+    if (!r) {
+      alert('리뷰를 찾을 수 없어요.')
+      router.replace('/reviews')
+      return
+    }
+    review.value = r
+    comments.value = await listComments(reviewNo)
+  } catch (e) {
+    console.error('❌ 리뷰 로드 실패:', e)
+    alert('데이터를 불러오지 못했습니다.')
+  }
 }
 
-function submitComment(){
-  if(!input.value.trim()) return;
-  const c = addComment(review.value.id, { authorName:'user', content: input.value });
-  comments.value = listComments(review.value.id);
-  input.value = '';
+onMounted(load)
+
+/** ✅ 댓글 등록 */
+async function submitComment() {
+  if (!requireLogin()) return
+  const text = input.value?.trim()
+  if (!text) return alert('댓글을 입력해 주세요.')
+
+  try {
+    await addComment(reviewNo, { memberNo: 1, content: text })
+    comments.value = await listComments(reviewNo)
+    input.value = ''
+  } catch (e) {
+    console.error('댓글 등록 실패:', e?.response?.data || e)
+    alert('댓글 등록 실패: ' + (e.response?.data?.message || e.message))
+  }
 }
-function startEdit(c){ editingId.value = c.id; editText.value = c.content; }
-function cancelEdit(){ editingId.value = null; editText.value=''; }
-function saveEdit(c){
-  if(!editText.value.trim()) return cancelEdit();
-  updateComment(review.value.id, c.id, editText.value);
-  comments.value = listComments(review.value.id);
-  cancelEdit();
+
+/** ✅ 댓글 수정 시작 */
+function startEdit(c) {
+  const id = Number(c.prcNo ?? c.commentNo ?? c.id)
+  if (!Number.isFinite(id)) {
+    alert('댓글 ID가 유효하지 않습니다.')
+    return
+  }
+  editingId.value = id
+  editText.value = c.prcDetail ?? c.content ?? ''
 }
-function removeComment(c){
-  deleteComment(review.value.id, c.id);
-  comments.value = listComments(review.value.id);
+
+/** ✅ 수정 취소 */
+function cancelEdit() {
+  editingId.value = null
+  editText.value = ''
+}
+
+/** ✅ 댓글 저장 */
+async function saveEdit() {
+  if (!requireLogin()) return
+  const id = Number(editingId.value)
+  if (!Number.isFinite(id)) {
+    alert('댓글 ID가 유효하지 않습니다.')
+    return
+  }
+  const text = editText.value?.trim()
+  if (!text) {
+    cancelEdit()
+    return
+  }
+
+  try {
+    await updateComment(id, { memberNo: 1, content: text })
+    comments.value = await listComments(reviewNo)
+    cancelEdit()
+  } catch (e) {
+    console.error('댓글 수정 실패:', e?.response?.data || e)
+    alert('댓글 수정 실패: ' + (e.response?.data?.message || e.message))
+  }
+}
+
+/** ✅ 댓글 삭제 */
+async function removeComment(c) {
+  if (!requireLogin()) return
+  const id = Number(c.prcNo ?? c.commentNo ?? c.id)
+  if (!Number.isFinite(id)) {
+    alert('댓글 ID가 유효하지 않습니다.')
+    return
+  }
+
+  try {
+    await deleteComment(id, 1)
+    comments.value = await listComments(reviewNo)
+  } catch (e) {
+    console.error('댓글 삭제 실패:', e?.response?.data || e)
+    alert('댓글 삭제 실패: ' + (e.response?.data?.message || e.message))
+  }
 }
 </script>
 
 <template>
   <section v-if="review" class="page">
-    <!-- 상단 제목/작성자 -->
+    <!-- 상단 -->
     <header class="top">
       <button class="back" @click="router.back()">←</button>
-
-      <img class="mini" :src="review.imgUrl || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='" />
       <div class="titlebox">
-        <h1>{{ review.title }}</h1>
+        <h1>{{ review.reviewTitle || review.title }}</h1>
         <div class="authorline">
           <div class="avatar">👤</div>
           <div class="name-time">
-            <div class="name">{{ review.authorName }}</div>
-            <div class="time">{{ timeAgo(review.createdAt) }}</div>
+            <div class="name">{{ review.memberEmail || review.authorName || '익명 사용자' }}</div>
+            <div class="time">{{ timeAgo(review.reviewDate || review.createdAt) }}</div>
           </div>
-        </div>
-      </div>
-
-      <div class="top-actions">
-        <button
-          class="follow"
-          :data-state="review.following ? 'on' : 'off'"
-          @click="toggleFollowBtn"
-        >
-          {{ review.following ? '팔로잉' : '팔로우' }}
-        </button>
-
-      <!-- ✅ 점 3개 버튼 -->
-        <button ref="moreBtnRef" class="more" @click.stop="toggleMenu" aria-haspopup="true" aria-expanded="menuOpen">⋯</button>
-
-        <!-- ✅ 말풍선 메뉴 -->
-        <div v-if="menuOpen" ref="menuRef" class="popover" role="menu">
-          <button class="row" role="menuitem" @click.stop="sendMessage">
-            <!-- 종이비행기 아이콘 대체 -->
-            <span class="ico">🕊️</span>
-            <span>메시지 보내기</span>
-          </button>
-          <button class="row warn" role="menuitem" @click.stop="report">
-            <span class="ico">🚫</span>
-            <span>신고</span>
-          </button>
         </div>
       </div>
     </header>
 
-    <!-- 메인 이미지 -->
+    <!-- 이미지 -->
     <div class="photo-box">
-      <img v-if="review.imgUrl" :src="review.imgUrl" class="photo" alt="" />
+      <template v-if="review.files && review.files.length">
+        <img
+          v-for="f in review.files"
+          :key="f.fileNo || f.id"
+          :src="f.urlOrPath || f.url || f.fileUrl || f.file_path || f.path"
+          class="photo"
+          alt=""
+        />
+      </template>
       <div v-else class="photo placeholder">이미지 없음</div>
     </div>
 
-    <!-- 해시태그 + 좋아요 -->
-    <div class="subhead">
-      <div class="hashtags">
-        <span class="h1">사진리뷰 1</span>
-        <span v-for="h in review.hashtags" :key="h" class="tag">{{ h }}</span>
-      </div>
-      <button class="like" @click="onLike">♡ {{ review.likeCount }}</button>
-    </div>
+    <!-- 본문 -->
+    <article class="content">
+      <p style="white-space: pre-wrap">{{ review.reviewContent || review.content }}</p>
+    </article>
 
     <!-- 댓글 -->
     <section class="comments">
@@ -140,73 +178,65 @@ function removeComment(c){
 
       <div class="write">
         <div class="me">🙂 user</div>
-        <input v-model="input" placeholder="댓글을 작성해 주세요." />
-        <button class="ok" @click="submitComment">댓글 작성</button>
+        <input
+          v-model="input"
+          placeholder="댓글을 작성해 주세요."
+          @keyup.enter="submitComment"
+        />
+        <button class="ok" @click="submitComment">등록</button>
       </div>
 
       <ul class="list">
-        <li v-for="c in comments" :key="c.id" class="item">
+        <li v-for="c in comments" :key="c.prcNo ?? c.commentNo ?? c.id" class="item">
           <div class="left">👤</div>
           <div class="right">
-            <div class="who">{{ c.authorName }}</div>
+            <div class="who">{{ c.memberEmail || c.authorName || '익명' }}</div>
 
-            <div v-if="editingId!==c.id" class="bubble">{{ c.content }}</div>
+            <!-- 수정 중이 아닐 때 -->
+            <div v-if="editingId !== (c.prcNo ?? c.commentNo ?? c.id)" class="bubble">
+              {{ c.prcDetail ?? c.content }}
+            </div>
+
+            <!-- 수정 중일 때 -->
             <div v-else class="edit-row">
               <input v-model="editText" />
               <div class="edit-actions">
-                <button @click="saveEdit(c)">완료</button>
+                <button @click="saveEdit()">완료</button>
                 <button @click="cancelEdit">취소</button>
               </div>
             </div>
 
             <div class="actions">
-              <button class="chip warn">신고</button>
               <button class="chip" @click="startEdit(c)">수정</button>
-              <button class="chip" @click="removeComment(c)">삭제</button>
+              <button class="chip warn" @click="removeComment(c)">삭제</button>
             </div>
           </div>
         </li>
       </ul>
     </section>
   </section>
+
+  <section v-else class="page">불러오는 중...</section>
 </template>
 
 <style scoped>
 .page{max-width:860px;margin:12px auto 60px;padding:0 10px;color:#2e2318}
-.top{display:flex;align-items:center;gap:12px;margin:8px 0 16px; position:relative;}
+.top{display:flex;align-items:center;gap:12px;margin:8px 0 16px;position:relative;}
 .back{border:none;background:transparent;font-size:28px;cursor:pointer}
-.mini{width:60px;height:60px;object-fit:cover;border-radius:10px;background:#ece5dc}
 .titlebox h1{margin:2px 0 8px;font-size:22px;font-weight:900}
 .authorline{display:flex;align-items:center;gap:8px}
 .avatar{width:34px;height:34px;border-radius:50%;background:#f0eadf;display:grid;place-items:center}
 .name-time .name{font-weight:900}
 .name-time .time{font-size:12px;color:#8a7a6a}
-.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px; position:relative;}
-.follow{border:none;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
-.follow[data-state="off"]{background:#d2b382;color:#2a1f16}
-.follow[data-state="on"]{
-  background:#f6e8c6;color:#2a1f16;
-  text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:4px;text-decoration-color:#f6e8c6;
-}
-.more{border:none;background:transparent;font-size:22px;cursor:pointer}
-
-.photo-box{display:flex;justify-content:center;margin:8px 0 16px}
+.photo-box{display:flex;justify-content:center;margin:8px 0 16px;flex-wrap:wrap;gap:10px}
 .photo{width:100%;max-width:720px;border-radius:8px;object-fit:cover}
 .photo.placeholder{width:100%;max-width:720px;aspect-ratio:16/10;background:#ece5dc;display:grid;place-items:center;color:#9a8b7a}
-
-.subhead{display:flex;align-items:center;justify-content:space-between;margin:14px 6px}
-.hashtags{display:flex;gap:10px;align-items:center}
-.h1{font-weight:900}
-.tag{color:#3a2e23;background:#fff3de;border-radius:10px;padding:4px 8px;font-weight:800}
-.like{border:none;background:transparent;font-weight:900;color:#3a2e23;cursor:pointer}
-
-.comments{background:#eae2d6;border-radius:12px;padding:14px}
+.content{background:#fff;border-radius:10px;padding:14px;line-height:1.7}
+.comments{background:#eae2d6;border-radius:12px;padding:14px;margin-top:14px}
 .count{margin:4px 2px 10px}
 .write{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.write .me{min-width:70px;color:#6b5b4a}
 .write input{flex:1;background:#fff;border:1px solid #e0d5c4;border-radius:8px;padding:10px}
-.write .ok{margin-left:6px;background:#fff;border:1px solid #c9ae86;border-radius:8px;padding:8px 10px;cursor:pointer}
-
+.write .ok{background:#fff;border:1px solid #c9ae86;border-radius:8px;padding:8px 10px;cursor:pointer}
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .item{display:flex;gap:10px}
 .left{width:32px;height:32px;border-radius:50%;background:#f0eadf;display:grid;place-items:center}
@@ -219,26 +249,4 @@ function removeComment(c){
 .edit-row{display:flex;gap:8px;align-items:center}
 .edit-row input{flex:1;background:#fff;border:1px solid #d5c9ba;border-radius:8px;padding:8px}
 .edit-actions button{margin-left:4px;border:1px solid #d5c9ba;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
-
-/* ✅ 말풍선 메뉴 */
-.popover{
-  position:absolute;
-  top:42px; right:0;
-  background:#fff; border:2px solid #1f1a1411; border-radius:12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-  padding:8px; width:180px; z-index:10;
-}
-.popover::after{
-  content:""; position:absolute; top:-10px; right:18px; width:14px; height:14px;
-  background:#fff; border-left:2px solid #1f1a1411; border-top:2px solid #1f1a1411;
-  transform: rotate(45deg);
-}
-.row{
-  width:100%; display:flex; align-items:center; gap:10px;
-  padding:10px 8px; background:transparent; border:none; text-align:left;
-  border-radius:10px; cursor:pointer; font-weight:800; color:#2e2318;
-}
-.row:hover{ background:#f6f0e6; }
-.row.warn{ color:#b01212; }
-.ico{ width:20px; text-align:center; }
 </style>

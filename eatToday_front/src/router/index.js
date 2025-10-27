@@ -45,10 +45,11 @@ import PrivacyPolicy from '@/views/PrivacyPolicy.vue';
 
 // message
 import Dm from '@/views/message/Dm.vue';
+
 // PhotoReview
-import PhotoReviewList from '@/views/review/PhotoReviewList.vue';
 import PhotoReviewDetail from '@/views/review/PhotoReviewDetail.vue';
 import PhotoReviewCreate from '@/views/review/PhotoReviewCreate.vue';
+import PhotoReviewMiniList from '@/views/review/PhotoReviewMiniListByBoard.vue';
 
 const router = createRouter({
 
@@ -105,10 +106,11 @@ const router = createRouter({
 
     // Dm
     { path: '/dm', component: Dm },
+
     // 사진 리뷰
-    { path: '/reviews', component: PhotoReviewList },
-    { path: '/reviews/new', component: PhotoReviewCreate },
-    { path: '/reviews/:id', component: PhotoReviewDetail, props: true },
+    { path: '/boards/:boardNo/reviews/new', component: PhotoReviewCreate },
+    { path: '/reviews/:reviewNo', component: PhotoReviewDetail, props: true },
+    { path: '/board/:boardNo', component: PhotoReviewMiniList },
 
 
     // Footer pages

@@ -1,34 +1,34 @@
 <template>
   <div class="wrap" v-if="post">
-    <!-- 헤더 -->
     <header class="head">
       <div>
         <h1 class="title">{{ post.title }}</h1>
         <div class="sub">
-          <span>작성자: {{ post.author }}</span>
+          <span>작성자: {{ post.author || '익명' }}</span>
           <span>·</span>
-          <span>{{ post.date || '오늘' }}</span>
+          <span>{{ (post.createdAt || post.date || '').toString().slice(0,10) || '오늘' }}</span>
           <span>· 조회 {{ Number(post.views || 0).toLocaleString() }}</span>
           <span>· 댓글 {{ comments.length }}</span>
         </div>
       </div>
     </header>
 
-    <!-- 대표 이미지 -->
-    <img class="hero" :src="post.cover || post.image" alt="cover" v-if="post.cover || post.image"/>
+    <!-- 이미지 표시 - images 배열이 있으면 여러 이미지, 없으면 단일 이미지 -->
+    <div class="hero-images" v-if="post.images && post.images.length > 0">
+      <img class="hero" :src="img" alt="cover" v-for="(img, idx) in post.images" :key="idx" />
+    </div>
+    <img class="hero" :src="heroUrl" alt="cover" v-else-if="heroUrl"/>
 
-    <!-- 본문 -->
-    <article class="content" v-html="post.html || defaultHtml"></article>
+    <article class="content" v-html="post.content || post.html || defaultHtml"></article>
 
-    <!-- 스크랩 & 반응 (가운데 정렬) -->
     <section class="action-bar">
       <ScrapButton
         v-model="scrapped"
         :postId="scrapKey"
         :title="post.title"
-        :image="post.cover || post.image"
-        :author="post.author"
-        :date="post.date || '오늘'"
+        :image="heroUrl"
+        :author="post.author || '익명'"
+        :date="(post.createdAt || post.date || '').toString().slice(0,10) || '오늘'"
         defaultFolder="기본"
       />
     </section>
@@ -37,38 +37,12 @@
       <ReactionChips :items="reactions" @toggle="onToggleReaction" />
     </div>
 
-    <!-- 댓글 -->
     <CommentBox
       class="mt24"
       :comments="comments"
       placeholder="맛은 어땠나요? 댓글을 남겨보세요 :)"
       @add="addComment"
     />
-
-    <!-- 사진 리뷰 -->
-    <section class="photo-review">
-      <div class="pr-head">
-        <h2>사진 리뷰</h2>
-        <button class="add" @click="addPhotoReview">리뷰 등록하기</button>
-      </div>
-
-      <div class="pr-grid">
-        <PhotoReviewCard
-          v-for="r in photoReviews"
-          :key="r.id"
-          :image="r.image"
-          :avatar="r.avatar"
-          :nickname="r.nickname"
-          :text="r.text"
-          :likes="r.likes"
-          @like="r.likes++"
-        />
-      </div>
-
-      <div class="more">
-        <button class="more-btn" @click="loadMore">더보기</button>
-      </div>
-    </section>
   </div>
 
   <div v-else class="empty">게시글 데이터를 불러오지 못했습니다. 목록에서 다시 시도해주세요.</div>
@@ -79,6 +53,8 @@ import ScrapButton from "@/components/post/ScrapButton.vue";
 import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
+import { fetchPost } from '@/api/post';
+import http from '@/api/index';
 
 const SCRAP_KEY = "scraps";
 function getScraps() {
@@ -99,57 +75,70 @@ export default {
         { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 52, me:true  },
         { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 6,  me:false }
       ],
-      comments: [
-        { id: 1, author: "짱구야놀자", date: "2025-10-15", text: "굽기 팁 감사합니다!" },
-        { id: 2, author: "맹구양구", date: "2025-10-15", text: "지글지글 삼겹살엔 소주가 찰떡✨" },
-      ],
-      photoReviews: [
-        { id: 1, image:"https://images.unsplash.com/photo-1544025161-32fdc2e1d2d0?q=80&w=900", avatar:"https://randomuser.me/api/portraits/men/12.jpg", nickname:"짱구야 놀자", text:"삼겹살 한 판~^^", likes:50 },
-        { id: 2, image:"https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=900", avatar:"https://randomuser.me/api/portraits/men/25.jpg", nickname:"맹구양구", text:"바삭한 껍데기", likes:58 },
-        { id: 3, image:"https://images.unsplash.com/photo-1543352634-8730e3b3b9f4?q=80&w=900", avatar:"https://randomuser.me/api/portraits/women/45.jpg", nickname:"user3", text:"오늘의 야외 삼겹살!", likes:34 },
-      ]
+      comments: [],
     };
   },
   computed: {
     scrapKey() {
       const id = this.post?.id || "unknown";
-      return `/post/food#${id}`;
+      return `/post/${id}`;
     },
     defaultHtml() {
       return `<p>간단한 설명입니다. 실제 본문은 에디터/작성 페이지에서 저장된 HTML을 사용합니다.</p>`;
+    },
+    heroUrl() {
+      return this.post?.coverUrl || this.post?.mainImageUrl || this.post?.cover || this.post?.image || '';
     }
   },
-  mounted() {
-    // 상세 데이터 초기화
-    this.loadPostFromStorage();
+  async mounted() {
+    await this.loadPostFromApi();
     this.initScrapState();
-
-    // 👉 페이지 진입 시 스크롤 맨 위로
     this.$nextTick(() => {
-      try {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      } catch (_) {
-        window.scrollTo(0, 0);
-      }
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }
+      catch (_) { window.scrollTo(0, 0); }
     });
   },
   methods:{
-    loadPostFromStorage(){
+    async loadPostFromApi(){
       try {
-        const raw = localStorage.getItem("current_post");
-        if (raw) {
-          const p = JSON.parse(raw);
-          this.post = {
-            id: p.id,
-            title: p.title || p.text || "(제목 없음)",
-            author: p.author || "익명",
-            date: p.date || "",
-            views: p.view || p.views || 0,
-            cover: p.cover || p.image || "",
-            html: p.content || ""
-          };
+        const rawId = this.$route.params.id
+        if (!rawId) { this.$router.replace('/post'); return; }
+        const id = Number(rawId)
+        if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
+ const data = await fetchPost(id)
+        this.post = data;
+        
+        // 댓글 목록 로드 (댓글 API가 없으면 빈 배열)
+        try {
+          const { data: comments } = await http.get(`/foods/${id}/comments`)
+          this.comments = (comments || []).map(c => ({
+            id: c.foodCommentNo,
+            author: c.memberId || '익명',
+            date: (c.fcDate || '').toString().slice(0,10),
+            text: c.fcContent
+          }))
+        } catch (e) {
+          console.warn('댓글 로드 실패:', e.message)
+          this.comments = []
         }
-      } catch { this.post = null; }
+
+        // 반응 집계 (댓글 API가 없으면 기본값 사용)
+        try {
+          const { data: reacts } = await http.get(`/foods/${id}/reactions`)
+          if (Array.isArray(reacts) && reacts[0]) {
+            const r = reacts[0]
+            const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
+            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
+          }
+        } catch (e) {
+          console.warn('반응 로드 실패:', e.message)
+          // 기본값 사용
+        }
+
+      } catch (e) {
+        console.error(e);
+        this.post = null;
+      }
     },
     initScrapState(){
       if (!this.post) return;
@@ -175,66 +164,24 @@ export default {
       const date = new Date().toISOString().slice(0,10);
       this.comments.unshift({ id, author:"나", date, text });
     },
-    addPhotoReview(){
-      const id = Date.now();
-      this.photoReviews.unshift({
-        id,
-        image: "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=900",
-        avatar: "https://randomuser.me/api/portraits/men/40.jpg",
-        nickname: "me",
-        text: "방금 찍은 사진!",
-        likes: 0
-      });
-    },
-    loadMore(){
-      const base = this.photoReviews.length + 1;
-      this.photoReviews.push({
-        id: base,
-        image: "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=900",
-        avatar: "https://randomuser.me/api/portraits/women/28.jpg",
-        nickname: "userX",
-        text: "더보기로 추가된 사진",
-        likes: 0
-      });
-    }
   }
 };
 </script>
 
 <style scoped>
+/* 기존 스타일 유지 */
 .wrap{width:900px;margin:0 auto;padding:24px 0;color:#2b2b2b}
 .head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .head .title{font-size:28px;margin:4px 0 6px}
 .sub{color:#6f6257;font-size:14px;display:flex;gap:6px;flex-wrap:wrap}
 .hero{width:100%;max-height:460px;object-fit:cover;border-radius:16px;margin:18px 0}
+.hero-images{display:flex;flex-direction:column;gap:12px;margin:18px 0}
+.hero-images .hero{width:100%}
 .content{line-height:1.8}
 .content img{display:block;margin:18px auto;border-radius:14px;max-width:100%}
-
-.action-bar {
-  margin: 18px 0;
-  width: 100%;
-  text-align: center;
-}
-.action-bar :deep(button),
-.action-bar :deep(.scrap-button) {
-  display: inline-block; /* 내부 컴포넌트가 flex여도 중앙에서 보이도록 */
-}
-
-.chips-center{
-  display:flex;
-  justify-content:center;
-}
-
+.action-bar { margin: 18px 0; width: 100%; text-align: center; }
+.chips-center{ display:flex; justify-content:center; }
 .mt16{margin-top:16px}
 .mt24{margin-top:24px}
-
-.photo-review{margin-top:28px;padding:18px;border-radius:14px;background:#F8ECD9}
-.pr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.pr-head h2{font-size:20px}
-.pr-head .add{border:none;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
-.pr-grid{display:grid;grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));gap:18px}
-.more{display:flex;justify-content:center;margin-top:16px}
-.more-btn{border:1px solid #ccc;background:#fff;padding:8px 16px;border-radius:20px;cursor:pointer}
 .empty{text-align:center;padding:48px 0;color:#7a6f63}
-@media (max-width: 980px){ .pr-grid{grid-template-columns: repeat(2, minmax(0,1fr));} }
 </style>

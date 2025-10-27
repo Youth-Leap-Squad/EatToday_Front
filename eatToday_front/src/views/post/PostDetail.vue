@@ -1,3 +1,4 @@
+<!-- src/views/PostDetail.vue -->
 <template>
   <div class="wrap" v-if="post">
     <header class="head">
@@ -50,6 +51,7 @@ import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
 import { fetchPost } from '@/api/post';
+import http from '@/api/index'; // ✅ axios 인스턴스 (baseURL: '/api')
 
 const SCRAP_KEY = "scraps";
 function getScraps() {
@@ -65,10 +67,10 @@ export default {
       scrapped: false,
       post: null,
       reactions: [
-        { key: "curious", emoji: "🤔", label: "궁금해요", count: 4,  me:false },
-        { key: "cheered", emoji: "👏", label: "맛있어요", count: 1,  me:false },
-        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 52, me:true  },
-        { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 6,  me:false }
+        { key: "curious", emoji: "🤔", label: "궁금해요", count: 0,  me:false },
+        { key: "cheered", emoji: "👏", label: "맛있어요", count: 0,  me:false },
+        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 0, me:false  },
+        { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 0,  me:false }
       ],
       comments: [],
     };
@@ -96,30 +98,31 @@ export default {
   methods:{
     async loadPostFromApi(){
       try {
-        const rawId = this.$route.params.id
+        const rawId = this.$route.params.id;
         if (!rawId) { this.$router.replace('/post'); return; }
-        const id = Number(rawId)
+        const id = Number(rawId);
         if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
- const data = await fetchPost(id)
+
+        // ✅ 게시글 상세
+        const data = await fetchPost(id);
         this.post = data;
-    // 댓글 목록 로드
-    const { data: comments } = await this.$axios.get(`/foods/${id}/comments`)
-    this.comments = (comments || []).map(c => ({
-    id: c.foodCommentNo,
-    author: c.memberId || '익명',
-    date: (c.fcDate || '').toString().slice(0,10),
-    text: c.fcContent
-    }))
 
-    // 반응 집계(원하면 표시)
-    const { data: reacts } = await this.$axios.get(`/foods/${id}/reactions`)
-    // reacts[0]에 likesNo1~4 들어있음 → this.reactions[].count를 세팅
-    if (Array.isArray(reacts) && reacts[0]) {
-    const r = reacts[0]
-    const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
-    this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
-    }
+        // ✅ 댓글 목록
+        const { data: comments } = await http.get(`/foods/${id}/comments`);
+        this.comments = (comments || []).map(c => ({
+          id: c.foodCommentNo,
+          author: c.memberId || '익명',
+          date: (c.fcDate || '').toString().slice(0,10),
+          text: c.fcContent
+        }));
 
+        // ✅ 반응 집계 (likesNo1~4)
+        const { data: reacts } = await http.get(`/foods/${id}/reactions`);
+        if (Array.isArray(reacts) && reacts[0]) {
+          const r = reacts[0];
+          const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0));
+          this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}));
+        }
       } catch (e) {
         console.error(e);
         this.post = null;
@@ -154,7 +157,6 @@ export default {
 </script>
 
 <style scoped>
-/* 기존 스타일 유지 */
 .wrap{width:900px;margin:0 auto;padding:24px 0;color:#2b2b2b}
 .head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .head .title{font-size:28px;margin:4px 0 6px}

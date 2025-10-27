@@ -103,21 +103,31 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import ChangePasswordModal from '@/components/member/ChangePasswordModal.vue'
 import WithdrawalModal from '@/components/member/WithdrawalModal.vue'
+import { changePassword, withdrawMember } from '@/api/member'
+
+const router = useRouter()
 
 const showChangePasswordModal = ref(false) // 비밀번호 변경 모달 표시 여부 관리
 const showWithdrawalModal = ref(false) // 회원 탈퇴 모달 표시 여부 관리
 
+// 로그인한 사용자 정보 불러오기
+const getUserInfo = () => {
+  const userEmail = localStorage.getItem('userEmail') || ''
+  return {
+    email: userEmail,
+    nickname: '',
+    name: '',
+    birth: '',
+    phone: '',
+    active: true,
+  }
+}
+
 // 실제 데이터는 API로 받아와 초기화해야함. (더미데이터임)
-const form = ref({
-  email: 'chatqwer11@gmail.com',
-  nickname: '멍구멍구',
-  name: '김윤지',
-  birth: '2000-06-05', // type="date"는 YYYY-MM-DD 형식
-  phone: '010-2139-3832',
-  active: true,
-})
+const form = ref(getUserInfo())
 
 const statusText = computed(() => (form.value.active ? '활동 중' : '정지/탈퇴'))  // 
 
@@ -133,17 +143,15 @@ function closeChangePasswordModal() {
   showChangePasswordModal.value = false // 모달 닫기
 }
 
-async function onPasswordChangeSubmit(newPassword) {
+async function onPasswordChangeSubmit(currentPassword, newPassword) {
   try {
-    // TODO: 실제 API 호출로 비밀번호 변경
-    // await http.put('/me/password', { password: newPassword })
-    console.log('새 비밀번호:', newPassword) // 임시 로그
+    await changePassword(currentPassword, newPassword)
     msgType.value = 'ok'
     msg.value = '비밀번호가 성공적으로 변경되었습니다.'
     showChangePasswordModal.value = false // 모달 닫기
   } catch (e) {
     msgType.value = 'err'
-    msg.value = '비밀번호 변경 중 오류가 발생했습니다. 다시 시도해 주세요.'
+    msg.value = e.response?.data?.message || '비밀번호 변경 중 오류가 발생했습니다. 다시 시도해 주세요.'
   }
 }
 
@@ -153,18 +161,19 @@ function closeWithdrawalModal() {
 
 async function confirmWithdrawal() {
   try {
-    // TODO: 실제 API 호출로 회원 탈퇴 처리
-    // await http.delete('/me')
-    console.log('회원 탈퇴 처리') // 임시 로그
+    // TODO: 비밀번호 입력받아야 함 (임시로 빈 문자열 전달)
+    await withdrawMember('')
     msgType.value = 'ok'
     msg.value = '회원 탈퇴가 완료되었습니다.'
     showWithdrawalModal.value = false // 모달 닫기
     
-    // 탈퇴 후 로그인 페이지로 이동하거나 홈으로 이동
-    // router.push('/login')
+    // 탈퇴 후 로그인 페이지로 이동
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
   } catch (e) {
     msgType.value = 'err'
-    msg.value = '회원 탈퇴 중 오류가 발생했습니다. 다시 시도해 주세요.'
+    msg.value = e.response?.data?.message || '회원 탈퇴 중 오류가 발생했습니다. 다시 시도해 주세요.'
   }
 }
 

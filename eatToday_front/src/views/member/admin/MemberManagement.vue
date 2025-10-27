@@ -89,6 +89,70 @@
       </div>
     </div>
 
+    <!-- 회원 관리 모달 -->
+    <div v-if="showManageModal" class="modal-overlay" @click="closeManageModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>회원 관리</h3>
+          <button class="modal-close-btn" @click="closeManageModal">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="info-row">
+            <span class="info-label">아이디:</span>
+            <span>{{ selectedMember?.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">이름:</span>
+            <span>{{ selectedMember?.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">이메일:</span>
+            <span>{{ selectedMember?.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">가입일:</span>
+            <span>{{ selectedMember?.joinDate }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">현재 상태:</span>
+            <span :class="['status-badge', `status-${selectedMember?.status}`]">
+              {{ getStatusText(selectedMember?.status) }}
+            </span>
+          </div>
+
+          <div class="action-section">
+            <h4>상태 변경</h4>
+            <div class="status-options">
+              <button 
+                @click="changeStatus('normal')" 
+                :class="['status-btn', { active: selectedMember?.status === 'normal' }]"
+              >
+                정상
+              </button>
+              <button 
+                @click="changeStatus('restricted')" 
+                :class="['status-btn', { active: selectedMember?.status === 'restricted' }]"
+              >
+                제한
+              </button>
+              <button 
+                @click="changeStatus('dormant')" 
+                :class="['status-btn', { active: selectedMember?.status === 'dormant' }]"
+              >
+                휴면
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-btn cancel-btn" @click="closeManageModal">취소</button>
+          <button class="modal-btn save-btn" @click="saveChanges">저장</button>
+        </div>
+      </div>
+    </div>
+
     <AdminFooter />
   </div>
 </template>
@@ -150,9 +214,37 @@ const nextPage = () => {
   }
 }
 
+const showManageModal = ref(false)
+const selectedMember = ref(null)
+
 const openManageModal = (member) => {
   console.log('관리 모달 열기:', member)
-  // 관리 모달 로직 구현
+  selectedMember.value = member
+  showManageModal.value = true
+}
+
+const closeManageModal = () => {
+  showManageModal.value = false
+  selectedMember.value = null
+}
+
+const changeStatus = (status) => {
+  if (selectedMember.value) {
+    selectedMember.value.status = status
+  }
+}
+
+const saveChanges = () => {
+  // 실제로는 API 호출로 DB 업데이트
+  console.log('회원 상태 변경:', selectedMember.value)
+  
+  // 로컬 데이터 업데이트
+  const memberIndex = members.value.findIndex(m => m.id === selectedMember.value.id)
+  if (memberIndex !== -1) {
+    members.value[memberIndex] = { ...selectedMember.value }
+  }
+  
+  closeManageModal()
 }
 </script>
 
@@ -335,5 +427,157 @@ const openManageModal = (member) => {
 .page-btn:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b2e1e;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: #f0f0f0;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #3b2e1e;
+}
+
+.action-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.action-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b2e1e;
+}
+
+.status-options {
+  display: flex;
+  gap: 12px;
+}
+
+.status-btn {
+  padding: 8px 20px;
+  border: 2px solid #dabb8b;
+  background: #fff;
+  color: #dabb8b;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-btn:hover {
+  background: #f5f1ea;
+}
+
+.status-btn.active {
+  background: #dabb8b;
+  color: #fff;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.save-btn {
+  background: #dabb8b;
+  color: #fff;
+}
+
+.save-btn:hover {
+  background: #c4a876;
 }
 </style>

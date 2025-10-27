@@ -43,12 +43,31 @@
           v-model="nickname"
           placeholder="한글,영문,숫자 2~20자"
           class="signup-input"
+          :readonly="useEmailPrefix"
         >
 
         <div class="email-option">
         <input type="checkbox" id="useEmailPrefix" v-model="useEmailPrefix" />
         <label for="useEmailPrefix">이메일 앞자리 사용</label>
         </div>
+
+        <!-- 이름 -->
+        <h3 class="signup-instruction">이름</h3>
+        <input 
+          type="text"
+          v-model="memberName"
+          placeholder="이름을 입력해주세요"
+          class="signup-input"
+        >
+
+        <!-- 전화번호 -->
+        <h3 class="signup-instruction">전화번호</h3>
+        <input 
+          type="tel"
+          v-model="memberPhone"
+          placeholder="010-1234-5678"
+          class="signup-input"
+        >
 
         <!-- 생년월일 -->
         <h3 class="signup-instruction">생년월일</h3>
@@ -90,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { signup, sendEmailCode, verifyEmailCode } from '@/api/member'
 
@@ -104,6 +123,8 @@ const confirmPassword = ref('')
 const useEmailPrefix = ref(false)
 const emailCode = ref('')
 const memberBirth = ref('')
+const memberName = ref('')
+const memberPhone = ref('')
 
 // State
 const codeSent = ref(false)
@@ -116,6 +137,16 @@ const emailError = ref('')
 const passwordError = ref('')
 const signupError = ref('')
 const signupSuccess = ref('')
+
+// 이메일 앞자리 자동 입력
+watch([email, useEmailPrefix], ([emailVal, isChecked]) => {
+  if (isChecked && emailVal) {
+    const localPart = emailVal.split('@')[0]
+    if (localPart) {
+      nickname.value = localPart
+    }
+  }
+})
 
 // 이메일 인증 처리
 const handleEmailVerification = async () => {
@@ -177,6 +208,16 @@ const handleSignup = async () => {
     return
   }
 
+  if (!memberName.value) {
+    signupError.value = '이름을 입력해주세요.'
+    return
+  }
+
+  if (!memberPhone.value) {
+    signupError.value = '전화번호를 입력해주세요.'
+    return
+  }
+
   if (!password.value || !confirmPassword.value) {
     passwordError.value = '비밀번호를 입력해주세요.'
     return
@@ -187,11 +228,6 @@ const handleSignup = async () => {
     return
   }
 
-  // 이메일 앞자리 사용 옵션
-  const finalNickname = useEmailPrefix.value 
-    ? email.value.split('@')[0] 
-    : nickname.value
-
   isLoading.value = true
   signupError.value = ''
   passwordError.value = ''
@@ -201,8 +237,8 @@ const handleSignup = async () => {
       memberEmail: email.value,
       memberPw: password.value,
       memberBirth: memberBirth.value,
-      memberName: finalNickname,
-      memberPhone: '',
+      memberName: memberName.value,
+      memberPhone: memberPhone.value,
       memberId: ''
     }
     

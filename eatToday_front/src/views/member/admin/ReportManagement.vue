@@ -186,6 +186,29 @@ const selectedReport = ref(null)
 
 // 페이지 로드 시 데이터 가져오기
 onMounted(() => {
+  // 로그인 상태 확인
+  const token = localStorage.getItem('token')
+  const isAdmin = localStorage.getItem('isAdmin')
+  const userEmail = localStorage.getItem('userEmail')
+  
+  console.log('관리자 페이지 접근 - 토큰:', token ? '있음' : '없음')
+  console.log('관리자 여부:', isAdmin)
+  console.log('사용자 이메일:', userEmail)
+  
+  if (!token) {
+    console.error('토큰이 없습니다. 로그인이 필요합니다.')
+    alert('로그인이 필요합니다.')
+    window.location.href = '/login'
+    return
+  }
+  
+  if (isAdmin !== 'true') {
+    console.error('관리자 권한이 없습니다.')
+    alert('관리자 권한이 필요합니다.')
+    window.location.href = '/'
+    return
+  }
+  
   fetchReports()
 })
 

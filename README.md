@@ -194,227 +194,222 @@
 <br>
 
 
-## 🧱 아키텍처 & CQRS
 
-* **Command(JPA)**: 회원가입/로그인, 게시글/댓글 생성·수정·삭제, 리액션 생성 등 **상태 변경** 처리
+
+## 🧵 와이어 프레임
+
+🔗 <a href="https://www.figma.com/design/DFoNxHc5dAtUaaUI5UnRhN/PICK---%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=1-2643&t=zbqKVZG0o1h8KwfQ-1"> 와이어 프레임 자세히 보기 </a>
+
+<br>
+
+<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/와이어 프레임 최종본.png" alt="와이어-프레임-최종본" width="800"/><br>
+
+<br><br>
+
+## 🪄 스토리 보드
+
+  #### 메인 페이지
+  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-1.png" width = "800"/><br>
   
-* **Query(MyBatis)**: 페어링 추천 결과, 게시글 목록·검색, 통계/집계, 신고내역 등 **조회 최적화**
+  <br>
+
+  #### 매칭 페이지
+  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-2.png" width = "800"/><br>
   
-* **도메인 규칙**: `approved(post.confirmed_yn=true)`가 되면 **수정 불가** (이력만 추가)
+  <br>
+
+  #### 대시보드
+  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-3.png" width = "800"/><br>
   
-* **리액션 스키마 예시**: `food_post_likes(member_no, board_no, likes_type ENUM('술술 들어가요','참신해요','맛없어요','궁금해요'), PK(member_no,board_no,likes_type))`
+  <br>
 
----
-
-## 📋 관리 및 계획
-
-### WBS [상세보기](https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=0#gid=0)
-<details>
-  <summary><b>WBS</b></summary>
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/WBS.png" />
-</details>
-
-
-### 요구사항 기능 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=0#gid=0)
-<details>
-  <summary><b>요구사항 명세서</b></summary>
-<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C_1.png" />
-
-<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C_2.png" />
-
-<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C_3.png" />
-</details>
-
-### 테이블 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=1091047026#gid=1091047026)
-<details>
-  <summary><b>테이블 명세서</b></summary>
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%201.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%202.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%203.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%204.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%205.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%206.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%207.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%208.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%209.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%2010.png" />
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/%ED%85%8C%EC%9D%B4%EB%B8%94%EC%A0%95%EC%9D%98%EC%84%9C%2011.png" />
-</details>
+  #### 전체 프로젝트 리스트
+  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-4.png" width = "800"/><br>
   
----
+  <br>
 
-<a id="data-structure"></a>
-## 🗂️ 데이터 및 구조
-
-### ERD [상세보기](https://www.erdcloud.com/d/uj6RjgfLGPpMRHLLK)
-<details>
-  <summary><b>ERD</b></summary>
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/ERD.png" />
-</details>
-
----
-
-<a id="architecture"></a>
-## 🏗️ 설계 및 아키텍처
-
-### DDD [상세보기](https://miro.com/app/board/uXjVJM9P4HM=/?share_link_id=369149134500)
-<details>
-  <summary><b>DDD</b></summary>
-<img width="1714" height="1863" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/WBS%2C%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EB%AA%85%EC%84%B8%EC%84%9C%2C%20ERD%2C%20DDD%20%EB%93%B1%EB%93%B1/DDD.jpg" />
-</details>
-
-
-
-<a id="interface"></a>
-## 🔌 인터페이스 및 API
-
-### REST API 문서
-<details>
-  <summary><b>DM</b></summary>
-- DM 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/DM/DM-%EC%B6%94%EA%B0%80.png" />
-
-- DM 삭제  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/DM/DM-%EC%82%AD%EC%A0%9C.png" />
-</details>
-
-<details>
-  <summary><b>게시글</b></summary>
-- 안주 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EA%B2%8C%EC%8B%9C%EA%B8%80/%EC%95%88%EC%A3%BC%20%EC%B6%94%EA%B0%80.png" />
-
-- 반응 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EA%B2%8C%EC%8B%9C%EA%B8%80/%EB%B0%98%EC%9D%91%20%EC%B6%94%EA%B0%80.png" />
-</details>
-
-<details>
-  <summary><b>라운지</b></summary>
-- 라운지 조회(좋아요 순)  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EB%9D%BC%EC%9A%B4%EC%A7%80/%EB%9D%BC%EC%9A%B4%EC%A7%80%20%EC%A1%B0%ED%9A%8C(%EC%A2%8B%EC%95%84%EC%9A%94%20%EC%88%9C).png" />
-
-- 라운지 조회(술 종류 별)  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EB%9D%BC%EC%9A%B4%EC%A7%80/%EB%9D%BC%EC%9A%B4%EC%A7%80%20%EC%A1%B0%ED%9A%8C(%EC%88%A0%20%EC%A2%85%EB%A5%98%20%EB%B3%84).png" />
-</details>
-
-<details>
-  <summary><b>문의사항</b></summary>
-- 문의사항 등록  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%AC%B8%EC%9D%98%20%EB%93%B1%EB%A1%9D.png" />
-
-- 문의사항 수정  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%88%98%EC%A0%95.png" />
-</details>
-
-<details>
-  <summary><b>사진리뷰</b></summary>
-- 사진리뷰 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0-%EC%B6%94%EA%B0%80.png" />
-</details>
-
-<details>
-  <summary><b>사진리뷰댓글</b></summary>
-- 사진리뷰 댓글 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80-%EC%B6%94%EA%B0%80.png" />
-
-- 사진리뷰 댓글 조회  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80-%EC%A1%B0%ED%9A%8C.png" />
-</details>
-
-<details>
-  <summary><b>신고</b></summary>
-- 신고 생성  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%8B%A0%EA%B3%A0/%EC%8B%A0%EA%B3%A0%EC%83%9D%EC%84%B1.png" />
-
-- 신고 확정  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%8B%A0%EA%B3%A0/%EC%8B%A0%EA%B3%A0%20%ED%99%95%EC%A0%95.png" />
-</details>
-
-<details>
-  <summary><b>이벤트</b></summary>
-- 술BTI 검사 결과 조회(회원별)  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%88%A0BTI%20%EA%B2%80%EC%82%AC%20%EA%B2%B0%EA%B3%BC%20%EC%A1%B0%ED%9A%8C(%ED%9A%8C%EC%9B%90%EB%B3%84).png" />
-
-- 주간월드컵 게임 랭킹 조회  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%A3%BC%EA%B0%84%EC%9B%94%EB%93%9C%EC%BB%B5%20%EA%B2%8C%EC%9E%84%20%EB%9E%AD%ED%82%B9%20%EC%A1%B0%ED%9A%8C.png" />
-</details>
-
-<details>
-  <summary><b>팔로우</b></summary>
-- 팔로우 추가  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%ED%8C%94%EB%A1%9C%EC%9A%B0/%ED%8C%94%EB%A1%9C%EC%9A%B0-%EC%B6%94%EA%B0%80.png" />
-
-- 팔로우 삭제  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%ED%8C%94%EB%A1%9C%EC%9A%B0/%ED%8C%94%EB%A1%9C%EC%9A%B0-%EC%82%AD%EC%A0%9C.png" />
-</details>
-
-<details>
-  <summary><b>회원, 관리자</b></summary>
-- 회원가입  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%ED%9A%8C%EC%9B%90%2C%EA%B4%80%EB%A6%AC%EC%9E%90/1.%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85_%EC%9D%B8%EC%A6%9Do_%ED%9A%8C%EC%9B%90.png" />
-
-- 로그인 성공  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%ED%9A%8C%EC%9B%90%2C%EA%B4%80%EB%A6%AC%EC%9E%90/2.%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%84%B1%EA%B3%B5_%ED%9A%8C%EC%9B%90.png" />
-
-- 신고내역 조회  
-<img width="800" height="700" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/postman/%ED%9A%8C%EC%9B%90%2C%EA%B4%80%EB%A6%AC%EC%9E%90/%EC%8B%A0%EA%B3%A0%EB%82%B4%EC%97%AD%20%EC%A1%B0%ED%9A%8C_%ED%9A%8C%EC%9B%90.png" />
-</details>
-
-
-
-
-
-
-
----
-
-## ✅ 테스트 및 품질
-### 🔬TEST Summary 
-<details>
-  <summary><b>TEST Summary </b></summary>
-<img with= "700" height="600" src = "https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%84%9C%EB%A8%B8%EB%A6%AC.png">
-</details>
-
-### 🧪TEST 코드 
-<details>
-  <summary><b>회원, 관리자</b></summary>
- - 신고처리시 회원 상태와 신고 횟수 업데이트
-<img width="1000" height="900" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%ED%9A%8C%EC%9B%90,%EA%B4%80%EB%A6%AC%EC%9E%90/%EC%8B%A0%EA%B3%A0%EC%B2%98%EB%A6%AC%EC%8B%9C_member%EC%83%81%ED%83%9C%EC%99%80_reportCount%EA%B0%80_%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8%EB%90%9C%EB%8B%A4.png?raw=true" />
-
-- 로그인 시, 휴대폰 번호로 회원을 조회해 인증 정보(UserDetails)를 생성하는 기능
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%ED%9A%8C%EC%9B%90%2C%EA%B4%80%EB%A6%AC%EC%9E%90/%ED%9A%8C%EC%9B%90%20%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%8B%9C%2C%20%ED%9C%B4%EB%8C%80%ED%8F%B0%20%EB%B2%88%ED%98%B8%EB%A1%9C%20%ED%9A%8C%EC%9B%90%EC%9D%84%20%EC%A1%B0%ED%9A%8C%ED%95%B4%20%EC%9D%B8%EC%A6%9D%20%EC%A0%95%EB%B3%B4(UserDetails)%EB%A5%BC%20%EC%83%9D%EC%84%B1%ED%95%98%EB%8A%94%20%EA%B8%B0%EB%8A%A5.png" />
-</details>
-
-<details>
-  <summary><b>이벤트</b></summary>
-- 주차별 월드컵 게임 랭킹 조회
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%A3%BC%EC%B0%A8%EB%B3%84%20%EC%9B%94%EB%93%9C%EC%BB%B5%20%EA%B2%8C%EC%9E%84%20%EB%9E%AD%ED%82%B9%20%EC%A1%B0%ED%9A%8C.png" />
+  #### 프로젝트 디테일 페이지
+  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-5.png" width = "800"/><br>
   
-- 회원별 술BTI 검사 결과 조회
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%ED%9A%8C%EC%9B%90%EB%B3%84%20%EC%88%A0BTI%20%EA%B2%80%EC%82%AC%20%EA%B2%B0%EA%B3%BC%20%EC%A1%B0%ED%9A%8C.png" />
-</details>
+  <br><br>
 
+## 📰 WBS
+
+🔗 <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vScA7f_mLFChQQ5SMSU5AAC6-O3h8PYJg0H-dxRvMKHrePOtW3VIgnlNMcAEWP1Xy8O8LcMe4OFuCWe/pubhtml?gid=2031264111&single=true"> WBS 자세히 보기 </a>
+
+<br>
+
+<img src ="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/WBS.png" width ="800" />
+
+<br><br>
+
+
+
+## 📱 테스트 케이스
+
+### 📄 공통 부분
 <details>
-  <summary><b>SNS</b></summary>
-- 사진리뷰
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/sns/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0.png" />
-  
-- 사진리뷰 댓글
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/sns/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80.png" />
+     <summary><b>공통 부분</b></summary><br>
+  <details>
+          <summary>메인 페이지 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/common/mainpage.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>오류 페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/common/TEST_오류_페이지.gif" width = "600"/><br>
+	          </p>
+  </details>
 </details>
 
+### 👤 회원
 <details>
-  <summary><b>게시판</b></summary>
-- 게시글등록 매핑 검증 & 승인 시 게시글수정 차단
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EA%B2%8C%EC%8B%9C%EA%B8%80%EB%93%B1%EB%A1%9D%20%EB%A7%A4%ED%95%91%20%EA%B2%80%EC%A6%9D%20%26%20%EC%8A%B9%EC%9D%B8%20%EC%8B%9C%20%EA%B2%8C%EC%8B%9C%EA%B8%80%EC%88%98%EC%A0%95%20%EC%B0%A8%EB%8B%A8.png" />
-
+     <summary><b>회원</b></summary><br>
+  <details>
+          <summary>회원가입</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/SignUp.gif" width = "600"/><br>
+	          </p>
+  </details>
+	<details>
+		<summary>로그인</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/Login.gif" width = "600"/><br>
+	          </p>
+	</details>
+	<details>
+		<summary>회원 정보 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberInfo.gif" width = "600"/><br>
+	          </p>
+	</details>
+	<details>
+		<summary>회원 정보 수정</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberInfo-fetch.gif" width = "600"/><br>
+	          </p>
+	</details>
+	<details>
+		<summary>프로필 페이지 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberProfile.gif" width = "600"/><br>
+	          </p>
+	</details>
+	<details>
+		<summary>깃허브 연결하기</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/info/TEST_회원_깃_인증하기.gif" width = "600"/><br>
+	          </p>
+	</details>
+	<details>
+		<summary>로그아웃</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberLogout.gif" width = "600"/><br>
+	          </p>
+	</details>
 </details>
 
+### 🎖️ 일일 미션
 <details>
-  <summary><b>문의 사항 게시판/라운지/신고</b></summary>
-- 신고 확정
-<img width="1000" height="900" width="2385" height="1366" src="https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EC%BC%80%EC%9D%B4%EC%8A%A4/%EC%8B%A0%EA%B3%A0/%EC%8B%A0%EA%B3%A0%20%ED%99%95%EC%A0%95.png" />
-  
+     <summary><b>일일 미션</b></summary><br>
+  <details>
+          <summary>일일 미션 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/dailymission/TEST_로그인 시 로그인 일일미션 달성 완료.gif" width = "600"/><br>
+	          </p>
+  </details>
 </details>
+
+### 📜 게시글
+<details>
+	<summary><b>게시판</b></summary>
+	<details>
+		<summary>자유 게시판 조회</summary>
+		<p alian="center">
+		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-게시판 사이드바-단일 게시글 조회.gif"  width="600"/>
+		</p>
+	</details>
+	<details>
+		<summary>단일 게시글 조회</summary>
+		<p alian="center">
+		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-게시판 사이드바-단일 게시글 조회.gif"  width="600"/>
+		</p>
+	</details>
+	<details>
+		<summary>게시글 쓰기 페이지</summary>
+		<p alian="center">
+		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-글쓰기창 진입.gif"  width="600"/>
+		</p>
+	</details>
+</details>
+
+### 🤼 매칭
+<details>
+     <summary><b>매칭</b></summary><br>
+  <details>
+          <summary>랜덤 매칭 생성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/랜덤매칭생성.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>매칭 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/매칭조회.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>사설 매칭 생성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사설매칭생성.gif" width = "600"/><br>
+	          </p>
+  </details>  
+  <details>
+          <summary>사설 매칭 입장</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사설매칭입장.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>사이드 바 매칭 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사이드바로매칭조회.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>헤더 랜덤 매칭 생성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_랜덤매칭생성.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>헤더 랜덤 매칭 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_매칭조회.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>헤더 사설 매칭 생성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_사설매칭생성.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>헤더 사설 매칭 입장</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_사설매칭입장.gif" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>헤더 프로젝트 매칭 페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭페이지.gif" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+
 
 
 

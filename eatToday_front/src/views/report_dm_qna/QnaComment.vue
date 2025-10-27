@@ -24,17 +24,31 @@
 
         <hr class="divider" />
 
-        <div v-if="answer" class="reply">
-          <div class="reply-head">
-            <div class="reply-title">
-              <img :src="arrowImg" class="arrow-img" />
-              <span class="label">답변</span>
+        <!-- 답변 목록 -->
+        <div v-if="comments.length" class="reply-list">
+          <div
+            v-for="c in comments"
+            :key="c.commentNo"
+            class="reply"
+          >
+            <div class="reply-head">
+              <div class="reply-title">
+                <img :src="arrowImg" class="arrow-img" />
+                <span class="label">답변</span>
+              </div>
+              <div class="reply-date">{{ fmtDate(c.commentAt) }}</div>
             </div>
-            <div class="reply-date">{{ answer.date }}</div>
+            <div class="reply-meta">{{ c.answerer?.memberName || '관리자' }}</div>
+            <div class="reply-body">
+              <p v-for="(line, i) in splitLines(c.commentContent)" :key="i">{{ line }}</p>
+            </div>
           </div>
-          <div class="reply-meta">{{ answer.writer }}</div>
-          <div class="reply-body">
-            <p v-for="(line, i) in answer.lines" :key="i">{{ line }}</p>
+
+          <!-- 간단 페이지네이션 -->
+          <div class="pager" v-if="totalPages > 1">
+            <button class="nav" :disabled="page===0" @click="go(page-1)">이전</button>
+            <span class="pg-text">{{ page+1 }} / {{ totalPages }}</span>
+            <button class="nav" :disabled="page>=totalPages-1" @click="go(page+1)">다음</button>
           </div>
         </div>
 
@@ -47,11 +61,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import userImg from '@/assets/images/photo_review/userexample.png'
 import arrowImg from '@/assets/images/arrow.png'
-import { fetchQnaDetail } from '@/api/inquiryQna'
+import { fetchQnaDetail, fetchQnaComments } from '@/api/inquiryQna'
 
 const route = useRoute()
 
@@ -60,13 +74,15 @@ const subject = ref('문의 제목')
 const date = ref('')
 const body = ref('')
 
-const answer = ref(null) // { writer, date, lines }
+const comments = ref([])
+const page = ref(0)
+const size = ref(10)
+const totalPages = ref(1)
 
 const token = localStorage.getItem('token') || ''
 
 function fmtDate(d) {
   if (!d) return ''
-  // "2025-09-12" 또는 ISO 모두 처리
   const s = String(d)
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.replaceAll('-', '.')
   try {
@@ -74,39 +90,46 @@ function fmtDate(d) {
     const y = dt.getFullYear()
     const m = String(dt.getMonth() + 1).padStart(2, '0')
     const dd = String(dt.getDate()).padStart(2, '0')
-    return `${y}.${m}.${dd}`
+    const hh = String(dt.getHours()).padStart(2, '0')
+    const mm = String(dt.getMinutes()).padStart(2, '0')
+    const ss = String(dt.getSeconds()).padStart(2, '0')
+    return `${y}.${m}.${dd} ${hh}:${mm}:${ss}`
   } catch { return s }
 }
 
 const bodyLines = computed(() => (body.value || '').split(/\r?\n/).filter(Boolean))
+const splitLines = txt => String(txt || '').split(/\r?\n/).filter(Boolean)
+
+async function loadDetail(id) {
+  const data = await fetchQnaDetail({ id, token })
+  name.value = data?.questioner?.memberName || '사용자'
+  subject.value = data?.inquiryTitle || (data?.inquiryContent ? String(data.inquiryContent).slice(0, 30) : '문의 제목')
+  date.value = fmtDate(data?.inquiryAt)
+  body.value = data?.inquiryContent || ''
+}
+
+async function loadComments(id) {
+  const res = await fetchQnaComments({ qnaPostNo: id, page: page.value, size: size.value, token })
+  const items = res?.content ?? res?.items ?? []
+  comments.value = items
+  totalPages.value = res?.totalPages ?? 1
+}
+
+function go(p) {
+  page.value = Math.max(0, Math.min(totalPages.value - 1, p))
+}
 
 onMounted(async () => {
   const id = route.query.id
   if (!id) return
+  await loadDetail(id)
+  await loadComments(id)
+})
 
-  try {
-    const data = await fetchQnaDetail({ id, token })
-    
-    name.value = data?.questioner?.memberName || '사용자'
-    subject.value =
-      data?.inquiryTitle ||
-      (data?.inquiryContent ? String(data.inquiryContent).slice(0, 30) : '문의 제목')
-
-    date.value = fmtDate(data?.inquiryAt)
-    body.value = data?.inquiryContent || ''
-
-    if (data?.answer?.content) {
-      answer.value = {
-        writer: data?.answer?.adminName || '관리자',
-        date: fmtDate(data?.answer?.answeredAt || data?.answer?.createdAt),
-        lines: String(data.answer.content).split(/\r?\n/).filter(Boolean),
-      }
-    } else {
-      answer.value = null
-    }
-  } catch (e) {
-    alert(`상세 조회 실패: ${e.message}`)
-  }
+watch(page, async (p) => {
+  const id = route.query.id
+  if (!id) return
+  await loadComments(id)
 })
 </script>
   

@@ -27,7 +27,7 @@ import AdminHeader from '@/common/header/AdminHeader.vue'
 import AdminFooter from '@/common/footer/AdminFooter.vue'
 
 import beerImg from '@/assets/images/맥주-Photoroom.png'
-import sojuImg from '@/assets/images/soju.png'
+import sojuImg from '@/assets/images/소주-Photoroom.png'
 import makgeolliImg from '@/assets/images/막걸리-Photoroom.png'
 import champagneImg from '@/assets/images/샴페인-Photoroom.png'
 import goryangjuImg from '@/assets/images/고량주-Photoroom.png'

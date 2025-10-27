@@ -80,7 +80,7 @@ const router = createRouter({
     { path: '/', redirect: '/post' },
     { path: '/post', name: 'PostList', component: PostList },
     { path: "/post/food", name: "PostDetail",   component: () => import('@/views/post/PostDetail.vue'), props: true },
-    {  path: '/posts/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
+    {  path: '/post/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
     { meta: { requiresAuth: true  }},
     { path: "/post/scrap", component: ScrapPage },
   

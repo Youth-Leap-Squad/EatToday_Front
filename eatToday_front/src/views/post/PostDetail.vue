@@ -20,7 +20,7 @@
     <!-- 본문 -->
     <article class="content" v-html="post.html || defaultHtml"></article>
 
-    <!-- 스크랩 & 반응 -->
+    <!-- 스크랩 & 반응 (가운데 정렬) -->
     <section class="action-bar">
       <ScrapButton
         v-model="scrapped"
@@ -32,7 +32,10 @@
         defaultFolder="기본"
       />
     </section>
-    <ReactionChips :items="reactions" @toggle="onToggleReaction" class="mt16" />
+
+    <div class="chips-center mt16">
+      <ReactionChips :items="reactions" @toggle="onToggleReaction" />
+    </div>
 
     <!-- 댓글 -->
     <CommentBox
@@ -117,8 +120,18 @@ export default {
     }
   },
   mounted() {
+    // 상세 데이터 초기화
     this.loadPostFromStorage();
     this.initScrapState();
+
+    // 👉 페이지 진입 시 스크롤 맨 위로
+    this.$nextTick(() => {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      } catch (_) {
+        window.scrollTo(0, 0);
+      }
+    });
   },
   methods:{
     loadPostFromStorage(){
@@ -196,10 +209,26 @@ export default {
 .hero{width:100%;max-height:460px;object-fit:cover;border-radius:16px;margin:18px 0}
 .content{line-height:1.8}
 .content img{display:block;margin:18px auto;border-radius:14px;max-width:100%}
-.action-bar{margin:18px 0}
+
+.action-bar {
+  margin: 18px 0;
+  width: 100%;
+  text-align: center;
+}
+.action-bar :deep(button),
+.action-bar :deep(.scrap-button) {
+  display: inline-block; /* 내부 컴포넌트가 flex여도 중앙에서 보이도록 */
+}
+
+.chips-center{
+  display:flex;
+  justify-content:center;
+}
+
 .mt16{margin-top:16px}
 .mt24{margin-top:24px}
-.photo-review{margin-top:28px;padding:18px;border-radius:14px;background:#efe7d9}
+
+.photo-review{margin-top:28px;padding:18px;border-radius:14px;background:#F8ECD9}
 .pr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .pr-head h2{font-size:20px}
 .pr-head .add{border:none;background:#111;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}

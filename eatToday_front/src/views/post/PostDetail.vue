@@ -13,7 +13,11 @@
       </div>
     </header>
 
-    <img class="hero" :src="heroUrl" alt="cover" v-if="heroUrl"/>
+    <!-- 이미지 표시 - images 배열이 있으면 여러 이미지, 없으면 단일 이미지 -->
+    <div class="hero-images" v-if="post.images && post.images.length > 0">
+      <img class="hero" :src="img" alt="cover" v-for="(img, idx) in post.images" :key="idx" />
+    </div>
+    <img class="hero" :src="heroUrl" alt="cover" v-else-if="heroUrl"/>
 
     <article class="content" v-html="post.content || post.html || defaultHtml"></article>
 
@@ -50,6 +54,7 @@ import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
 import { fetchPost } from '@/api/post';
+import http from '@/api/index';
 
 const SCRAP_KEY = "scraps";
 function getScraps() {
@@ -102,23 +107,33 @@ export default {
         if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
  const data = await fetchPost(id)
         this.post = data;
-    // 댓글 목록 로드
-    const { data: comments } = await this.$axios.get(`/foods/${id}/comments`)
-    this.comments = (comments || []).map(c => ({
-    id: c.foodCommentNo,
-    author: c.memberId || '익명',
-    date: (c.fcDate || '').toString().slice(0,10),
-    text: c.fcContent
-    }))
+        
+        // 댓글 목록 로드 (댓글 API가 없으면 빈 배열)
+        try {
+          const { data: comments } = await http.get(`/foods/${id}/comments`)
+          this.comments = (comments || []).map(c => ({
+            id: c.foodCommentNo,
+            author: c.memberId || '익명',
+            date: (c.fcDate || '').toString().slice(0,10),
+            text: c.fcContent
+          }))
+        } catch (e) {
+          console.warn('댓글 로드 실패:', e.message)
+          this.comments = []
+        }
 
-    // 반응 집계(원하면 표시)
-    const { data: reacts } = await this.$axios.get(`/foods/${id}/reactions`)
-    // reacts[0]에 likesNo1~4 들어있음 → this.reactions[].count를 세팅
-    if (Array.isArray(reacts) && reacts[0]) {
-    const r = reacts[0]
-    const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
-    this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
-    }
+        // 반응 집계 (댓글 API가 없으면 기본값 사용)
+        try {
+          const { data: reacts } = await http.get(`/foods/${id}/reactions`)
+          if (Array.isArray(reacts) && reacts[0]) {
+            const r = reacts[0]
+            const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
+            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
+          }
+        } catch (e) {
+          console.warn('반응 로드 실패:', e.message)
+          // 기본값 사용
+        }
 
       } catch (e) {
         console.error(e);
@@ -160,6 +175,8 @@ export default {
 .head .title{font-size:28px;margin:4px 0 6px}
 .sub{color:#6f6257;font-size:14px;display:flex;gap:6px;flex-wrap:wrap}
 .hero{width:100%;max-height:460px;object-fit:cover;border-radius:16px;margin:18px 0}
+.hero-images{display:flex;flex-direction:column;gap:12px;margin:18px 0}
+.hero-images .hero{width:100%}
 .content{line-height:1.8}
 .content img{display:block;margin:18px auto;border-radius:14px;max-width:100%}
 .action-bar { margin: 18px 0; width: 100%; text-align: center; }

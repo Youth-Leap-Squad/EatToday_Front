@@ -69,11 +69,12 @@ const handleLogin = async () => {
   errorMessage.value = ''
 
     try {
-    const response = await login({
+    const loginData = {
       memberEmail: email.value,
       memberPw: password.value
-    })
-
+    }
+    console.log('로그인 요청 데이터:', loginData)
+    const response = await login(loginData)
     console.log('로그인 응답:', response)
 
     // 토큰 저장 (백엔드는 accessToken으로 보내므로 맞춰줌)

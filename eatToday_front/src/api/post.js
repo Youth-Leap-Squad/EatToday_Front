@@ -1,4 +1,6 @@
 import http from '@/api/index'
+// http는 baseURL: '/api'를 가지고 있으므로, 모든 경로는 이미 /api로 시작함
+// vite proxy의 rewrite로 /api가 제거되어 백엔드로 전달됨
 
 /** 정렬 → 백엔드 경로 매핑 */
 function listPathBySort(sort) {
@@ -21,7 +23,11 @@ function resolveAssetUrl(u) {
   if (typeof u === 'string' && u.includes(',')) {
     u = u.split(',')[0].trim()
   }
-  if (/^https?:\/\//i.test(u)) return u
+  // 절대 URL이면 포트 번호 교체
+  if (/^https?:\/\//i.test(u)) {
+    // localhost:8003을 localhost:8080으로 변경
+    return u.replace('localhost:8003', 'localhost:8080').replace('localhost:8888', 'localhost:8080')
+  }
   if (u.startsWith('/images/')) return u
   if (u.startsWith('/src/assets/')) {
     try {
@@ -57,15 +63,29 @@ function normalizeItem(x) {
   // 조회수: board_seq 사용
   const views = Number(x.views ?? x.viewCount ?? x.boardSeq ?? 0)
 
-  // 커버 후보
-  const rawCover =
-    x.coverUrl ||
-    x.mainImageUrl ||
-    x.imageUrl ||
-    x.foodPicture ||
-    x.cover ||
-    x.image ||
-    firstImgFromHtml(x.content || x.boardContent || x.contentHtml)
+  // 커버 후보 - foodPictures 배열 처리
+  let rawCover = null
+  if (Array.isArray(x.foodPictures) && x.foodPictures.length > 0) {
+    rawCover = x.foodPictures[0]
+  } else if (x.foodPictures && typeof x.foodPictures === 'string') {
+    rawCover = x.foodPictures.split(',')[0].trim()
+  } else {
+    rawCover =
+      x.coverUrl ||
+      x.mainImageUrl ||
+      x.imageUrl ||
+      x.foodPicture ||
+      x.cover ||
+      x.image ||
+      firstImgFromHtml(x.content || x.boardContent || x.contentHtml)
+  }
+
+  // foodPictures 배열 처리
+  const images = Array.isArray(x.foodPictures)
+    ? x.foodPictures.map(img => resolveAssetUrl(img))
+    : x.foodPictures && typeof x.foodPictures === 'string'
+    ? x.foodPictures.split(',').map(img => resolveAssetUrl(img.trim()))
+    : []
 
   return {
     id,
@@ -76,6 +96,7 @@ function normalizeItem(x) {
     likes: totalLikes,
     comment: Number(x.comment ?? x.commentCount ?? 0),
     coverUrl: resolveAssetUrl(rawCover),
+    images, // 배열로 전달
     avatar: resolveAssetUrl(x.avatar ?? x.authorAvatar ?? ''),
     content: x.content ?? x.boardContent ?? x.contentHtml ?? '',
     createdAt: x.createdAt ?? x.boardDate ?? null,
@@ -92,14 +113,17 @@ export async function fetchPosts({ page = 0, size = 12, sort = 'view' } = {}) {
 
 /** 단건 */
 export async function fetchPost(id) {
+  // 백엔드 API가 단건 조회를 지원하지 않으므로 fallback 사용
   try {
-    const r = await http.get(`/foods/${id}`)
-    return normalizeItem(r.data)
-  } catch (e) {
     const { list } = await fetchPosts({ page: 0, size: 200, sort: 'view' })
     const found = list.find((it) => String(it.id) === String(id))
-    if (!found) throw e
+    if (!found) {
+      throw new Error(`Post with id ${id} not found`)
+    }
     return found
+  } catch (e) {
+    console.error('fetchPost error:', e)
+    throw e
   }
 }
 
@@ -128,7 +152,20 @@ export async function createPost({
     .forEach((f) => fd.append('images', f))
 
   const { data } = await http.post('/command/foods', fd)
-  return data
+  
+  // 응답의 이미지 URL 포트 번호 변환 (8003 → 8080)
+  let result = data
+  if (result) {
+    if (typeof result === 'string') {
+      result = result.replace(/localhost:8003/g, 'localhost:8080').replace(/localhost:8888/g, 'localhost:8080')
+    } else if (typeof result === 'object') {
+      const jsonStr = JSON.stringify(result)
+      const corrected = jsonStr.replace(/localhost:8003/g, 'localhost:8080').replace(/localhost:8888/g, 'localhost:8080')
+      result = JSON.parse(corrected)
+    }
+  }
+  
+  return result
 }
 
 /** 수정 */

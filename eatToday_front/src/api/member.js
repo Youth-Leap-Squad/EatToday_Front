@@ -35,3 +35,12 @@ export const login = async (loginData) => {
   const response = await api.post('/login', loginData)
   return response.data
 }
+
+// 내 등급/이름 조회
+export const findMyLevel = async (memberNo, token) => {
+  const response = await api.get('/members/findmylevel', {
+    params: { memberNo },
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  return response.data
+}

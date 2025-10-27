@@ -7,16 +7,16 @@
           <div class="row-1">
             <h1 class="nickname">
               {{ nickname }}
-              <img class="badge" :src="goldBadge" alt="gold" />
+              <img class="badge" :src="badgeImg" alt="badge" />
             </h1>
-            <div class="actions">
+            <div class="actions" v-if="!isMine">
               <button class="btn solid">팔로우</button>
               <RouterLink to="/dm" class="btn solid">메시지</RouterLink>
               <button class="btn report">신고</button>
             </div>
           </div>
           <div class="row-2">
-            <span class="level">활발함</span>
+            <span class="level">{{ levelLabel }}</span>
           </div>
           <div class="row-3">
             <span class="link" @click="openFollow('followers')">팔로워 {{ follower.toLocaleString() }}</span>
@@ -72,19 +72,60 @@
 </template>
 
 <script setup>
-import { reactive, computed, ref, watch } from 'vue'
+import { reactive, computed, ref, watch, onMounted } from 'vue'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
 import Follow from '@/components/mypage/follow.vue'
 import avatarLg from '@/assets/images/photo_review/userexample.png'
 import defaultPhoto1 from '@/assets/images/photo_review/reviewexample.png'
 import defaultPhoto2 from '@/assets/images/photo_review/reviewexample.png'
 import defaultPhoto3 from '@/assets/images/photo_review/reviewexample.png'
+import bronzeBadge from '@/assets/images/bronze.png'
+import silverBadge from '@/assets/images/silver.png'
 import goldBadge from '@/assets/images/gold.png'
+import { findMyLevel } from '@/api/member'
 
-const nickname = '짱구야 놀자'
-const follower = 190
-const following = 240
-const reviews = 40
+const isMine = ref(true)
+
+const token = computed(() => localStorage.getItem('token') || '')
+
+function parseJwt(t) {
+  try {
+    const part = t.split('.')[1]
+    if (!part) return null
+    const padded = part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (part.length % 4 || 4)) % 4)
+    return JSON.parse(decodeURIComponent(atob(padded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')))
+  } catch {
+    return null
+  }
+}
+const memberNo = computed(() => {
+  const p = parseJwt(token.value)
+  return p?.memberNo ?? null
+})
+
+const nickname = ref('')
+const levelLabel = ref('')
+const badgeImg = ref(goldBadge)
+
+function pickBadge(label) {
+  if (!label) return bronzeBadge
+  const l = label.toLowerCase()
+  if (l.includes('골드') || l.includes('gold')) return goldBadge
+  if (l.includes('실버') || l.includes('silver')) return silverBadge
+  return bronzeBadge
+}
+
+async function loadProfile() {
+  if (!token.value || !memberNo.value) return
+  const data = await findMyLevel(memberNo.value, token.value)
+  nickname.value = data.memberName ?? ''
+  levelLabel.value = data.memberLevelLabel ?? ''
+  badgeImg.value = pickBadge(levelLabel.value)
+}
+
+const follower = 0
+const following = 0
+const reviews = 0
 
 const posts = reactive([
   { photoSrc: defaultPhoto1, avatarSrc: avatarLg, content: '일요일은 내가 요리사!', likeCount: 100, isLiked: false },
@@ -117,6 +158,8 @@ watch(showFollowModal, (val) => {
     document.body.style.overflow = 'auto'
   }
 })
+
+onMounted(loadProfile)
 </script>
 
 <style scoped>

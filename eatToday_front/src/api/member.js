@@ -68,7 +68,15 @@ export const findMyLevel = async (memberNo, token) => {
   const response = await api.get('/members/findmylevel', {
     params: { memberNo },
     headers: { Authorization: `Bearer ${token}` }
-
   })
   return response.data
 }
+
+// 내 정보 조회 (이메일로 프로필 조회)
+export const getMyInfo = async (email) => {
+  const response = await api.get(`/members/getprofile-by-email?email=${email}`)
+  return response.data
+}
+
+
+

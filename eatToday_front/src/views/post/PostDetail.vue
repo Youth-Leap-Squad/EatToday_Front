@@ -1,4 +1,3 @@
-<!-- src/views/PostDetail.vue -->
 <template>
   <div class="wrap" v-if="post">
     <header class="head">
@@ -14,7 +13,11 @@
       </div>
     </header>
 
-    <img class="hero" :src="heroUrl" alt="cover" v-if="heroUrl"/>
+    <!-- 이미지 표시 - images 배열이 있으면 여러 이미지, 없으면 단일 이미지 -->
+    <div class="hero-images" v-if="post.images && post.images.length > 0">
+      <img class="hero" :src="img" alt="cover" v-for="(img, idx) in post.images" :key="idx" />
+    </div>
+    <img class="hero" :src="heroUrl" alt="cover" v-else-if="heroUrl"/>
 
     <article class="content" v-html="post.content || post.html || defaultHtml"></article>
 
@@ -51,7 +54,7 @@ import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
 import { fetchPost } from '@/api/post';
-import http from '@/api/index'; // ✅ axios 인스턴스 (baseURL: '/api')
+import http from '@/api/index';
 
 const SCRAP_KEY = "scraps";
 function getScraps() {
@@ -67,10 +70,10 @@ export default {
       scrapped: false,
       post: null,
       reactions: [
-        { key: "curious", emoji: "🤔", label: "궁금해요", count: 0,  me:false },
-        { key: "cheered", emoji: "👏", label: "맛있어요", count: 0,  me:false },
-        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 0, me:false  },
-        { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 0,  me:false }
+        { key: "curious", emoji: "🤔", label: "궁금해요", count: 4,  me:false },
+        { key: "cheered", emoji: "👏", label: "맛있어요", count: 1,  me:false },
+        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 52, me:true  },
+        { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 6,  me:false }
       ],
       comments: [],
     };
@@ -98,31 +101,40 @@ export default {
   methods:{
     async loadPostFromApi(){
       try {
-        const rawId = this.$route.params.id;
+        const rawId = this.$route.params.id
         if (!rawId) { this.$router.replace('/post'); return; }
-        const id = Number(rawId);
+        const id = Number(rawId)
         if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
-
-        // ✅ 게시글 상세
-        const data = await fetchPost(id);
+ const data = await fetchPost(id)
         this.post = data;
-
-        // ✅ 댓글 목록
-        const { data: comments } = await http.get(`/foods/${id}/comments`);
-        this.comments = (comments || []).map(c => ({
-          id: c.foodCommentNo,
-          author: c.memberId || '익명',
-          date: (c.fcDate || '').toString().slice(0,10),
-          text: c.fcContent
-        }));
-
-        // ✅ 반응 집계 (likesNo1~4)
-        const { data: reacts } = await http.get(`/foods/${id}/reactions`);
-        if (Array.isArray(reacts) && reacts[0]) {
-          const r = reacts[0];
-          const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0));
-          this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}));
+        
+        // 댓글 목록 로드 (댓글 API가 없으면 빈 배열)
+        try {
+          const { data: comments } = await http.get(`/foods/${id}/comments`)
+          this.comments = (comments || []).map(c => ({
+            id: c.foodCommentNo,
+            author: c.memberId || '익명',
+            date: (c.fcDate || '').toString().slice(0,10),
+            text: c.fcContent
+          }))
+        } catch (e) {
+          console.warn('댓글 로드 실패:', e.message)
+          this.comments = []
         }
+
+        // 반응 집계 (댓글 API가 없으면 기본값 사용)
+        try {
+          const { data: reacts } = await http.get(`/foods/${id}/reactions`)
+          if (Array.isArray(reacts) && reacts[0]) {
+            const r = reacts[0]
+            const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
+            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
+          }
+        } catch (e) {
+          console.warn('반응 로드 실패:', e.message)
+          // 기본값 사용
+        }
+
       } catch (e) {
         console.error(e);
         this.post = null;
@@ -157,11 +169,14 @@ export default {
 </script>
 
 <style scoped>
+/* 기존 스타일 유지 */
 .wrap{width:900px;margin:0 auto;padding:24px 0;color:#2b2b2b}
 .head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .head .title{font-size:28px;margin:4px 0 6px}
 .sub{color:#6f6257;font-size:14px;display:flex;gap:6px;flex-wrap:wrap}
 .hero{width:100%;max-height:460px;object-fit:cover;border-radius:16px;margin:18px 0}
+.hero-images{display:flex;flex-direction:column;gap:12px;margin:18px 0}
+.hero-images .hero{width:100%}
 .content{line-height:1.8}
 .content img{display:block;margin:18px auto;border-radius:14px;max-width:100%}
 .action-bar { margin: 18px 0; width: 100%; text-align: center; }

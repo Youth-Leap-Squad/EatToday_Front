@@ -102,11 +102,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ChangePasswordModal from '@/components/member/ChangePasswordModal.vue'
 import WithdrawalModal from '@/components/member/WithdrawalModal.vue'
-import { changePassword, withdrawMember } from '@/api/member'
+import { changePassword, withdrawMember, getMyInfo } from '@/api/member'
 
 const router = useRouter()
 
@@ -206,6 +206,46 @@ function onCancel() {
   // 이전 화면으로 이동하거나 원본 값으로 되돌리기
   history.back()
 }
+
+// 페이지 로드 시 회원 정보 불러오기
+onMounted(async () => {
+  try {
+    const userEmail = localStorage.getItem('userEmail') || ''
+    if (!userEmail) {
+      console.warn('이메일 정보가 없습니다.')
+      return
+    }
+    
+    const userInfo = await getMyInfo(userEmail)
+    console.log('불러온 회원 정보:', userInfo)
+    
+    if (userInfo) {
+      // 이메일 앞자리를 닉네임으로 사용
+      const emailLocal = userInfo.memberEmail?.split('@')[0] || ''
+      
+      form.value = {
+        email: userInfo.memberEmail || form.value.email,
+        nickname: emailLocal,
+        name: userInfo.memberName || '',
+        birth: userInfo.memberBirth || '',
+        phone: userInfo.memberPhone || '',
+        active: userInfo.memberActive ?? true,
+      }
+      
+      console.log('설정된 form 값:', form.value)
+    }
+  } catch (error) {
+    console.error('회원 정보 불러오기 실패:', error)
+    // API 실패 시 현재 이메일만 표시
+    const userEmail = localStorage.getItem('userEmail') || ''
+    const emailLocal = userEmail.split('@')[0] || ''
+    form.value = {
+      ...form.value,
+      email: userEmail,
+      nickname: emailLocal
+    }
+  }
+})
 </script>
 
 <style scoped>

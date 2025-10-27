@@ -15,17 +15,17 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     proxy: {
-      '/photoReview': {
-        target: 'http://localhost:8003',
-        changeOrigin: true,
-      },
+      // 게이트웨이 우회 (임시): 바로 백엔드 8080으로
       '/api': {
-        target: 'http://localhost:8003',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-        // ws: true,
+      },
+      // (필요시) 포토리뷰도 8080으로
+      '/photoReview': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       },
     },
-    
   },
 })

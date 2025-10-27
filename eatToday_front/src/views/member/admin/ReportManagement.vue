@@ -3,7 +3,6 @@
     <AdminHeader />
     
     <div class="admin-content">
-      <!-- 페이지 타이틀 -->
       <h1 class="page-title">신고 관리</h1>
 
       <!-- 검색 필터 -->
@@ -12,7 +11,7 @@
           <input 
             type="text" 
             v-model="searchQuery" 
-            placeholder="신고자/대상 검색" 
+ edits            placeholder="신고자/대상 검색" 
             class="filter-input"
           />
         </div>
@@ -21,16 +20,16 @@
             <option value="all">전체</option>
             <option value="pending">처리 대기</option>
             <option value="resolved">처리 완료</option>
-            <option value="rejected">거부됨</option>
           </select>
         </div>
         <div class="filter-group">
           <select v-model="typeFilter" class="filter-input">
             <option value="all">전체 유형</option>
-            <option value="post">게시글</option>
-            <option value="comment">댓글</option>
-            <option value="user">사용자</option>
-            <option value="other">기타</option>
+            <option value="photo_review">사진 리뷰</option>
+            <option value="food_post">게시글</option>
+            <option value="food_comment">댓글</option>
+            <option value="direct_message">DM</option>
+            <option value="qna_post">QnA</option>
           </select>
         </div>
         <button class="search-btn" @click="applySearch">검색</button>
@@ -51,7 +50,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(report, index) in filteredReports" :key="index">
+            <tr v-for="report in filteredReports" :key="report.id">
               <td>{{ report.reporter }}</td>
               <td>{{ report.target }}</td>
               <td>
@@ -76,13 +75,6 @@
                     승인
                   </button>
                   <button 
-                    v-if="report.status === 'pending'" 
-                    class="action-btn reject-btn"
-                    @click="handleReject(report)"
-                  >
-                    거부
-                  </button>
-                  <button 
                     class="action-btn detail-btn"
                     @click="viewDetail(report)"
                   >
@@ -100,18 +92,71 @@
         <button 
           v-for="page in totalPages" 
           :key="page" 
-          @click="currentPage = page" 
-          :class="['page-btn', { active: currentPage === page }]"
+          @click="currentPage = page - 1" 
+          :class="['page-btn', { active: currentPage === page - 1 }]"
         >
           {{ page }}
         </button>
-        <button 
-          class="page-btn" 
-          @click="nextPage" 
-          :disabled="currentPage === totalPages"
-        >
+      </div>
+    </div>
+
+    <!-- 신고 상세 모달 -->
+    <div v-if="showDetailModal" class="modal-overlay" @click="closeDetailModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>신고 상세 정보</h3>
+          <button class="modal-close-btn" @click="closeDetailModal">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="info-row">
+            <span class="info-label">신고 번호:</span>
+            <span>{{ selectedReport?.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">신고자:</span>
+            <span>{{ selectedReport?.reporter }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">대상:</span>
+            <span>{{ selectedReport?.target }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">유형:</span>
+            <span :class="['type-badge', `type-${selectedReport?.type}`]">
+              {{ getTypeText(selectedReport?.type) }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">제목:</span>
+            <span>{{ selectedReport?.title }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">내용:</span>
+            <span>{{ selectedReport?.reason }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">신고일:</span>
+            <span>{{ selectedReport?.date }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">상태:</span>
+            <span :class="['status-badge', `status-${selectedReport?.status}`]">
+              {{ getStatusText(selectedReport?.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-btn cancel-btn" @click="closeDetailModal">닫기</button>
+          <button 
+            v-if="selectedReport?.status === 'pending'"
+            class="modal-btn approve-btn" 
+            @click="handleApproveFromModal"
           >
-        </button>
+            승인
+          </button>
+        </div>
       </div>
     </div>
 
@@ -120,95 +165,90 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AdminHeader from '@/common/header/AdminHeader.vue'
 import AdminFooter from '@/common/footer/AdminFooter.vue'
+import { getReportList, approveReport } from '@/api/report'
 
 const searchQuery = ref('')
 const statusFilter = ref('all')
 const typeFilter = ref('all')
-const currentPage = ref(1)
+const currentPage = ref(0)
 const itemsPerPage = 10
 
-const reports = ref([
-  { 
-    reporter: 'user123', 
-    target: 'post #1234', 
-    type: 'post', 
-    reason: '부적절한 콘텐츠가 포함되어 있습니다.',
-    date: '2025-01-15',
-    status: 'pending'
-  },
-  { 
-    reporter: 'admin_user', 
-    target: 'user456', 
-    type: 'user', 
-    reason: '스팸 계정으로 의심됩니다.',
-    date: '2025-01-14',
-    status: 'resolved'
-  },
-  { 
-    reporter: 'moderator1', 
-    target: 'comment #567', 
-    type: 'comment', 
-    reason: '욕설 및 비방 게시글입니다.',
-    date: '2025-01-13',
-    status: 'pending'
-  },
-  { 
-    reporter: 'user789', 
-    target: 'post #890', 
-    type: 'post', 
-    reason: '저작권 침해가 의심됩니다.',
-    date: '2025-01-12',
-    status: 'rejected'
-  },
-  { 
-    reporter: 'security_team', 
-    target: 'user999', 
-    type: 'user', 
-    reason: '계정 도용 의심.',
-    date: '2025-01-11',
-    status: 'resolved'
-  },
-])
+const reports = ref([])
+const totalPages = ref(0)
+const isLoading = ref(false)
+
+// 모달 관련
+const showDetailModal = ref(false)
+const selectedReport = ref(null)
+
+// 페이지 로드 시 데이터 가져오기
+onMounted(() => {
+  fetchReports()
+})
+
+// 페이지 변경 감지
+watch(currentPage, () => {
+  fetchReports()
+})
+
+// 백엔드에서 신고 목록 가져오기
+const fetchReports = async () => {
+  try {
+    isLoading.value = true
+    const response = await getReportList(currentPage.value, itemsPerPage)
+    
+    // 백엔드 응답을 프론트엔드 형식으로 변환
+    reports.value = response.content.map(report => ({
+      id: report.reportNo,
+      reporter: report.reporter?.memberName || `User${report.memberNo}`,
+      target: report.accused?.memberName || `User${report.memberNo2}`,
+      type: report.reportSource,
+      reason: report.reportContent,
+      title: report.reportTitle,
+      date: report.reportDate,
+      status: report.reportYn ? 'resolved' : 'pending'
+    }))
+    
+    totalPages.value = response.totalPages || 0
+  } catch (error) {
+    console.error('신고 목록 가져오기 실패:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const filteredReports = computed(() => {
   let filtered = reports.value
 
-  // 검색 필터
   if (searchQuery.value) {
     filtered = filtered.filter(r => 
-      r.reporter.includes(searchQuery.value) || 
-      r.target.includes(searchQuery.value) ||
-      r.reason.includes(searchQuery.value)
+      r.reporter?.toString().includes(searchQuery.value) || 
+      r.target?.toString().includes(searchQuery.value) ||
+      r.reason?.includes(searchQuery.value)
     )
   }
 
-  // 상태 필터
   if (statusFilter.value !== 'all') {
     filtered = filtered.filter(r => r.status === statusFilter.value)
   }
 
-  // 유형 필터
   if (typeFilter.value !== 'all') {
     filtered = filtered.filter(r => r.type === typeFilter.value)
   }
 
-  // 페이지네이션
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filtered.slice(start, end)
+  return filtered
 })
-
-const totalPages = computed(() => Math.ceil(filteredReports.value.length / itemsPerPage))
 
 const getTypeText = (type) => {
   const typeMap = {
-    post: '게시글',
-    comment: '댓글',
-    user: '사용자',
-    other: '기타'
+    photo_review: '사진 리뷰',
+    food_post: '게시글',
+    food_comment: '댓글',
+    direct_message: 'DM',
+    qna_post: 'QnA'
   }
   return typeMap[type] || type
 }
@@ -216,37 +256,42 @@ const getTypeText = (type) => {
 const getStatusText = (status) => {
   const statusMap = {
     pending: '처리 대기',
-    resolved: '처리 완료',
-    rejected: '거부됨'
+    resolved: '처리 완료'
   }
   return statusMap[status] || status
 }
 
 const applySearch = () => {
-  currentPage.value = 1
+  currentPage.value = 0
+  fetchReports()
 }
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
+const handleApprove = async (report) => {
+  try {
+    await approveReport(report.id)
+    report.status = 'resolved'
+    alert('신고가 승인되었습니다.')
+  } catch (error) {
+    console.error('신고 승인 실패:', error)
+    alert('신고 승인에 실패했습니다.')
   }
 }
 
-const handleApprove = (report) => {
-  console.log('신고 승인:', report)
-  report.status = 'resolved'
-  // 실제로는 API 호출
-}
-
-const handleReject = (report) => {
-  console.log('신고 거부:', report)
-  report.status = 'rejected'
-  // 실제로는 API 호출
-}
-
 const viewDetail = (report) => {
-  console.log('신고 상세:', report)
-  // 모달이나 상세 페이지로 이동
+  selectedReport.value = report
+  showDetailModal.value = true
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  selectedReport.value = null
+}
+
+const handleApproveFromModal = async () => {
+  if (selectedReport.value) {
+    await handleApprove(selectedReport.value)
+    closeDetailModal()
+  }
 }
 </script>
 
@@ -269,7 +314,6 @@ const viewDetail = (report) => {
   margin-bottom: 24px;
 }
 
-/* 검색 필터 */
 .search-filters {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
@@ -310,7 +354,6 @@ const viewDetail = (report) => {
   background: #c4a876;
 }
 
-/* 테이블 */
 .table-container {
   background: #fff;
   border: 1px solid #e0e0e0;
@@ -356,7 +399,6 @@ const viewDetail = (report) => {
   white-space: nowrap;
 }
 
-/* 유형 배지 */
 .type-badge {
   padding: 4px 12px;
   border-radius: 12px;
@@ -364,27 +406,31 @@ const viewDetail = (report) => {
   font-weight: 600;
 }
 
-.type-post {
+.type-photo_review {
   background: #e3f2fd;
   color: #1976d2;
 }
 
-.type-comment {
+.type-food_post {
   background: #f3e5f5;
   color: #7b1fa2;
 }
 
-.type-user {
+.type-food_comment {
   background: #fff3e0;
   color: #e65100;
 }
 
-.type-other {
+.type-direct_message {
   background: #eceff1;
   color: #546e7a;
 }
 
-/* 상태 배지 */
+.type-qna_post {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
 .status-badge {
   padding: 4px 12px;
   border-radius: 12px;
@@ -402,12 +448,6 @@ const viewDetail = (report) => {
   color: #2e7d32;
 }
 
-.status-rejected {
-  background: #ffebee;
-  color: #c62828;
-}
-
-/* 액션 버튼 */
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -432,15 +472,6 @@ const viewDetail = (report) => {
   background: #388e3c;
 }
 
-.reject-btn {
-  background: #f44336;
-  color: #fff;
-}
-
-.reject-btn:hover {
-  background: #d32f2f;
-}
-
 .detail-btn {
   background: #dabb8b;
   color: #fff;
@@ -450,7 +481,6 @@ const viewDetail = (report) => {
   background: #c4a876;
 }
 
-/* 페이지네이션 */
 .pagination {
   display: flex;
   justify-content: center;
@@ -469,7 +499,7 @@ const viewDetail = (report) => {
   transition: all 0.2s ease;
 }
 
-.page-btn:hover:not(:disabled):not(.active) {
+.page-btn:hover {
   background: #f0f0f0;
 }
 
@@ -479,8 +509,119 @@ const viewDetail = (report) => {
   border-color: #3b2e1e;
 }
 
-.page-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b2e1e;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: #f0f0f0;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #3b2e1e;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.modal-footer .approve-btn {
+  background: #4caf50;
+  color: #fff;
+}
+
+.modal-footer .approve-btn:hover {
+  background: #388e3c;
 }
 </style>
+

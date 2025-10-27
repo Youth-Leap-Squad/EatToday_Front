@@ -11,14 +11,21 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5173,
+    strictPort: true,
+    cors: true,
     proxy: {
-      // API 요청을 백엔드로 프록시
+      '/photoReview': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
-  }
+        // ws: true,
+      },
+    },
+    
+  },
 })
-

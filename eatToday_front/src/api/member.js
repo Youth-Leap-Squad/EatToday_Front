@@ -35,3 +35,29 @@ export const login = async (loginData) => {
   const response = await api.post('/login', loginData)
   return response.data
 }
+
+// 관리자: 회원 목록 조회
+export const getMemberList = async (page = 0, size = 10) => {
+  const response = await api.get(`/members?page=${page}&size=${size}`)
+  return response.data
+}
+
+// 관리자: default 상태 변경
+export const updateMemberStatus = async (memberId, status) => {
+  const response = await api.put(`/admin/members/${memberId}/status`, { status })
+  return response.data
+}
+
+// 비밀번호 변경
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await api.post(`/members/change-password?currentPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`)
+  return response.data
+}
+
+// 회원 탈퇴
+export const withdrawMember = async (password) => {
+  const response = await api.delete('/members', {
+    params: { password }
+  })
+  return response.data
+}

@@ -133,9 +133,6 @@ const qnas = ref([
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.row-inner:hover {
-  background-color: #e9ddcc;
-}
 .row-inner::after {
   content: "";
   position: absolute;

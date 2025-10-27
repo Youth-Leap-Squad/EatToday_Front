@@ -50,14 +50,6 @@ const checkLoginStatus = () => {
   const token = localStorage.getItem('token')
   const wasLoggedIn = loginStatus.value
   loginStatus.value = (isLoggedIn === 'true' && !!token)
-  
-  // 디버깅용 콘솔 로그
-  console.log('로그인 상태 확인:', {
-    isLoggedIn,
-    hasToken: !!token,
-    loginStatus: loginStatus.value,
-    changed: wasLoggedIn !== loginStatus.value
-  })
 }
 
 // 컴포넌트 마운트 시 로그인 상태 확인

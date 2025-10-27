@@ -68,15 +68,18 @@ const handleLogin = async () => {
   isLoading.value = true
   errorMessage.value = ''
 
-  try {
+    try {
     const response = await login({
       memberEmail: email.value,
       memberPw: password.value
     })
 
-    // 토큰 저장
-    if (response.token) {
-      localStorage.setItem('token', response.token)
+    console.log('로그인 응답:', response)
+
+    // 토큰 저장 (백엔드는 accessToken으로 보내므로 맞춰줌)
+    const token = response.accessToken || response.token
+    if (token) {
+      localStorage.setItem('token', token)
       localStorage.setItem('isLoggedIn', 'true')
       
       // 로그인 상태 저장 (rememberMe 옵션에 따라)
@@ -85,7 +88,10 @@ const handleLogin = async () => {
       }
       
       // 같은 탭 헤더 즉시 갱신
+      console.log('로그인 성공! 이벤트 발행:', token)
       window.dispatchEvent(new Event('loginStatusChanged'))
+    } else {
+      console.error('토큰이 없습니다:', response)
     }
 
     // 성공 메시지 표시

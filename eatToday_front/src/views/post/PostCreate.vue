@@ -54,7 +54,9 @@
     <div class="btns">
       <button class="ghost" @click="saveTemp">임시 저장</button>
       <button class="ghost" @click="openPreview = true">미리보기</button>
-      <button class="primary" @click="submit">작성 완료</button>
+      <button class="primary" :disabled="submitting" @click="submit">
+        {{ submitting ? '등록 중...' : '작성 완료' }}
+      </button>
     </div>
 
     <!-- 프리뷰 모달 -->
@@ -77,15 +79,7 @@ import ToggleSelect from "@/components/post/ToggleSelect.vue";
 import ImageUploader from "@/components/post/ImageUploader.vue";
 import ContentImageUploader from "@/components/post/ContentImageUploader.vue";
 import PreviewModal from "@/components/post/PreviewModal.vue";
-
-const toDataURL = (file) =>
-  new Promise((res, rej) => {
-    if (!file) return res("");
-    const fr = new FileReader();
-    fr.onload = () => res(fr.result);
-    fr.onerror = rej;
-    fr.readAsDataURL(file);
-  });
+import { createPost } from '@/api/post';
 
 export default {
   name: "PostCreate",
@@ -108,6 +102,7 @@ export default {
       contentImages: [],
       isDirty: false,
       openPreview: false,
+      submitting: false,
     };
   },
   computed: {
@@ -161,44 +156,39 @@ export default {
       return true;
     },
     async submit() {
-      if (!this.validate()) return;
-
-      const mainImageDataUrl = await toDataURL(this.form.mainImage);
-      const contentImageDataUrls = await Promise.all(this.contentImages.map((f) => toDataURL(f)));
-
-      const post = {
-        id: `local-${Date.now()}`,
-        category: this.form.category,
-        title: this.form.title.trim(),
-        subtitle: this.form.subtitle.trim(),
-        content: this.renderedContent.trim(),
-        cover: mainImageDataUrl,
-        contentImages: contentImageDataUrls,
-        author: "나",
-        date: new Date().toISOString().slice(0, 10),
-        views: 0,
-        likes: 0,
-      };
-
-      // 목록 저장(옵션)
-      const key = "local_posts";
-      const list = JSON.parse(localStorage.getItem(key) || "[]");
-      list.unshift(post);
-      localStorage.setItem(key, JSON.stringify(list));
-
-      // 상세에서 읽을 수 있도록 현재 글 저장 후 상세로 이동
-      localStorage.setItem("current_post", JSON.stringify(post));
-      localStorage.removeItem("temp_post_v2");
-      this.isDirty = false;
-
-      alert("게시글이 등록되었습니다!");
-      this.$router.push({ name: 'PostDetail', params: { id: post.id } });
+      if (!this.validate() || this.submitting) return;
+      this.submitting = true;
+      try {
+        const payload = {
+          category: this.form.category,
+          alcoholNo: 2,
+          title: this.form.title.trim(),
+          subtitle: this.form.subtitle.trim(),
+          contentHtml: this.renderedContent.trim(),
+          mainImageFile: this.form.mainImage || null,
+          contentImageFiles: this.contentImages || [],
+        };
+        const created = await createPost(payload); // { id, ... } 반환 가정
+        localStorage.removeItem("temp_post_v2");
+        this.isDirty = false;
+        alert("게시글이 등록되었습니다!");
+        const id = created?.id ?? created?.boardNo ?? created?.data?.id
+        // 라우터와 일치 (경로 기반 추천)
+        this.$router.push(`/post/${id}`);
+      } catch (e) {
+        console.error(e);
+        const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || '등록 실패';
+        alert(msg)
+      } finally {
+        this.submitting = false;
+      }
     },
   },
 };
 </script>
 
 <style scoped>
+/* 그대로 유지 */
 .wrap { width: 900px; margin: 0 auto; padding: 24px; color: #2b2b2b; }
 .page-title { font-size: 28px; margin-bottom: 12px; }
 .row { display: flex; align-items: flex-start; gap: 14px; margin: 14px 0; }

@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // 게시글
 import PostList from '@/views/post/PostList.vue';
-import PostDetail from "@/views/post/PostDetail.vue"; 
-import PostCreate from "@/views/post/PostCreate.vue";
-import ScrapPage from "@/views/post/ScrapPage.vue";
+import PostDetail from '@/views/post/PostDetail.vue';
+import PostCreate from '@/views/post/PostCreate.vue';
+import ScrapPage from '@/views/post/ScrapPage.vue';
 
 // view 페이지 import 
 import HomePage from '@/views/Home.vue'
@@ -74,13 +74,11 @@ const router = createRouter({
     { path: '/updateprofile', component: UpdateProfilePage}, // 회원정보 수정
     { path: '/mypage', component: MyPage },                  // 마이페이지
 
-    // 게시글
-    { path: '/', redirect: '/post' },
-    { path: '/post/soju', name: 'PostList', component: PostList },
-    { path: "/post/food", name: "PostDetail",   component: () => import('@/views/post/PostDetail.vue'), props: true },
-    {  path: '/post/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
-    { meta: { requiresAuth: true  }},
-    { path: "/post/scrap", component: ScrapPage },
+    // 게시글 
+    { path: '/post',       name: 'PostList',   component: PostList },
+    { path: '/post/new',   name: 'PostCreate', component: PostCreate },
+    { path: '/post/:id',   name: 'PostDetail', component: PostDetail, props: true },
+    { path: '/post/scrap',                    component: ScrapPage },
   
     // QnA
     { path: '/qna', component: MainQna },

@@ -219,8 +219,8 @@ export default {
     },
 
     openPost(id) {
-      const it = this.scraps.find(s => s.id === id);
-      if (it?.postId) this.$router.push(it.postId);
+    const it = this.scraps.find(s => s.id === id);
+    if (it?.postId) this.$router.push(it.postId); 
     },
   }
 };

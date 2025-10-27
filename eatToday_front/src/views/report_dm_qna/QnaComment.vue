@@ -1,55 +1,114 @@
 <template>
-    <div class="qna-comment">
-      <div class="inner">
-        <div class="card">
-          <div class="card-title">
-            <h2 class="title">문의사항</h2>
-            <hr class="title-line" />
-          </div>
-  
-          <div class="head">
-            <div class="user">
-              <img :src="userImg" alt="user" class="avatar" />
-              <div class="meta">
-                <div class="name">맹구망구</div>
-                <div class="subject">이벤트 시작이 안됩니다 ㅡㅡ</div>
-              </div>
-            </div>
-            <div class="date">2025.10.19</div>
-          </div>
-  
-          <div class="body">
-            <p>아니 이벤트 참여가 안되잖아요;;</p>
-            <p>이벤트 참여 버튼 누르면 계속 렉걸리고 초기 화면으로 넘어와요</p>
-            <p>빠른 조치 부탁드립니다;;</p>
-          </div>
-  
-          <hr class="divider" />
-  
-          <div class="reply">
-            <div class="reply-head">
-              <div class="reply-title">
-                <img :src="arrowImg" class="arrow-img" />
-                <span class="label">답변</span>
-              </div>
-              <div class="reply-date">2025.10.19</div>
-            </div>
-            <div class="reply-meta">관리자</div>
-            <div class="reply-body">
-              <p>맹구망구님 죄송합니다...</p>
-              <p>저희 사이트를 이용하면서 많은 불편을 느끼셨군요</p>
-              <p>빠른 조치 하겠습니다..ㅠㅠ</p>
+  <div class="qna-comment">
+    <div class="inner">
+      <div class="card">
+        <div class="card-title">
+          <h2 class="title">문의사항</h2>
+          <hr class="title-line" />
+        </div>
+
+        <div class="head">
+          <div class="user">
+            <img :src="userImg" alt="user" class="avatar" />
+            <div class="meta">
+              <div class="name">{{ name }}</div>
+              <div class="subject">{{ subject }}</div>
             </div>
           </div>
+          <div class="date">{{ date }}</div>
+        </div>
+
+        <div class="body">
+          <p v-for="(line, i) in bodyLines" :key="i">{{ line }}</p>
+        </div>
+
+        <hr class="divider" />
+
+        <div v-if="answer" class="reply">
+          <div class="reply-head">
+            <div class="reply-title">
+              <img :src="arrowImg" class="arrow-img" />
+              <span class="label">답변</span>
+            </div>
+            <div class="reply-date">{{ answer.date }}</div>
+          </div>
+          <div class="reply-meta">{{ answer.writer }}</div>
+          <div class="reply-body">
+            <p v-for="(line, i) in answer.lines" :key="i">{{ line }}</p>
+          </div>
+        </div>
+
+        <div v-else class="reply">
+          <div class="reply-meta" style="margin-left:0">아직 등록된 답변이 없습니다.</div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import userImg from '@/assets/images/photo_review/userexample.png'
-  import arrowImg from '@/assets/images/arrow.png'
-  </script>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import userImg from '@/assets/images/photo_review/userexample.png'
+import arrowImg from '@/assets/images/arrow.png'
+import { fetchQnaDetail } from '@/api/inquiryQna'
+
+const route = useRoute()
+
+const name = ref('사용자')
+const subject = ref('문의 제목')
+const date = ref('')
+const body = ref('')
+
+const answer = ref(null) // { writer, date, lines }
+
+const token = localStorage.getItem('token') || ''
+
+function fmtDate(d) {
+  if (!d) return ''
+  // "2025-09-12" 또는 ISO 모두 처리
+  const s = String(d)
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.replaceAll('-', '.')
+  try {
+    const dt = new Date(s)
+    const y = dt.getFullYear()
+    const m = String(dt.getMonth() + 1).padStart(2, '0')
+    const dd = String(dt.getDate()).padStart(2, '0')
+    return `${y}.${m}.${dd}`
+  } catch { return s }
+}
+
+const bodyLines = computed(() => (body.value || '').split(/\r?\n/).filter(Boolean))
+
+onMounted(async () => {
+  const id = route.query.id
+  if (!id) return
+
+  try {
+    const data = await fetchQnaDetail({ id, token })
+    
+    name.value = data?.questioner?.memberName || '사용자'
+    subject.value =
+      data?.inquiryTitle ||
+      (data?.inquiryContent ? String(data.inquiryContent).slice(0, 30) : '문의 제목')
+
+    date.value = fmtDate(data?.inquiryAt)
+    body.value = data?.inquiryContent || ''
+
+    if (data?.answer?.content) {
+      answer.value = {
+        writer: data?.answer?.adminName || '관리자',
+        date: fmtDate(data?.answer?.answeredAt || data?.answer?.createdAt),
+        lines: String(data.answer.content).split(/\r?\n/).filter(Boolean),
+      }
+    } else {
+      answer.value = null
+    }
+  } catch (e) {
+    alert(`상세 조회 실패: ${e.message}`)
+  }
+})
+</script>
   
   <style scoped>
   .qna-comment {

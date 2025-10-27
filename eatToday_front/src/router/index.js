@@ -9,8 +9,13 @@ import UpdateProfilePage from '@/views/member/UpdateProfilePage.vue'
 
 // event 파트
 import EventHome from "@/views/event/EventHome.vue";
-import Albti_Survey from "@/views/event/event_albti/Albti_Survey.vue";    // 술BTI 설문화면
-import Albti_Result from "@/views/event/event_albti/Albti_Result.vue";    // 술BTI 결과화면
+
+// import Albti_Survey from "@/views/event/event_albti/Albti_Survey.vue";    // 술BTI 설문화면
+import Albti_Survey from "@/views/event/event_albti/Albti_Survey(back)2.vue";    // 술BTI 설문화면(백엔드 연동)
+
+// import Albti_Result from "@/views/event/event_albti/Albti_Result.vue";    // 술BTI 결과화면
+import Albti_Result from "@/views/event/event_albti/Albti_Result(back)2.vue";    // 술BTI 결과화면(백엔드 연동)
+
 import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select.vue"; // World 술선택 화면
 import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play.vue";     // World 진행 화면
 import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week.vue"; // World 주간 순위 조회 화면
@@ -28,8 +33,11 @@ const router = createRouter({
 
         {path: '/', component: EventHome},
         {path: "/event", component: EventHome },    // 이벤트 메인화면
-        {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면
-        {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면
+        // {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면
+        {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면(백엔드 연동)
+        // {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면
+        {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면(백엔드 연동)
+        
         // { path: '/:pathMatch(.*)*', redirect: '/event/albti/survey' }
         
         

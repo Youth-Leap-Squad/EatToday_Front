@@ -81,26 +81,38 @@ const handleLogin = async () => {
     if (token) {
       localStorage.setItem('token', token)
       localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('userEmail', response.memberEmail || email.value)
       
       // 로그인 상태 저장 (rememberMe 옵션에 따라)
       if (rememberMe.value) {
         localStorage.setItem('rememberMe', 'true')
       }
       
+      // 관리자 체크 (memberRole이 ADMIN이면 관리자)
+      const isAdmin = response.memberRole === 'ADMIN'
+      console.log('관리자 여부:', isAdmin, 'memberRole:', response.memberRole)
+      if (isAdmin) {
+        localStorage.setItem('isAdmin', 'true')
+      }
+      
       // 같은 탭 헤더 즉시 갱신
       console.log('로그인 성공! 이벤트 발행:', token)
       window.dispatchEvent(new Event('loginStatusChanged'))
+      
+      // 성공 메시지 표시
+      errorMessage.value = '로그인에 성공했습니다!'
+      
+      // 1초 후 페이지로 이동 (관리자는 관리자 페이지로)
+      setTimeout(() => {
+        if (isAdmin) {
+            router.push('/admindashboard')
+        } else {
+          router.push('/')
+        }
+      }, 1000)
     } else {
       console.error('토큰이 없습니다:', response)
     }
-
-    // 성공 메시지 표시
-    errorMessage.value = '로그인에 성공했습니다!'
-    
-    // 1초 후 메인 페이지로 이동
-    setTimeout(() => {
-      router.push('/')
-    }, 1000)
   } catch (error) {
     errorMessage.value = error.response?.data?.message || '로그인에 실패했습니다.'
     console.error('로그인 에러:', error)

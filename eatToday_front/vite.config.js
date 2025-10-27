@@ -16,11 +16,11 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/photoReview': {
-        target: 'http://localhost:8003',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8003',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         // ws: true,

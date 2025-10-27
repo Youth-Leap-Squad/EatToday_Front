@@ -218,12 +218,12 @@ export default {
 .drink-info {
   display: flex;
   align-items: flex-start; /* 위쪽 기준 정렬 */
-  gap: 60px;               /* ✅ 기존 40px → 60px 정도로 여유 있게 */
+  gap: 60px;              
   margin-top: 20px;
   margin-bottom: 40px;
 }
 .drink-img {
-  width: 300px;       /* ✅ 기존 150px → 300px 정도로 확대 */
+  width: 300px;  
   height: auto;
   object-fit: contain; /* 이미지 비율 유지 */
 }

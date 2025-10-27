@@ -1,5 +1,5 @@
 <script setup>
-import SignUp from './views/member/SignUp.vue'; '@/views/member/SignupPage.vue/SignUp.vue';
+import SignUp from '@/views/member/SignUp.vue';
 import Header from '@/common/header/Header.vue'
 import Footer from '@/common/footer/Footer.vue'
 import { computed } from 'vue'
@@ -24,11 +24,8 @@ const isAdminPage = computed(() => route.path.startsWith('/admin'))
     <template v-else>
       <router-view />
     </template>
-
-
 </template>
 
-
 <style scoped>
-
+/* 필요시 스타일 추가 */
 </style>

@@ -11,7 +11,7 @@
             </h1>
             <div class="actions">
               <button class="btn solid">팔로우</button>
-              <button class="btn solid">메시지</button>
+              <RouterLink to="/dm" class="btn solid">메시지</RouterLink>
               <button class="btn report">신고</button>
             </div>
           </div>

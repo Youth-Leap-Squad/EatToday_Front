@@ -1,5 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+// 게시글
+import PostList from '@/views/post/PostList.vue';
+import PostDetail from "@/views/post/PostDetail.vue"; 
+import PostCreate from "@/views/post/PostCreate.vue";
+import ScrapPage from "@/views/post/ScrapPage.vue";
+
 // view 페이지 import 
 import HomePage from '@/views/Home.vue'
 import SignUpPage from '@/views/member/SignUp.vue';
@@ -37,12 +43,19 @@ import TermsDefinition from '@/views/TermsDefinition.vue';
 import TermsOfService from '@/views/TermsOfService.vue';
 import PrivacyPolicy from '@/views/PrivacyPolicy.vue';
 
+// message
+import Dm from '@/views/message/Dm.vue';
+// PhotoReview
+import PhotoReviewList from '@/views/review/PhotoReviewList.vue';
+import PhotoReviewDetail from '@/views/review/PhotoReviewDetail.vue';
+import PhotoReviewCreate from '@/views/review/PhotoReviewCreate.vue';
+
 const router = createRouter({
 
     history: createWebHistory(),
     routes: [  
-        
-    //    {path: '/', component: HomePage},  // 메인화면
+      
+       {path: '/', component: HomePage},  // 메인화면
         {path: '/login', component: LoginPage},  //로그인
         {path: '/signup', component: SignUpPage},  //회원가입
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정
@@ -61,6 +74,14 @@ const router = createRouter({
     { path: '/updateprofile', component: UpdateProfilePage}, // 회원정보 수정
     { path: '/mypage', component: MyPage },                  // 마이페이지
 
+    // 게시글
+    { path: '/', redirect: '/post' },
+    { path: '/post', name: 'PostList', component: PostList },
+    { path: "/post/food", name: "PostDetail",   component: () => import('@/views/post/PostDetail.vue'), props: true },
+    {  path: '/post/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
+    { meta: { requiresAuth: true  }},
+    { path: "/post/scrap", component: ScrapPage },
+  
     // QnA
     { path: '/qna', component: MainQna },
     { path: '/qna/my', component: MyQna },
@@ -84,6 +105,14 @@ const router = createRouter({
     { path: '/admin/event/worldcup', component: WorldCupGameDetails },
     { path: '/admin/event/albti', component: AlbtiStatistics },
 
+    // Dm
+    { path: '/dm', component: Dm },
+    // 사진 리뷰
+    { path: '/reviews', component: PhotoReviewList },
+    { path: '/reviews/new', component: PhotoReviewCreate },
+    { path: '/reviews/:id', component: PhotoReviewDetail, props: true },
+
+
     // Footer pages
     { path: '/about', component: AboutProject },
     { path: '/terms', component: TermsDefinition },
@@ -92,6 +121,7 @@ const router = createRouter({
 
     // ✅ catch-all 은 항상 맨 마지막
     { path: '/:pathMatch(.*)*', redirect: '/event' },
+    { path: '/:pathMatch(.*)*', redirect: '/reviews' },
   ]
 });
 

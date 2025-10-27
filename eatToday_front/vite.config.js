@@ -15,8 +15,6 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     proxy: {
-
-      // 게이트웨이 우회 (임시): 바로 백엔드 8080으로
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
@@ -41,7 +39,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
-      }
+      },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
     },
   },
 })

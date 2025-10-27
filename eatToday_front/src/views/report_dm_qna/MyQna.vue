@@ -12,51 +12,122 @@
       </div>
 
       <div class="board">
-        <ul class="rows">
-          <li
-            v-for="q in qnas"
-            :key="q.id"
-            class="row"
-            @click="goToComment(q.id)"
-          >
-            <div class="row-inner">
-              <div class="left">
-                <img :src="editBtn" alt="edit" class="edit-img" />
-                <span class="category">{{ q.category }}</span>
+        <template v-if="loading">
+          <div class="empty">불러오는 중입니다…</div>
+        </template>
+
+        <template v-else>
+          <ul class="rows" v-if="qnas.length">
+            <li
+              v-for="q in qnas"
+              :key="q.id"
+              class="row"
+              @click="goToComment(q.id)"
+            >
+              <div class="row-inner">
+                <div class="left">
+                  <img :src="editBtn" alt="edit" class="edit-img" />
+                  <span class="category">{{ q.category }}</span>
+                </div>
+                <span class="subject">{{ q.subject }}</span>
+                <span class="date">{{ q.date }}</span>
               </div>
-              <span class="subject">{{ q.subject }}</span>
-              <span class="date">{{ q.date }}</span>
-            </div>
-          </li>
-        </ul>
+            </li>
+          </ul>
+          <div v-else class="empty">작성한 문의가 없습니다.</div>
+        </template>
+      </div>
+
+      <div class="pager" v-if="totalPages > 1">
+        <button class="nav" @click="prevPage" :disabled="page === 0">
+          <img :src="leftBtn" alt="prev" />
+        </button>
+
+        <button
+          v-for="p in pages"
+          :key="p"
+          class="page"
+          :class="{ current: p - 1 === page }"
+          @click="go(p - 1)"
+        >
+          {{ p }}
+        </button>
+
+        <button class="nav" @click="nextPage" :disabled="page >= totalPages - 1">
+          <img :src="rightBtn" alt="next" />
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-
 import plusBtn from '@/assets/images/plusbutton.png'
 import editBtn from '@/assets/images/editbutton.png'
+import leftBtn from '@/assets/images/leftbutton.png'
+import rightBtn from '@/assets/images/rightbutton.png'
+import { fetchMyInquiryQnas } from '@/api/inquiryQna'
 
 const router = useRouter()
 
 function goToComment(id) {
   router.push(`/qna/comment?id=${id}`)
 }
-
 function goToCreate() {
   router.push('/qna/create')
 }
 
-const qnas = ref([
-  { id: 1, category: '이벤트 문제', subject: '이벤트 시작이 제대로 안되네요.. 조치 부탁드립니다.', date: '2025-10-20' },
-  { id: 2, category: '포인트 적립', subject: '포인트 적립이 안되는 거 같아요…ㅠㅠ', date: '2025-10-19' },
-  { id: 3, category: '등급 문제', subject: '포인트가 쌓였는데 아직도 브론즈예요 왜 이래요 ㅡㅡ', date: '2025-10-18' },
-  { id: 4, category: '로그인 문제', subject: '비밀번호 입력이 안돼요 ㅠㅠ', date: '2025-10-18' }
-])
+const token = computed(() => localStorage.getItem('token') || '')
+
+const loading = ref(false)
+const qnas = ref([])
+const page = ref(0)
+const size = ref(4)
+const totalPages = ref(1)
+
+async function load() {
+  loading.value = true
+  try {
+    if (!token.value) {
+      qnas.value = []
+      totalPages.value = 1
+      return
+    }
+
+    const data = await fetchMyInquiryQnas({
+      token: token.value,
+      page: page.value,
+      size: size.value,
+    })
+
+    const items = data?.content ?? []
+    totalPages.value = data?.totalPages ?? 1
+
+    qnas.value = items.map(i => ({
+      id: i.qnaPostNo ?? i.id ?? i.postId ?? i.qnaId,
+      category: i.category ?? '문의',
+      subject: i.inquiryTitle ?? i.title ?? (i.inquiryContent ?? '').slice(0, 60),
+      date: (i.inquiryAt ?? i.createdAt ?? '').toString().slice(0, 10),
+    }))
+  } catch (e) {
+    qnas.value = []
+    totalPages.value = 1
+    alert(`목록 조회 실패: ${e.message}`)
+  } finally {
+    loading.value = false
+  }
+}
+
+const pages = computed(() => Array.from({ length: totalPages.value }, (_, i) => i + 1))
+
+function go(to) { page.value = to }
+function prevPage() { if (page.value > 0) page.value-- }
+function nextPage() { if (page.value < totalPages.value - 1) page.value++ }
+
+onMounted(load)
+watch([page, token], load)
 </script>
 
 <style scoped>
@@ -112,11 +183,7 @@ const qnas = ref([
   overflow: hidden;
   padding: 8px 0;
 }
-.rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+.rows { list-style: none; margin: 0; padding: 0; }
 .row {
   margin-top: 25px;
   display: flex;
@@ -133,9 +200,6 @@ const qnas = ref([
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.row-inner:hover {
-  background-color: #e9ddcc;
-}
 .row-inner::after {
   content: "";
   position: absolute;
@@ -145,34 +209,46 @@ const qnas = ref([
   height: 1.2px;
   background: #BFBFBF;
 }
-.row:last-child .row-inner::after {
-  display: none;
-}
-.left {
-  display: inline-flex;
+.row:last-child .row-inner::after { display: none; }
+.left { display: inline-flex; align-items: center; gap: 12px; }
+.edit-img { width: 20px; height: 20px; opacity: 0.85; }
+.category { font-size: 16px; font-weight: 800; color: #D2B382; }
+.subject { font-size: 16px; font-weight: 700; color: #000; line-height: 1.6; }
+.date { justify-self: end; font-size: 15px; color: #2F2A23; opacity: 0.85; }
+.empty {
+  height: 100%;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  color: #6b635b;
+  font-size: 14px;
 }
-.edit-img {
-  width: 20px;
-  height: 20px;
-  opacity: 0.85;
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
 }
-.category {
-  font-size: 16px;
-  font-weight: 800;
-  color: #D2B382;
+.nav {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
 }
-.subject {
-  font-size: 16px;
-  font-weight: 700;
-  color: #000000;
-  line-height: 1.6;
-}
-.date {
-  justify-self: end;
+.nav[disabled] { opacity: 0.4; cursor: default; }
+.nav img { width: 18px; height: 18px; }
+.page {
+  border: none;
+  background: transparent;
+  cursor: pointer;
   font-size: 15px;
-  color: #2F2A23;
-  opacity: 0.85;
+  color: #BFBFBF;
+  padding: 4px 6px;
+}
+.page.current {
+  color: #c4a874;
+  font-size: 17px;
+  font-weight: 700;
 }
 </style>

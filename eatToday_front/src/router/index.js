@@ -76,7 +76,7 @@ const router = createRouter({
 
     // 게시글
     { path: '/', redirect: '/post' },
-    { path: '/post', name: 'PostList', component: PostList },
+    { path: '/post/soju', name: 'PostList', component: PostList },
     { path: "/post/food", name: "PostDetail",   component: () => import('@/views/post/PostDetail.vue'), props: true },
     {  path: '/post/new', name: 'PostCreate', component: () => import('@/views/post/PostCreate.vue')},
     { meta: { requiresAuth: true  }},

@@ -16,13 +16,13 @@ import LoginPage from '@/views/member/Login.vue'
 import UpdateProfilePage from '@/views/member/UpdateProfilePage.vue'
 import MyPage from '@/views/mypage/Mypage.vue'
 
-// Event
-import EventHome from "@/views/event/EventHome.vue"
-import Albti_Survey from "@/views/event/event_albti/Albti_Survey.vue"
-import Albti_Result from "@/views/event/event_albti/Albti_Result.vue"
-import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select.vue"
-import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play.vue"
-import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week.vue"
+// event 파트
+import EventHome from "@/views/event/EventHome_v0.2.vue";
+import Albti_Survey from "@/views/event/event_albti/Albti_Survey_v0.3.vue";    // 술BTI 설문화면
+import Albti_Result from "@/views/event/event_albti/Albti_Result_v0.3.vue";    // 술BTI 결과화면
+import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select_v0.2.vue"; // World 술선택 화면
+import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play_v0.3.vue";     // World 진행 화면
+import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week_v0.3.vue";     // World 주간 순위 조회 화면
 
 // QnA
 import MainQna from '@/views/report_dm_qna/MainQna.vue'

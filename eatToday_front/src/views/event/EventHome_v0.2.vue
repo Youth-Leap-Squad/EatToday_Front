@@ -10,11 +10,16 @@
       <div class="card">
         <h2>술안주 월드컵 게임</h2>
         <p>당신의 취향을 알아볼까요?</p>
-        <div>
-          <img src="https://img.icons8.com/emoji/48/shrimp-emoji.png" alt="shrimp">
-          <img src="https://img.icons8.com/emoji/48/pizza-emoji.png" alt="pizza">
-          <img src="https://img.icons8.com/emoji/48/pancakes-emoji.png" alt="pancakes">
-          <img src="https://img.icons8.com/emoji/48/pizza-emoji.png" alt="pizza">
+
+        <!-- ✅ 이미지 아이콘 교체 -->
+        <div class="food-icons">
+          <img :src="shrimpImg" class="side-icon" alt="shrimp" />
+          <img :src="trophyImg" class="center-icon" alt="cup" />
+          <img :src="pizzaImg" class="side-icon" alt="pizza" />
+
+
+          <img :src="ramenImg" class="side-icon" alt="ramen" />
+          <img :src="chickenImg" class="side-icon" alt="chicken" />
         </div>
 
         <!-- ✅ 라우터 이동 유지 -->
@@ -59,17 +64,25 @@
       <div class="modal">
         <h3>술BTI 유형 요약표</h3>
         <table>
-          <tr><th>타입</th><th>키워드</th><th>한줄요약</th></tr>
-          <tr><td>활발함</td><td>시끌, 밝음, 파티</td><td>분위기 메이커</td></tr>
-          <tr><td>차분함</td><td>조용, 안정</td><td>조용히 음미하는 주당</td></tr>
-          <tr><td>전통파</td><td>한국 술 선호</td><td>소주와 파전이 편안한 사람</td></tr>
-          <tr><td>도전적</td><td>새로운 술 도전</td><td>새로운 술 먼저 시도하는 사람</td></tr>
-          <tr><td>감성파</td><td>분위기 중요</td><td>음악 + 무드 중요</td></tr>
-          <tr><td>로맨틱</td><td>분위기 + 감성</td><td>분위기 + 설렘 + 감정형</td></tr>
-          <tr><td>정열파</td><td>강한 술 + 매운 음식</td><td>화끈 + 매운맛 + 강한 술</td></tr>
-          <tr><td>힐링러</td><td>편안한 한 잔</td><td>조용히 쉬는 술자리</td></tr>
-          <tr><td>테이스팅러버</td><td>향미, 분석</td><td>향미 깊게 분석하는 타입</td></tr>
-          <tr><td>클래식</td><td>전통 조합 선호</td><td>가장 익숙한 조합을 사랑하는 타입</td></tr>
+          <thead>
+            <tr>
+              <th>타입</th>
+              <th>키워드</th>
+              <th>한줄요약</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>활발함</td><td>시끌, 밝음, 파티</td><td>분위기 메이커</td></tr>
+            <tr><td>차분함</td><td>조용, 안정</td><td>조용히 음미하는 주당</td></tr>
+            <tr><td>전통파</td><td>한국 술 선호</td><td>소주와 파전이 편안한 사람</td></tr>
+            <tr><td>도전적</td><td>새로운 술 도전</td><td>새로운 술 먼저 시도하는 사람</td></tr>
+            <tr><td>감성파</td><td>분위기 중요</td><td>음악 + 무드 중요</td></tr>
+            <tr><td>로맨틱</td><td>분위기 + 감성</td><td>분위기 + 설렘 + 감정형</td></tr>
+            <tr><td>정열파</td><td>강한 술 + 매운 음식</td><td>화끈 + 매운맛 + 강한 술</td></tr>
+            <tr><td>힐링러</td><td>편안한 한 잔</td><td>조용히 쉬는 술자리</td></tr>
+            <tr><td>테이스팅러버</td><td>향미, 분석</td><td>향미 깊게 분석하는 타입</td></tr>
+            <tr><td>클래식</td><td>전통 조합 선호</td><td>가장 익숙한 조합을 사랑하는 타입</td></tr>
+          </tbody>
         </table>
 
         <button class="close-btn" @click="showModal = false">닫기</button>
@@ -83,10 +96,17 @@ export default {
   name: "EventHome",
   data() {
     return {
-      showModal: false        
+      showModal: false,
+      shrimpImg: new URL("@/assets/icons/shrimp.png", import.meta.url).href,
+      pizzaImg: new URL("@/assets/icons/pizza.png", import.meta.url).href,
+      trophyImg: new URL("@/assets/icons/cup.png", import.meta.url).href,
+      ramenImg: new URL("@/assets/icons/ramen.png", import.meta.url).href,
+      chickenImg: new URL("@/assets/icons/chicken.png", import.meta.url).href
     };
   }
 };
+
+
 </script>
 <style scoped>
   body {
@@ -333,4 +353,35 @@ export default {
     from { opacity: 0; transform: scale(0.96); }
     to   { opacity: 1; transform: scale(1); }
   }
+
+  .food-icons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3열 */
+    grid-template-rows: repeat(2, auto);  /* 2행 */
+    justify-items: center;
+    align-items: center;
+    margin: 30px 0;
+    row-gap: 35px;
+    column-gap: 60px;
+  }
+
+  /* 중앙 컵 (정확히 1행 2열 위치 고정) */
+  .center-icon {
+    width: 150px;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  /* 사이드 음식 */
+  .side-icon {
+    width: 90px;
+  }
+
+  /* 각 이미지 위치 명확히 지정 */
+  .food-icons img:nth-child(1) { grid-column: 1; grid-row: 1; } /* shrimp */
+  .food-icons img:nth-child(2) { grid-column: 2; grid-row: 1; } /* trophy */
+  .food-icons img:nth-child(3) { grid-column: 3; grid-row: 1; } /* pizza */
+
+  .food-icons img:nth-child(4) { grid-column: 1; grid-row: 2; } /* ramen */
+  .food-icons img:nth-child(5) { grid-column: 3; grid-row: 2; } /* chicken */
 </style>

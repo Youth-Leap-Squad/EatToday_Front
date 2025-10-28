@@ -1,0 +1,196 @@
+<template>
+  <div>
+    <div class="wrapper">
+      <div class="title">나의 술BTI 검사 🍺</div>
+      <div class="subtitle">당신의 술자리 성향을 선택해보세요.</div>
+
+      <div class="progress">{{ currentIndex + 1 }} / {{ total }}</div>
+
+      <div v-if="questions.length && questions[currentIndex]" class="question">
+        {{ questions[currentIndex].question }}
+      </div>
+
+      <div v-if="questions.length && questions[currentIndex]">
+        <button
+          v-for="(ans, i) in questions[currentIndex].answers"
+          :key="i"
+          class="btn"
+          @click="selectAnswer(ans.value)"
+        >
+          {{ ans.text }}
+        </button>
+      </div>
+
+      <div class="back-btn" @click="goBack">↩</div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "Albti_Survey",
+
+  data() {
+    return {
+      currentIndex: 0,
+      answersSelected: [],
+      questions: [],
+      total: 0,
+
+      // 감성 선택지 텍스트
+      customAnswerTextsByQuestion: {
+        1: { a: "시끌벅적한 술자리가 좋아! 🥳", b: "조용히 대화 나누는 분위기가 좋아 ☺️" },
+        2: { a: "익숙한 술이 편안해 🍶", b: "새로운 술은 언제나 설레! 🍸" },
+        3: { a: "잔잔한 음악과 함께 감성에 젖고 싶어 🎧", b: "신나는 비트로 텐션 업! 🔥" },
+        4: { a: "편안하고 여유로운 분위기가 좋아 🌙", b: "감성적인 분위기와 설렘이 중요해 🌹" },
+        5: { a: "맛과 향을 천천히 음미하고 싶어 🍷", b: "차분하게 조용히 즐기고 싶어 ☺️" },
+        6: { a: "전통 조합이 제일 안정감 있어 👍", b: "새로운 조합도 재밌지! ✨" },
+        7: { a: "게임으로 분위기 띄워보자! 🎉", b: "조용히 맛에 집중하고 싶어 😌" },
+        8: { a: "새로운 조합은 언제나 환영! 🍽️", b: "역시 익숙한 맛이 최고지 🍜" },
+        9: { a: "열정적으로 이야기 나누는게 좋아! 🔥", b: "잔잔하고 따뜻한 대화가 좋아 🌙" },
+        10: { a: "조용히 깊은 대화가 좋아 ☺️", b: "편안하게 휴식하듯 마시고 싶어 💤" }
+      }
+    };
+  },
+
+  mounted() {
+    axios.get("/albti/survey/list")
+      .then(res => {
+        this.questions = res.data.map(q => {
+          // ✅ camelCase 사용 + 안전 처리
+          const custom = this.customAnswerTextsByQuestion[q.albtiSurveyNo] ?? { a: "A", b: "B" };
+
+          return {
+            question: q.question,
+            answers: [
+              { text: custom.a, value: "A", surveyNo: q.albtiSurveyNo },
+              { text: custom.b, value: "B", surveyNo: q.albtiSurveyNo }
+            ]
+          };
+        });
+        this.total = this.questions.length;
+      })
+      .catch(err => console.error("⚠️ 설문 불러오기 실패:", err));
+  },
+
+  methods: {
+    selectAnswer(choiceValue) {
+      // ✅ 안전 가드: 질문이 없으면 종료
+      if (!this.questions[this.currentIndex]) return;
+
+      const surveyNo = this.questions[this.currentIndex].answers[0].surveyNo;
+
+      this.answersSelected.push({ albtiSurveyNo: surveyNo, choice: choiceValue });
+      this.currentIndex++;
+
+      // ✅ 모든 질문 완료 시 저장
+      if (this.currentIndex >= this.total) {
+        const memberNo = prompt("테스트용 member_no 입력 (예: 1)");
+
+        axios.post("/albti/member/add-bulk", {
+          memberNo: Number(memberNo),
+          answers: this.answersSelected
+        })
+          .then(res => {
+            // ✅ 하루 1회 포인트 지급 여부
+            if (res.data.pointGranted) {
+              alert("🎉 오늘 첫 참여! 포인트가 지급되었습니다! (+30P)");
+            } else {
+              alert("🙂 재참여하셨습니다.\n(포인트는 1일 1회만 지급됩니다!)");
+            }
+
+            localStorage.setItem("member_no", memberNo);
+            this.$router.push("/event/albti/result");
+          })
+        // .then(() => {
+        //   localStorage.setItem("member_no", memberNo);
+        //   alert("✅ 저장 완료! 결과 페이지로 이동합니다.");
+        //   this.$router.push("/event/albti/result");
+        // })
+        .catch(err => {
+          console.error("⚠️ 저장 실패:", err);
+          alert("❌ 저장 중 오류 발생 (console 확인)");
+        });
+      }
+    },
+
+    goBack() {
+      if (this.currentIndex === 0) return this.$router.push("/event");
+      this.currentIndex--;
+      this.answersSelected.pop();
+    }
+  }
+};
+</script>
+
+<style scoped>
+/* ✅ 스타일 그대로 유지 */
+.wrapper {
+  font-family: "Ownglyph", sans-serif;
+  background-color: #fdf6eb;
+  width: 90%;
+  max-width: 1000px;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  margin: 60px auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6b4b2c;
+}
+.subtitle {
+  font-size: 1.1rem;
+  color: #a27a52;
+  margin-bottom: 30px;
+}
+.progress {
+  background: #fff;
+  display: inline-block;
+  border: 2px solid #c7b8a3;
+  padding: 8px 20px;
+  border-radius: 10px;
+  color: #6b4b2c;
+  margin-bottom: 30px;
+  font-size: 1rem;
+}
+.question {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #2b2b2b;
+  margin-bottom: 30px;
+}
+.btn {
+  width: 60%;
+  padding: 16px;
+  margin: 12px auto;
+  background-color: #faeacf;
+  border: none;
+  border-radius: 18px;
+  font-size: 1rem;
+  color: #6b4b2c;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.back-btn {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #6b4b2c;
+  transition: 0.2s;
+}
+.back-btn:hover {
+  transform: scale(1.15);
+}
+</style>

@@ -37,6 +37,8 @@ import EventManagement from '@/views/member/admin/EventManagement.vue';
 import WorldCupGameDetails from '@/views/member/admin/WorldCupGameDetails.vue';
 import AlbtiStatistics from '@/views/member/admin/AlbtiStatistics.vue';
 import ReportManagement from '@/views/member/admin/ReportManagement.vue';
+import QnaManagement from '@/views/member/admin/QnaManagement.vue';
+import AdminQnaAnswer from '@/views/member/admin/AdminQnaAnswer.vue';
 
 // Footer pages
 import AboutProject from '@/views/AboutProject.vue';
@@ -106,6 +108,8 @@ const router = createRouter({
     { path: '/admin/event', component: EventManagement },
     { path: '/admin/event/worldcup', component: WorldCupGameDetails },
     { path: '/admin/event/albti', component: AlbtiStatistics },
+    { path: '/admin/qna', component: QnaManagement },
+    { path: '/admin/qna/answer', component: AdminQnaAnswer },
 
     // Dm
     { path: '/dm', component: Dm },

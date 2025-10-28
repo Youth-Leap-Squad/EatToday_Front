@@ -104,6 +104,7 @@ export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {
 export const fetchPost = async (id) => {
   const r = await api.get(`/foods/${id}`)
   return normalizeItem(r.data)
+
 }
 
 /** 작성 */
@@ -161,6 +162,7 @@ export const addBookmark = async (folderId, boardNo) => {
   const { data } = await api.post('/command/bookmarks', { folderId, boardNo })
   return data
 }
+
 export const removeBookmark = async (folderId, boardNo) => {
   const { data } = await api.delete('/command/bookmarks', { params: { folderId, boardNo } })
   return data

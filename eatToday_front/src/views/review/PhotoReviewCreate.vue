@@ -113,7 +113,12 @@ async function submit(){
       window.dispatchEvent(new CustomEvent('photo-review:created', { detail }))
     }
     alert('등록되었습니다.')
-    router.push(`/boards/${boardNo}`)
+    const reviewId = Number(detail.reviewNo ?? detail.id)
+    if (Number.isFinite(reviewId) && reviewId > 0) {
+      router.push(`/reviews/${reviewId}`)
+    } else {
+      router.push(`/boards/${boardNo}`)
+    }
   } catch (e) {
     console.error('등록 실패:', e?.response?.data || e)
     const serverMessage = e?.response?.data?.message || e?.response?.data?.error || e?.message

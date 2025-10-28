@@ -1,8 +1,14 @@
-<template>
+﻿<template>
   <div class="container">
     <div class="topbar">
       <h2 class="page-title">{{ pageTitle }}</h2>
-      <RouterLink to="/event" class="worldcup-btn">🏆 주간 월드컵 순위 조회하기</RouterLink>
+      <!-- 한글 파라미터 안전 전달을 위해 객체로 바인딩 -->
+    <RouterLink
+      :to="{ path: '/event/worldcup/week', query: { alcohol: meta.title } }"
+      class="worldcup-btn"
+    >
+      🏆 주간 월드컵 순위 조회하기
+    </RouterLink>
     </div>
 
     <!-- 소개 섹션 -->
@@ -62,7 +68,12 @@
       <div class="panel-head"><h3>페어링 추천</h3></div>
 
       <div class="cards">
-        <article v-for="p in items" :key="p.id" class="card" @click="openPost(p)">
+        <article
+          v-for="p in items"
+          :key="p.id"
+          class="card"
+          @click="openPost(p)"
+        >
           <div class="thumb">
             <img :src="thumbOf(p)" alt="thumbnail" />
             <span class="like-badge">♡ {{ (p.likes ?? 0).toLocaleString() }}</span>
@@ -116,6 +127,7 @@ export default {
       page: { totalPages: 1, number: 0, size: 12 },
       loadingMore: false,
       defaultAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      fallbackThumb: '/images/placeholder-thumb.jpg', // public 폴더에 간단한 placeholders 이미지 하나 두세요
     }
   },
   computed: {
@@ -149,34 +161,38 @@ export default {
   },
   watch: {
     '$route.params.id': {
+      immediate: false,
       async handler() {
         this.items = []
         await this.load(0)
       },
     },
-    sort: {
-      async handler() {
-        this.applySort()
-      },
+    sort() {
+      this.applySort()
     },
   },
   methods: {
     async load(page = 0) {
-      // 소주 고정으로 쓰고 싶으면 alcoholNo: 2 로 고정
       const { list, page: p } = await fetchPostsByAlcohol({
-        alcoholNo: this.alcoholNo,
+        alcoholNo: this.alcoholNo, // 소주 고정이면 2로 고정
         page,
         size: this.page.size || 12,
       })
       if (page === 0) this.items = list
       else this.items = [...this.items, ...list]
+
       this.applySort()
-      this.page = { totalPages: p.totalPages ?? 1, number: page, size: p.size ?? 12 }
+      this.page = {
+        totalPages: p.totalPages ?? 1,
+        number: page,
+        size: p.size ?? 12,
+      }
     },
     applySort() {
       const byView = (a, b) => (b.views ?? 0) - (a.views ?? 0)
       const byLike = (a, b) => (b.likes ?? 0) - (a.likes ?? 0)
       const byComment = (a, b) => (b.comment ?? 0) - (a.comment ?? 0)
+
       if (this.sort === 'view') this.items.sort(byView)
       else if (this.sort === 'like') this.items.sort(byLike)
       else if (this.sort === 'comment') this.items.sort(byComment)
@@ -195,7 +211,8 @@ export default {
       this.$router.push(`/post/${p.id}`)
     },
     thumbOf(p) {
-      return p.coverUrl || ''
+      const src = p.coverUrl || ''
+      return src || this.fallbackThumb
     },
   },
 }

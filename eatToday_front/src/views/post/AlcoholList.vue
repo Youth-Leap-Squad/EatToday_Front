@@ -1,38 +1,38 @@
-<!-- src/views/post/AlcoholList.vue -->
 <template>
   <div class="p-4">
     <h2 class="text-2xl font-bold mb-4">{{ title }}</h2>
 
-    <p class="mb-3 text-gray-600">route param: {{ id }}</p>
-
-    <div v-if="items.length">
-      <div v-for="it in items" :key="it.id" class="mb-2">
-        <strong>{{ it.title }}</strong>
-        <small> · 👁 {{ it.views ?? 0 }} · ♡ {{ it.likes ?? 0 }} · 💬 {{ it.comment ?? 0 }}</small>
+    <div v-if="foods.length" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div v-for="f in foods" :key="f.boardNo" class="border rounded-xl p-3 bg-white">
+        <img :src="resolveAssetUrl(f.food_picture)" class="w-full h-40 object-cover rounded-lg mb-2" />
+        <h3 class="font-semibold text-lg">{{ f.board_title }}</h3>
+        <p class="text-sm text-gray-600 line-clamp-2">{{ f.food_explain }}</p>
       </div>
     </div>
-    <div v-else class="text-gray-500">데이터가 없습니다.</div>
+
+    <div v-else class="text-gray-500">해당 주종 게시글이 없습니다.</div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchPostsByAlcohol } from '@/api/post' // ✅ post.js에 있음
+import { fetchPostsByAlcohol } from '@/api/post'
 
 const route = useRoute()
-const id = computed(() => Number(route.params.id))
-const items = ref([])
+const foods = ref([])
 
 const alcoholNames = { 1: '🍺 맥주', 2: '🍶 소주', 3: '🌾 막걸리', 8: '🍷 와인' }
-const title = computed(() => `${alcoholNames[id.value] ?? '주종'} 안주 게시글`)
+const title = computed(() => `${alcoholNames[Number(route.params.id)] ?? '주종'} 안주 게시글`)
 
 async function load() {
-  // 소주: 2, 와인: 8
-  const { list } = await fetchPostsByAlcohol({ alcoholNo: id.value, page: 0, size: 12 })
-  items.value = list
-}
+  const id = Number(route.params.id)
+  const allowed = [1, 2, 3, 8]
+  if (!allowed.includes(id)) { foods.value = []; return }
 
+  const { list } = await fetchPostsByAlcohol({ alcoholNo: id, page: 0, size: 12 })
+  foods.value = list
+}
 onMounted(load)
 watch(() => route.params.id, load)
 </script>

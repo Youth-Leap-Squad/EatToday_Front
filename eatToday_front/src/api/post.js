@@ -27,6 +27,13 @@ function resolveAssetUrl(u) {
 }
 
 /** 백엔드 DTO → 프론트 표준 모델 */
+function asBool(v) {
+  if (v === true || v === 1) return true
+  if (v === false || v === 0 || v == null) return false
+  const s = String(v).trim().toUpperCase()
+  return s === 'T' || s === 'Y' || s === 'TRUE' || s === '1'
+}
+
 function normalizeItem(x) {
   const id = x.id ?? x.boardNo ?? x.board_no ?? x.no
   const totalLikes =
@@ -58,7 +65,8 @@ function normalizeItem(x) {
     avatar: resolveAssetUrl(x.avatar ?? x.authorAvatar ?? ''),
     content: x.content ?? x.boardContent ?? x.contentHtml ?? '',
     createdAt: x.createdAt ?? x.boardDate ?? null,
-    approved: x.confirmedYn === 'T' || x.approved === true,
+    // ✅ 승인 판정 유연화
+    approved: asBool(x.confirmedYn ?? x.confirmed ?? x.approved),
   }
 }
 
@@ -74,23 +82,30 @@ export const fetchPosts = async ({ page = 0, size = 12, sort = 'view' } = {}) =>
 
 /** ✅ 주종별 승인된 게시글 목록 */
 export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {}) => {
-  const { data } = await api.get(`/${alcoholNo}/foods`, { params: { page, size } })
-  const list = (Array.isArray(data) ? data : []).map(normalizeItem)
-  return { list, page: { totalPages: 1, number: page, size } }
+    try {
+    const { data } = await api.get(`/${alcoholNo}/foods`, { params: { page, size } })
+    let list = (Array.isArray(data) ? data : []).map(normalizeItem)
+    if (list.length === 0) {
+      // ✅ 승인글이 없으면 전체에서 해당 주종만 클라이언트 필터 (임시 폴백)
+      const { data: all } = await api.get('/foods/all', { params: { page, size: 200 } })
+      const filtered = (Array.isArray(all) ? all : []).filter(
+        x => Number(x.alcoholNo ?? x.alcohol_no) === Number(alcoholNo)
+      )
+      list = filtered.map(normalizeItem)
+    }
+    return { list, page: { totalPages: 1, number: page, size } }
+  } catch (e) {
+    // 500 등 백엔드 오류 시에도 안전하게 빈 리스트와 에러 전달
+    console.error('[fetchPostsByAlcohol] fail:', e)
+    return { list: [], page: { totalPages: 1, number: page, size }, error: e }
+  }
 }
 
 /** 단건 조회 */
 export const fetchPost = async (id) => {
-  try {
-    const r = await api.get(`/foods/${id}`)
-    return normalizeItem(r.data)
-  } catch (e) {
-    const { list } = await fetchPosts({ page: 0, size: 200, sort: 'view' })
-    const found = list.find((it) => String(it.id) === String(id))
-    if (!found) throw e
-    return found
-  }
-}
+  const r = await api.get(`/foods/${id}`);
+  return normalizeItem(r.data);
+};
 
 /** 작성 */
 export const createPost = async ({
@@ -175,4 +190,19 @@ export const approvePost = async (boardNo, approved = true) => {
 export const getAllPosts = async (params = {}) => {
   const { list, page } = await fetchUnapprovedPosts(params)
   return { data: list, page }
+}
+
+export const increaseView = async (boardNo) => {
+  await api.patch(`/command/foods/${boardNo}/view`)
+}
+
+export const createComment = async (boardNo, content) => {
+  const { data } = await api.post(`/command/foods/${boardNo}/comments`, { content })
+  return data   // 서버가 반환하는 CommentResponse
+}
+
+export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
+  // 서버는 POST(add) / PATCH(change) 둘 다 제공 → change로 일원화
+  const { data } = await api.patch(`/command/foods/${boardNo}/reactions`, { likesType })
+  return data // ReactionResponse (likesNo1..likesNo4 포함)
 }

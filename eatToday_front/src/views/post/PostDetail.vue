@@ -1,18 +1,40 @@
 <template>
   <div class="wrap" v-if="post">
-<header class="head">
-  <div>
-    <h1 class="title">{{ post.title }}</h1>
-    <div class="sub">
-      <img :src="post.avatar || '/image/user-profile/basic_profile.jpg'" alt="" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:6px;">
-      <span>작성자: {{ post.author || '익명' }}</span>
-      <span>·</span>
-      <span>{{ (post.createdAt || post.date || '').toString().slice(0,10) || '오늘' }}</span>
-      <span>· 조회 {{ Number(post.views || 0).toLocaleString() }}</span>
-      <span>· 댓글 {{ comments.length }}</span>
+    <!-- 술 게시판으로 돌아가기 -->
+    <div class="backbar">
+      <button class="back-btn" @click="goBackToAlcohol">
+        {{ alcoholLabel ? `${alcoholLabel} 게시판으로` : '술 게시판으로' }}
+      </button>
     </div>
-  </div>
-</header>
+
+    <header class="head">
+      <div>
+        <h1 class="title">{{ post.title }}</h1>
+        <div class="sub">
+          <!-- ✅ authorNo가 있으면 네임드 라우트로 이동 -->
+          <router-link
+            v-if="authorNo"
+            :to="{ name: 'mypage.user', params: { memberNo: authorNo } }"
+            class="author-link"
+            aria-label="작성자 마이페이지로 이동"
+          >
+            <img :src="post.avatar || '/image/user-profile/basic_profile.jpg'" alt="" class="avatar" />
+            <span>작성자: {{ post.author || '익명' }}</span>
+          </router-link>
+
+          <!-- 작성자 번호가 없으면 평문 -->
+          <template v-else>
+            <img :src="post.avatar || '/image/user-profile/basic_profile.jpg'" alt="" class="avatar" />
+            <span>작성자: {{ post.author || '익명' }}</span>
+          </template>
+
+          <span>·</span>
+          <span>{{ (post.createdAt || post.date || '').toString().slice(0,10) || '오늘' }}</span>
+          <span>· 조회 {{ Number(post.views || 0).toLocaleString() }}</span>
+          <span>· 댓글 {{ comments.length }}</span>
+        </div>
+      </div>
+    </header>
 
     <!-- 이미지 -->
     <div class="hero-images" v-if="post.images && post.images.length > 0">
@@ -46,7 +68,7 @@
       :comments="comments"
       placeholder="맛은 어땠나요? 댓글을 남겨보세요 :)"
       :current-user-no="meNo"
-      :post-author-no="post?.authorNo"
+      :post-author-no="authorNo"
       @go-user="goUserPage"
       @add="addComment"
       @update="updateComment"
@@ -106,7 +128,7 @@ export default {
         { key: "yummy",   emoji: "🤤", label: "먹고싶어요",   count: 0, me:false },
       ],
       comments: [],
-      meNo: null, // 로그인 사용자 번호를 주입하세요(토큰 파싱/프로필 호출 등).
+      meNo: null,
     };
   },
   computed: {
@@ -119,7 +141,89 @@ export default {
     },
     heroUrl() {
       return this.post?.coverUrl || this.post?.mainImageUrl || this.post?.cover || this.post?.image || '';
-    }
+    },
+    /** ✅ 모든 가능한 키에서 안전하게 memberNo 추출 */
+    authorNo() {
+      const p = this.post || {};
+      // 최상위 → 중첩 → snake → writer 계열까지 폭넓게 커버
+      return (
+        p.authorNo ??
+        p.memberNo ??
+        p.member?.memberNo ??
+        p.raw?.authorNo ??
+        p.raw?.memberNo ??
+        p.raw?.member?.memberNo ??
+        p.raw?.writerNo ??
+        p.raw?.writer?.memberNo ??
+        p.raw?.member_no ??
+        null
+      );
+    },
+
+    /** 게시글에서 술 카테고리 문자열을 최대한 유추 (soju, wine 등) */
+    alcoholCategory() {
+      const p = this.post || {};
+      return (
+        p.category ??
+        p.alcoholCategory ??
+        p.alcoholType ??
+        p.raw?.category ??
+        p.raw?.alcoholCategory ??
+        p.raw?.alcohol_type ??
+        p.raw?.alcohol?.category ??
+        null
+      );
+    },
+
+    /** 게시글에서 술 번호(alcoholNo)를 유추 (없으면 카테고리 -> 번호 매핑) */
+    alcoholNoForPost() {
+      const p = this.post || {};
+      const directNo =
+        p.alcoholNo ??
+        p.alcohol_no ??
+        p.alcohol?.alcoholNo ??
+        p.alcohol?.id ??
+        p.raw?.alcoholNo ??
+        p.raw?.alcohol_no ??
+        p.raw?.alcohol?.alcoholNo ??
+        p.raw?.alcohol?.id ??
+        null;
+
+      if (directNo) return Number(directNo);
+
+      // 카테고리 문자열로 매핑
+      const categoryToAlcoholNo = {
+        beer: 1,
+        soju: 2,
+        makgeolli: 3,
+        champagne: 4,
+        sake: 5,
+        golyangju: 6,
+        highball: 7,
+        wine: 8,
+        etc: 9,
+      };
+
+      const c = String(this.alcoholCategory || '').toLowerCase();
+      return categoryToAlcoholNo[c] || 1; // 기본값: 맥주(1)
+    },
+
+    /** 버튼 라벨용 카테고리 한글명 */
+    alcoholLabel() {
+      const map = {
+        beer: '맥주',
+        soju: '소주',
+        makgeolli: '막걸리',
+        champagne: '샴페인',
+        sake: '사케',
+        golyangju: '고량주',
+        highball: '하이볼',
+        wine: '와인',
+        etc: '기타',
+      };
+      const c = String(this.alcoholCategory || '').toLowerCase();
+      return map[c] || '';
+    },
   },
 
   async mounted() {
@@ -153,19 +257,18 @@ export default {
         this.post = await fetchPost(id);
 
         if (this.post) {
+          // 표시용 작성자명 보정
           this.post.author =
             this.post.author ??
             this.post.memberId ??
             this.post.member?.memberId ??
             '익명';
-          // 상세 페이지에서 작성자 이동을 위해 authorNo 보정
-          this.post.authorNo = this.post.authorNo ?? this.post.memberNo ?? this.post.member?.memberNo ?? null;
         }
 
-        // 댓글 (조회는 쿼리 API로 가정: GET /foods/{id}/comments)
+        // 댓글
         await this.reloadComments(id);
 
-        // 반응 (조회는 쿼리 API로 가정: GET /foods/{id}/reactions)
+        // 반응
         try {
           const { data } = await http.get(`/foods/${id}/reactions`);
           if (Array.isArray(data) && data[0]) {
@@ -176,13 +279,13 @@ export default {
               r.likesNo3 ?? r.likes_no_3 ?? 0,
               r.likesNo4 ?? r.likes_no_4 ?? 0,
             ].map(n => Number(n || 0));
-            const storedKey = localStorage.getItem('reaction:post:'+id) || ''
+            const storedKey = localStorage.getItem('reaction:post:'+id) || '';
             this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i], me: x.key === storedKey }));
           }
         } catch (e) {
           console.warn("반응 로드 실패:", e.message);
-          const storedKey = localStorage.getItem('reaction:post:'+id) || ''
-          if (storedKey) this.reactions = this.reactions.map(x => ({ ...x, me: x.key === storedKey }))
+          const storedKey = localStorage.getItem('reaction:post:'+id) || '';
+          if (storedKey) this.reactions = this.reactions.map(x => ({ ...x, me: x.key === storedKey }));
         }
 
       } catch (e) {
@@ -200,7 +303,7 @@ export default {
           writerId: c.memberNo ?? c.member?.memberNo ?? c.memberId ?? null,
           date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
           text: c.content ?? c.fcContent,
-          isAuthor: (c.memberNo ?? c.member?.memberNo) === (this.post?.authorNo ?? -1),
+          isAuthor: (c.memberNo ?? c.member?.memberNo) === (this.authorNo ?? -1),
         }));
       } catch (e) {
         console.warn("댓글 로드 실패:", e.message);
@@ -304,10 +407,19 @@ export default {
       }
     },
 
-    /** 작성자/사용자 페이지 이동 (필요 시 구현) */
+    /** 댓글/작성자에서 사용자 페이지로 이동 */
     goUserPage(memberNo) {
-      if (!memberNo) return;
-      // 예: this.$router.push(`/profile/${memberNo}`);
+      const no = Number(memberNo || this.authorNo);
+      if (!no || Number.isNaN(no)) return;
+      this.$router.push({ name: 'mypage.user', params: { memberNo: no } });
+    },
+
+    /** 해당 술 게시판으로 이동 + 스크롤 맨 위 */
+    goBackToAlcohol() {
+      const no = Number(this.alcoholNoForPost || 1);
+      this.$router.push(`/alcohol/${no}`).then(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
     },
   },
 };
@@ -315,14 +427,29 @@ export default {
 
 <style scoped>
 .wrap { width: 900px; margin: 0 auto; padding: 24px 0; color: #2b2b2b; }
+
+/* 뒤로가기 바 */
+.backbar { margin: 8px 0 12px; display: flex; justify-content: flex-end; }
+.back-btn {
+  border: 1px solid #d9d2c7; background: #fff; color:#333;
+  padding: 8px 12px; border-radius: 10px; cursor: pointer;
+}
+.back-btn:hover { background:#faf8f5; }
+
 .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .head .title { font-size: 28px; margin: 4px 0 6px; }
 .sub { color: #6f6257; font-size: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.avatar { width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:6px; }
+.author-link { display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:inherit; cursor:pointer; }
+.author-link:hover { text-decoration: underline; }
+
 .hero { width: 100%; max-height: 460px; object-fit: cover; border-radius: 16px; margin: 18px 0; }
 .hero-images { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
 .hero-images .hero { width: 100%; }
+
 .content { line-height: 1.8; }
 .content img { display: block; margin: 18px auto; border-radius: 14px; max-width: 100%; }
+
 .action-bar { margin: 18px 0; width: 100%; text-align: center; }
 .chips-center { display: flex; justify-content: center; }
 .mt16 { margin-top: 16px; }

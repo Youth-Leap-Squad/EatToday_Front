@@ -23,14 +23,30 @@
 
       <div class="back-btn" @click="goBack">↩</div>
     </div>
+
+    <!-- 포인트 획득 모달 -->
+    <PointEarnedModal 
+      :visible="showPointModal"
+      :description="POINT_POLICY.ALBTI_PARTICIPATE.description"
+      :points="POINT_POLICY.ALBTI_PARTICIPATE.points"
+      @close="closePointModal"
+      :auto-close="true"
+      :auto-close-delay="2500"
+    />
   </div>
 </template>
 
 <script>
-import { getAlbtiSurveyList, submitAlbtiAnswers } from "@/api/albti";
+import { getAlbtiSurveyList, submitAlbtiAnswers } from "@/api/albti"
+import PointEarnedModal from '@/common/modal/PointEarnedModal.vue'
+import { POINT_POLICY } from '@/common/constants/pointPolicy'
 
 export default {
   name: "Albti_Survey",
+
+  components: {
+    PointEarnedModal
+  },
 
   data() {
     return {
@@ -38,6 +54,7 @@ export default {
       answersSelected: [],
       questions: [],
       total: 0,
+      showPointModal: false,
 
       customAnswerTextsByQuestion: {
         1: { a: "시끌벅적한 술자리가 좋아! 🥳", b: "조용히 대화 나누는 분위기가 좋아 ☺️" },
@@ -100,12 +117,12 @@ export default {
           const result = await submitAlbtiAnswers(memberNo, this.answersSelected);
 
           if (result.pointGranted) {
-            alert("🎉 오늘 첫 참여! 포인트가 지급되었습니다! (+30P)");
+            // 포인트 모달 표시
+            this.showPointModal = true
           } else {
-            alert("🙂 이미 참여한 적 있습니다.\n(포인트는 1일 1회 지급)");
+            // 재참여 - 바로 결과 페이지로
+            this.$router.push("/event/albti/result")
           }
-
-          this.$router.push("/event/albti/result");
         } catch (err) {
           alert("로그인이 필요합니다!");
           this.$router.push("/login");
@@ -117,6 +134,11 @@ export default {
       if (this.currentIndex === 0) return this.$router.push("/event");
       this.currentIndex--;
       this.answersSelected.pop();
+    },
+
+    closePointModal() {
+      this.showPointModal = false
+      this.$router.push("/event/albti/result")
     }
   }
 };

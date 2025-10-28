@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
-      <div class="title">나의 술BTI 검사 🍺</div>
-      <div class="subtitle">당신의 술자리 성향을 선택해보세요.</div>
+      <div class="title">술안주 월드컵 게임 🍺</div>
+      <div class="subtitle">원하는 술을 선택하여 월드컵 게임에 참여해 보세요.</div>
     <div class="divider"></div>
 
     <div class="alcohol-grid">
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { checkWorldcupPlayed } from "@/api/worldcup";
+// import { checkWorldcupPlayed } from "@/api/worldcup";
 
 export default {
   name: "Worldcup_Select",
@@ -79,27 +79,13 @@ export default {
         return;
       }
 
-      // ✅ 프론트 재참여 제한 로직 (localStorage 기반)
-      const key = "worldcup_results";
-      const stored = JSON.parse(localStorage.getItem(key)) || [];
-      const currentWeek = 2; // 👉 임시값, 나중에 백엔드로부터 주차 받아오면 자동화
-
-      const alreadyPlayed = stored.some(
-        (record) => record.weekNo === currentWeek && record.alcohol === item.name
-      );
-
-      if (alreadyPlayed) {
-        alert("⚠️ 이미 이번 주에 이 술로 월드컵을 진행했습니다!\n다른 술로는 참여 가능해요 😊");
-        return;
-      }
-
-      // ✅ 서버 중복 체크 (백엔드 정상 동작 시)
-      try {
-        await checkWorldcupPlayed(memberNo, alcoholId);
-      } catch (err) {
-        alert("⚠️ 이미 이번 주에 이 술로 월드컵을 진행했습니다!\n다른 술로는 참여 가능해요 😊");
-        return;
-      }
+      // // ✅ 서버 중복 체크 (백엔드에서 주차별 참여 제한 검증)
+      // try {
+      //   await checkWorldcupPlayed(memberNo, alcoholId);
+      // } catch (err) {
+      //   alert("⚠️ 이미 이번 주에 이 술로 월드컵을 진행했습니다!\n다른 술로는 참여 가능해요 😊");
+      //   return;
+      // }
 
       // ✅ 통과 → 게임 시작
       this.$router.push({

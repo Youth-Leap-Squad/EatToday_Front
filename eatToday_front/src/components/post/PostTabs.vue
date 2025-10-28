@@ -17,7 +17,7 @@ export default {
   props: {
     tabs: { type: Array, required: true },
     modelValue: String,
-  },
+  }, 
   emits: ["update:modelValue"],
 };
 </script>

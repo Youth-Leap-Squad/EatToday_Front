@@ -104,6 +104,7 @@ export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {
 export const fetchPost = async (id) => {
   const r = await api.get(`/foods/${id}`)
   return normalizeItem(r.data)
+
 }
 
 /** 작성 */
@@ -161,6 +162,7 @@ export const addBookmark = async (folderId, boardNo) => {
   const { data } = await api.post('/command/bookmarks', { folderId, boardNo })
   return data
 }
+
 export const removeBookmark = async (folderId, boardNo) => {
   const { data } = await api.delete('/command/bookmarks', { params: { folderId, boardNo } })
   return data
@@ -251,4 +253,14 @@ export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
     }
     throw e
   }
+}
+
+export async function fetchUserPosts({ memberNo, page = 0, size = 12, token }) {
+  const headers = token ? { Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {}
+  // 백엔드가 배열을 바로 주는 케이스와 페이징 래퍼(content/totalElements)를 모두 지원
+  const res = await api.get(`/members/${memberNo}/foods`, {
+    headers,
+    params: { page, size },
+  })
+  return res.data
 }

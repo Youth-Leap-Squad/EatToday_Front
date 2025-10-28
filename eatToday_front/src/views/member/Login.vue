@@ -84,6 +84,9 @@ const handleLogin = async () => {
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userEmail', response.memberEmail || email.value)
       
+      // ✅ 여기 추가 (설문 참여시 매우 중요)
+      localStorage.setItem('member_no', response.memberNo || response.member_no)    // 우경 추가함
+
       // 로그인 상태 저장 (rememberMe 옵션에 따라)
       if (rememberMe.value) {
         localStorage.setItem('rememberMe', 'true')

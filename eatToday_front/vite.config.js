@@ -27,15 +27,18 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-    },
-  },
-  server: {
-    proxy: {
+      // ✅ 술BTI
       '/albti': {
-        target: 'http://localhost:17284', // ✅ 백엔드 주소
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
-      }
-    }
-  }
+      },
+      // ✅ 월드컵게임
+      '/worldcup': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

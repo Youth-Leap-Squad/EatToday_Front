@@ -14,17 +14,12 @@ import UpdateProfilePage from '@/views/member/UpdateProfilePage.vue'
 import RoungePage from '@/views/rounge/Rounge.vue';
 
 // event 파트
-import EventHome from "@/views/event/EventHome.vue";
-
-// import Albti_Survey from "@/views/event/event_albti/Albti_Survey.vue";    // 술BTI 설문화면
-import Albti_Survey from "@/views/event/event_albti/Albti_Survey(back)2.vue";    // 술BTI 설문화면(백엔드 연동)
-
-// import Albti_Result from "@/views/event/event_albti/Albti_Result.vue";    // 술BTI 결과화면
-import Albti_Result from "@/views/event/event_albti/Albti_Result(back)2.vue";    // 술BTI 결과화면(백엔드 연동)
-
-import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select.vue"; // World 술선택 화면
-import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play.vue";     // World 진행 화면
-import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week.vue";     // World 주간 순위 조회 화면
+import EventHome from "@/views/event/EventHome_v0.2.vue";
+import Albti_Survey from "@/views/event/event_albti/Albti_Survey_v0.3.vue";    // 술BTI 설문화면
+import Albti_Result from "@/views/event/event_albti/Albti_Result_v0.3.vue";    // 술BTI 결과화면
+import Worldcup_Select from "@/views/event/event_worldcup/Worldcup_Select_v0.2.vue"; // World 술선택 화면
+import Worldcup_Play from "@/views/event/event_worldcup/Worldcup_Play_v0.3.vue";     // World 진행 화면
+import Worldcup_Week from "@/views/event/event_worldcup/Worldcup_Week_v0.3.vue";     // World 주간 순위 조회 화면
 
 import MyPage from '@/views/mypage/Mypage.vue'; // 마이페이지
 
@@ -73,25 +68,6 @@ const router = createRouter({
         {path: '/updateprofile', component: UpdateProfilePage},  //회원정보 수정
 
 
-<<<<<<< HEAD
-        {path: '/', component: EventHome},
-        {path: "/event", component: EventHome },    // 이벤트 메인화면
-        // {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면
-        {path: "/event/albti/survey", component: Albti_Survey },    // 술BTI 설문화면(백엔드 연동)
-        // {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면
-        {path: "/event/albti/result", component: Albti_Result },     // 술BTI 결과화면(백엔드 연동)
-        
-        // { path: '/:pathMatch(.*)*', redirect: '/event/albti/survey' }
-        
-        
-        {path: "/event/worldcup",component: Worldcup_Select},       // World 술선택 화면
-        {path: "/event/worldcup/play",component: Worldcup_Play},    // World 진행 화면
-        {path: "/event/worldcup/week",component: Worldcup_Week}, // World 주간 순위 조회 화면
-        
-        // ✅ catch-all 은 항상 **제일 마지막**
-        { path: '/:pathMatch(.*)*', redirect: '/event' }
-    ]   
-=======
     { path: '/login', component: LoginPage },                // 로그인
     { path: '/signup', component: SignUpPage },              // 회원가입
     { path: '/rounge', component: RoungePage },              // 라운지
@@ -145,7 +121,6 @@ const router = createRouter({
     { path: '/:pathMatch(.*)*', redirect: '/event' },
     { path: '/:pathMatch(.*)*', redirect: '/reviews' },
   ]
->>>>>>> bc7ed363d4f4afda294dd017ff73ffbb2bd7c2d3
 });
 
 export default router;

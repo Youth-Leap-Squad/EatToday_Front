@@ -1,6 +1,5 @@
 <template>
   <div class="wrapper">
-
     <div class="title">나의 술BTI 결과 🍺</div>
     <div class="divider"></div>
 
@@ -30,44 +29,45 @@
 </template>
 
 <script>
-import axios from "axios";
+import { getAlbtiResult } from "@/api/albti";
 
 export default {
   name: "Albti_Result",
+
   data() {
     return {
-      result: {}
+      result: {},
     };
   },
 
-  mounted() {
-    // ✅ 설문 단계에서 이미 localStorage에 member_no 저장됨
-    const memberNo = localStorage.getItem("member_no");
+  // beforeMount() {
+  //   if (!localStorage.getItem("token")) {
+  //     alert("로그인이 필요한 서비스입니다.");
+  //     this.$router.push("/login");
+  //   }
+  // },
 
-    // ✅ 로그인 토큰 요구 X / 프록시 경로 사용
-    axios.get(`/albti/getalbtiresult?member_no=${memberNo}`)
-      .then(res => {
-        const data = res.data;
+  async mounted() {
+    try {
+      const memberNo = localStorage.getItem("member_no");
+      const data = await getAlbtiResult(memberNo);
 
-        this.result = {
-          typeName: data.albti_dto.alBTI_category,
-          description: data.albti_dto.alBTI_detail,
-          recommendAlcohol: data.albti_output.alBTI_alcohol_explain,
-          recommendFood: data.foodpost_dto.food_explain,
-          imageUrl: data.foodpost_dto.food_picture // ✅ DB 경로 그대로
-        };
-      })
-      .catch(err => {
-        console.error("⚠️ 결과 조회 실패:", err);
-        alert("결과를 불러오지 못했습니다.");
-        this.$router.push("/event");
-      });
-  }
+      this.result = {
+        typeName: data.albti_dto.alBTI_category,
+        description: data.albti_dto.alBTI_detail,
+        recommendAlcohol: data.albti_output.alBTI_alcohol_explain,
+        recommendFood: data.foodpost_dto.food_explain,
+        imageUrl: data.foodpost_dto.food_picture,
+      };
+    } catch (err) {
+      alert("결과 조회에 실패했습니다. 다시 시도해주세요.");
+      this.$router.push("/event");
+    }
+  },
 };
 </script>
 
 <style scoped>
-/* ✅ CSS 그대로 유지 */
 .wrapper {
   width: 90%;
   max-width: 1000px;

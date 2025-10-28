@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { getAlbtiSurveyList, submitAlbtiAnswers } from "@/api/albti";
 
 export default {
   name: "Albti_Survey",
@@ -39,7 +39,6 @@ export default {
       questions: [],
       total: 0,
 
-      // 감성 선택지 텍스트
       customAnswerTextsByQuestion: {
         1: { a: "시끌벅적한 술자리가 좋아! 🥳", b: "조용히 대화 나누는 분위기가 좋아 ☺️" },
         2: { a: "익숙한 술이 편안해 🍶", b: "새로운 술은 언제나 설레! 🍸" },
@@ -55,64 +54,62 @@ export default {
     };
   },
 
-  mounted() {
-    axios.get("/albti/survey/list")
-      .then(res => {
-        this.questions = res.data.map(q => {
-          // ✅ camelCase 사용 + 안전 처리
-          const custom = this.customAnswerTextsByQuestion[q.albtiSurveyNo] ?? { a: "A", b: "B" };
+  // // ✅ 로그인 안 되어 있으면 페이지 진입 차단
+  // beforeMount() {
+  //   if (!localStorage.getItem("token")) {
+  //     alert("로그인이 필요한 서비스입니다.");
+  //     this.$router.push("/login");
+  //   }
+  // },
 
-          return {
-            question: q.question,
-            answers: [
-              { text: custom.a, value: "A", surveyNo: q.albtiSurveyNo },
-              { text: custom.b, value: "B", surveyNo: q.albtiSurveyNo }
-            ]
-          };
-        });
-        this.total = this.questions.length;
-      })
-      .catch(err => console.error("⚠️ 설문 불러오기 실패:", err));
+  // ✅ 설문 목록 로딩
+  async mounted() {
+    try {
+      const data = await getAlbtiSurveyList();
+      this.questions = data.map(q => {
+        const custom = this.customAnswerTextsByQuestion[q.albtiSurveyNo] ?? { a: "A", b: "B" };
+        return {
+          question: q.question,
+          answers: [
+            { text: custom.a, value: "A", surveyNo: q.albtiSurveyNo },
+            { text: custom.b, value: "B", surveyNo: q.albtiSurveyNo }
+          ]
+        };
+      });
+      this.total = this.questions.length;
+    } catch (err) {
+      alert("로그인이 필요합니다.");
+      this.$router.push("/login");
+    }
   },
 
   methods: {
-    selectAnswer(choiceValue) {
-      // ✅ 안전 가드: 질문이 없으면 종료
-      if (!this.questions[this.currentIndex]) return;
+    // ✅ 답변 선택
+    async selectAnswer(choiceValue) {
+      const current = this.questions[this.currentIndex];
+      if (!current) return;
 
-      const surveyNo = this.questions[this.currentIndex].answers[0].surveyNo;
-
+      const surveyNo = current.answers[0].surveyNo;
       this.answersSelected.push({ albtiSurveyNo: surveyNo, choice: choiceValue });
       this.currentIndex++;
 
-      // ✅ 모든 질문 완료 시 저장
+      // ✅ 모든 질문 종료 시 저장
       if (this.currentIndex >= this.total) {
-        const memberNo = prompt("테스트용 member_no 입력 (예: 1)");
+        try {
+          const memberNo = Number(localStorage.getItem("member_no"));
+          const result = await submitAlbtiAnswers(memberNo, this.answersSelected);
 
-        axios.post("/albti/member/add-bulk", {
-          memberNo: Number(memberNo),
-          answers: this.answersSelected
-        })
-          .then(res => {
-            // ✅ 하루 1회 포인트 지급 여부
-            if (res.data.pointGranted) {
-              alert("🎉 오늘 첫 참여! 포인트가 지급되었습니다! (+30P)");
-            } else {
-              alert("🙂 재참여하셨습니다.\n(포인트는 1일 1회만 지급됩니다!)");
-            }
+          if (result.pointGranted) {
+            alert("🎉 오늘 첫 참여! 포인트가 지급되었습니다! (+30P)");
+          } else {
+            alert("🙂 이미 참여한 적 있습니다.\n(포인트는 1일 1회 지급)");
+          }
 
-            localStorage.setItem("member_no", memberNo);
-            this.$router.push("/event/albti/result");
-          })
-        // .then(() => {
-        //   localStorage.setItem("member_no", memberNo);
-        //   alert("✅ 저장 완료! 결과 페이지로 이동합니다.");
-        //   this.$router.push("/event/albti/result");
-        // })
-        .catch(err => {
-          console.error("⚠️ 저장 실패:", err);
-          alert("❌ 저장 중 오류 발생 (console 확인)");
-        });
+          this.$router.push("/event/albti/result");
+        } catch (err) {
+          alert("로그인이 필요합니다!");
+          this.$router.push("/login");
+        }
       }
     },
 
@@ -124,6 +121,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 /* ✅ 스타일 그대로 유지 */

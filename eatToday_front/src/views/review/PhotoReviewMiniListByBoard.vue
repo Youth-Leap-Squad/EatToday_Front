@@ -477,7 +477,12 @@ function goCreate () {
 function goDetail (id) {
   if (!requireLogin()) return
   const n = Number(id)
-  if (Number.isFinite(n)) router.push(`/reviews/${n}`)
+  if (Number.isFinite(n)) {
+    router.push({
+      path: `/reviews/${n}`,
+      state: { imgUrl: items.value.find(it => it.id === n)?.imgUrl || '' }
+    })
+  }
 }
 function goLounge () {
   router.push(loungePath)

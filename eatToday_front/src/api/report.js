@@ -11,4 +11,3 @@ export const approveReport = async (reportNo) => {
   const response = await api.post(`/api/reports/${reportNo}/confirm`)
   return response.data
 }
-

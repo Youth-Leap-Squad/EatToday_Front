@@ -51,7 +51,7 @@
         </button>
         <button class="count" :class="{ active: tab==='post' }" @click="tab='post'">
           <span class="label">게시물</span>
-          <span class="num">{{ posts.length }}</span>
+          <span class="num">{{ postsTotal }}</span>
         </button>
       </section>
 
@@ -75,23 +75,23 @@
       </section>
 
       <section class="grid" v-else>
-        <PhotoReviewCard
-          v-for="(r, i) in reviewsRows"
-          :key="r.id ?? i"
-          :member-no="r.memberNo"
-          :my-member-no="myMemberNo"
-          :photo-src="r.photo || undefined"
-          :avatar-src="r.avatar || undefined"
-          :nickname="r.nickname"
-          :content="r.content"
-          :like-count="r.likes"
-          :is-liked="r.isLiked"
-          @toggle-like="onToggleLike(i, $event)"
+        <PostCard
+          v-for="p in postsRows"
+          :key="p.postId"
+          :id="p.postId"
+          :title="p.title"
+          :likes="p.likes"
+          :views="p.views"
+          :comment="p.comment"
+          :author="p.author"
+          :avatar="p.avatar || basicProfile"
+          :thumbnail="p.thumbnail || defaultPhoto1"
         />
       </section>
 
       <p v-if="loading" class="center">불러오는 중…</p>
       <p v-else-if="!loading && tab==='review' && reviewsRows.length===0" class="center">리뷰가 없습니다.</p>
+      <p v-else-if="!loading && tab==='post' && postsRows.length===0" class="center">게시물이 없습니다.</p>
     </div>
 
     <Follow
@@ -105,8 +105,9 @@
 
 <script setup>
 import { reactive, computed, ref, watch, onMounted } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, RouterLink, useRouter } from 'vue-router'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
+import PostCard from '@/components/post/PostCard.vue'
 import Follow from '@/components/mypage/follow.vue'
 import basicProfile from '@/assets/images/basic_profile.jpg'
 import defaultPhoto1 from '@/assets/images/photo_review/reviewexample.png'
@@ -118,8 +119,10 @@ import goldBadge from '@/assets/images/gold.png'
 import { findMyLevel, uploadProfileImage, getProfileImageUrl } from '@/api/member'
 import { fetchMyPhotoReviews, fetchUserPhotoReviews } from '@/api/photoReview'
 import { getAlbtiResult } from '@/api/albti'
+import { fetchUserPosts } from '@/api/post'
 
 const route = useRoute()
+const router = useRouter()
 
 const token = computed(() => localStorage.getItem('token') || '')
 function parseJwt(t) {
@@ -146,7 +149,6 @@ const targetMemberNo = computed(() => {
 const isMine = computed(() => targetMemberNo.value === myMemberNo.value)
 
 const nickname = ref('')
-const levelLabel = ref('')
 const albtiCategory = ref('')
 const badgeImg = ref(goldBadge)
 
@@ -168,8 +170,8 @@ async function loadProfile() {
   if (!token.value || !targetMemberNo.value) return
   const data = await findMyLevel(targetMemberNo.value, token.value)
   nickname.value = data?.memberId ?? data?.memberName ?? '알 수 없음'
-  levelLabel.value = data?.memberLevelLabel ?? '등급 없음'
-  badgeImg.value = pickBadge(levelLabel.value)
+  const label = data?.memberLevelLabel ?? ''
+  badgeImg.value = pickBadge(label)
 }
 
 async function loadAlbti() {
@@ -197,31 +199,26 @@ async function onPickAvatar(e) {
   } catch (err) {
     const msg = err?.response?.data?.message || err?.message || '업로드 실패'
     alert(msg)
-    console.error(err)
   } finally {
     e.target.value = ''
   }
 }
 
 const loading = ref(false)
+
 const reviews = ref(0)
 const reviewsRows = ref([])
-
-const normalize = r => {
+const normalizeReview = r => {
   const rawPhoto =
     r?.files?.[0]?.prFileUrl ??
     r?.files?.[0]?.url ??
     r?.files?.[0]?.fileUrl ??
     r?.files?.[0]?.path ??
-    r?.files?.[0]?.fileName ??
-    ''
-
+    r?.files?.[0]?.fileName ?? ''
   const rawAvatar =
     r?.member?.profileImage?.url ??
     r?.member?.avatarUrl ??
-    r?.member?.profilePath ??
-    ''
-
+    r?.member?.profilePath ?? ''
   return {
     id: r.reviewNo,
     reviewId: r.reviewNo ?? r.reviewId ?? null,
@@ -234,7 +231,6 @@ const normalize = r => {
     avatar: rawAvatar
   }
 }
-
 async function loadReviews() {
   if (!token.value) return
   loading.value = true
@@ -246,7 +242,7 @@ async function loadReviews() {
       size: 12,
       token: token.value
     })
-    const rows = Array.isArray(res?.content) ? res.content.map(normalize) : []
+    const rows = Array.isArray(res?.content) ? res.content.map(normalizeReview) : []
     reviewsRows.value = rows
     reviews.value = typeof res?.totalElements === 'number' ? res.totalElements : rows.length
   } finally {
@@ -254,17 +250,53 @@ async function loadReviews() {
   }
 }
 
-const posts = reactive([
-  { photoSrc: defaultPhoto1, avatarSrc: basicProfile, content: '일요일은 내가 요리사!', likeCount: 100, isLiked: false },
-  { photoSrc: defaultPhoto2, avatarSrc: basicProfile, content: '주말에 와인 먹고 왔어요!!', likeCount: 11, isLiked: false },
-  { photoSrc: defaultPhoto3, avatarSrc: basicProfile, content: '용용선생 노량진찐!!', likeCount: 11, isLiked: false }
-])
+const postsRows = ref([])
+const postsTotal = ref(0)
+const normalizePost = p => ({
+  postId: p.boardNo ?? p.postId ?? p.id ?? null,
+  title: p.boardTitle ?? p.title ?? '',
+  likes:
+    (Number(p.likesNo1) || 0) +
+    (Number(p.likesNo2) || 0) +
+    (Number(p.likesNo3) || 0) +
+    (Number(p.likesNo4) || 0),
+  views: Number(p.boardSeq) || Number(p.views) || 0,
+  comment: Number(p.commentCount) || Number(p.comment) || 0,
+  author: p.memberId ?? p.member?.memberId ?? p.writer ?? p.author ?? '',
+  avatar: p.memberAvatar ?? p.avatar ?? '',
+  thumbnail:
+    p.foodPicture ??
+    p.thumbnail ??
+    p.coverImage ??
+    p.images?.[0]?.url ??
+    p.files?.[0]?.url ?? ''
+})
+async function loadPosts() {
+  if (!token.value || !targetMemberNo.value) return
+  loading.value = true
+  try {
+    const res = await fetchUserPosts({
+      memberNo: targetMemberNo.value,
+      page: 0,
+      size: 12,
+      token: token.value
+    })
+    const list = Array.isArray(res?.content) ? res.content : Array.isArray(res) ? res : []
+    postsRows.value = list.map(normalizePost)
+    postsTotal.value = typeof res?.totalElements === 'number' ? res.totalElements : postsRows.value.length
+  } finally {
+    loading.value = false
+  }
+}
+function goPost(postId) {
+  if (!postId) return
+  router.push(`/post/${postId}`)
+}
 
 function onToggleLike(index, payload) {
-  const list = tab.value === 'review' ? reviewsRows.value : posts
+  const list = tab.value === 'review' ? reviewsRows.value : postsRows.value
   list[index].isLiked = payload.liked
-  if (tab.value === 'review') list[index].likes = payload.count
-  else list[index].likeCount = payload.count
+  list[index].likes = payload.count
 }
 
 const follower = 0
@@ -278,14 +310,15 @@ function openFollow(type) {
   showFollowModal.value = true
   document.body.style.overflow = 'hidden'
 }
-watch(showFollowModal, v => { if (!v) document.body.style.overflow = 'auto' })
 
 const tab = ref('review')
 
+watch(showFollowModal, v => { if (!v) document.body.style.overflow = 'auto' })
 watch(() => route.params.memberNo, () => {
   loadProfile()
   loadAlbti()
   loadReviews()
+  loadPosts()
   avatarBust.value = ''
 })
 
@@ -293,6 +326,7 @@ onMounted(() => {
   loadProfile()
   loadAlbti()
   loadReviews()
+  loadPosts()
 })
 </script>
 
@@ -319,11 +353,15 @@ onMounted(() => {
 .link { cursor: pointer; }
 .sep { opacity: .5; }
 .row-3 { margin-top: 10px; }
+
 .counts { display: flex; gap: 28px; align-items: center; padding: 4px 8px 0; margin-top: 20px; }
 .count { display: inline-flex; align-items: baseline; gap: 8px; padding: 2px 4px; border: none; background: transparent; cursor: pointer; }
 .count .label, .count .num { font-size: 22px; font-weight: 900; color: #2B1F14; }
 .count.active .label, .count.active .num { color: #D2B382; }
+
 .line { border: none; border-top: 1.5px solid #D9D0C1; margin: 10px 0 20px; }
+
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px 46px; padding: 16px 6px 6px; }
+
 .center { text-align: center; margin-top: 12px; color: #2B1F14; font-weight: 600; }
 </style>

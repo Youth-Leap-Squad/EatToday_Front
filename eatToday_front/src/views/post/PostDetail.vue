@@ -1,17 +1,18 @@
 <template>
   <div class="wrap" v-if="post">
-    <header class="head">
-      <div>
-        <h1 class="title">{{ post.title }}</h1>
-        <div class="sub">
-          <span>작성자: {{ post.author || '익명' }}</span>
-          <span>·</span>
-          <span>{{ (post.createdAt || post.date || '').toString().slice(0,10) || '오늘' }}</span>
-          <span>· 조회 {{ Number(post.views || 0).toLocaleString() }}</span>
-          <span>· 댓글 {{ comments.length }}</span>
-        </div>
-      </div>
-    </header>
+<header class="head">
+  <div>
+    <h1 class="title">{{ post.title }}</h1>
+    <div class="sub">
+      <img :src="post.avatar || '/image/user-profile/basic_profile.jpg'" alt="" style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:6px;">
+      <span>작성자: {{ post.author || '익명' }}</span>
+      <span>·</span>
+      <span>{{ (post.createdAt || post.date || '').toString().slice(0,10) || '오늘' }}</span>
+      <span>· 조회 {{ Number(post.views || 0).toLocaleString() }}</span>
+      <span>· 댓글 {{ comments.length }}</span>
+    </div>
+  </div>
+</header>
 
     <!-- 이미지 -->
     <div class="hero-images" v-if="post.images && post.images.length > 0">

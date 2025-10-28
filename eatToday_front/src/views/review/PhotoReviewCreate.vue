@@ -57,7 +57,16 @@ async function submit(){
   fileList.value.forEach(f => fd.append('files', f))
 
   try {
-    await axios.post('http://localhost:8080/command/photo-reviews', fd, { withCredentials: true })
+    const { data } = await axios.post('http://localhost:8080/command/photo-reviews', fd, { withCredentials: true })
+    const detail =
+      data && typeof data === 'object'
+        ? { ...payload, ...data }
+        : typeof data === 'number'
+          ? { ...payload, reviewNo: data }
+          : payload
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('photo-review:created', { detail }))
+    }
     alert('등록되었습니다.')
     router.push(`/boards/${boardNo}`)
   } catch (e) {

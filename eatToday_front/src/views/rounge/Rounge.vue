@@ -17,9 +17,9 @@
         v-for="item in items"
         :key="item.id"
         :member-no="item.memberNo"
-        :my-member-no="myMemberNo"     
-        :photo-src="item.photo ?? undefined"
-        :avatar-src="item.avatar ?? undefined"
+        :my-member-no="myMemberNo"
+        :photo-src="item.photo || undefined"     
+        :avatar-src="item.avatar || undefined"   
         :nickname="item.nickname"
         :content="item.content"
         :like-count="item.likes ?? 0"
@@ -87,45 +87,30 @@ const myMemberNo = computed(() => {
 /* ================= 서버 응답 정규화 ================= */
 const normalize = r => ({
   id: r.reviewNo,
-
-  // ✅ memberNo 여러 케이스 대응
   memberNo:
     r?.member?.memberNo ??
-    r?.writer?.memberNo ??
-    r?.author?.memberNo ??
     r?.memberNo ??
-    r?.writerNo ??
-    r?.authorId ??
     null,
-
   nickname:
     r?.member?.memberName ??
-    r?.writer?.name ??
-    r?.author?.name ??
     r?.memberName ??
     '익명',
-
   content: r.reviewContent ?? r.reviewTitle ?? '',
   likes: r.reviewLike ?? 0,
+  createdAt: r.reviewDate ? new Date(r.reviewDate).toISOString() : new Date().toISOString(),
 
-  createdAt: r.reviewDate
-    ? new Date(r.reviewDate).toISOString()
-    : new Date().toISOString(),
-
+  // ★ prFileUrl 우선
   photo:
-    r.files?.[0]?.url ??
-    r.files?.[0]?.fileUrl ??
-    r.files?.[0]?.path ??
-    null,
+    r?.files?.[0]?.prFileUrl ??
+    r?.files?.[0]?.url ??
+    r?.files?.[0]?.fileUrl ??
+    r?.files?.[0]?.path ??
+    '',
 
   avatar:
     r?.member?.profileImage?.url ??
-    r?.writer?.avatarUrl ??
-    r?.author?.avatarUrl ??
     r?.avatar ??
-    null,
-
-  isLiked: r.isLiked ?? false,
+    ''
 })
 
 /* ================= 페이지 데이터 로드 ================= */

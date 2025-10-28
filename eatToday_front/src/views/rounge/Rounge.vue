@@ -16,6 +16,8 @@
       <PhotoReviewCard
         v-for="item in items"
         :key="item.id"
+        :member-no="item.memberNo"
+        :my-member-no="myMemberNo"     
         :photo-src="item.photo ?? undefined"
         :avatar-src="item.avatar ?? undefined"
         :nickname="item.nickname"
@@ -34,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import RoungeHeader from '@/components/rounge/RoungeHeader.vue'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
 import {
@@ -56,18 +58,77 @@ const loading = ref(false)
 const loadingMore = ref(false)
 const hasNext = ref(true)
 let observer = null
+const sentinel = ref(null)
 let reqSeq = 0
 
-const normalize = r => ({
-  id: r.reviewNo,
-  nickname: r?.member?.memberName ?? '익명',
-  content: r.reviewContent ?? r.reviewTitle ?? '',
-  likes: r.reviewLike ?? 0,
-  createdAt: r.reviewDate ? new Date(r.reviewDate).toISOString() : new Date().toISOString(),
-  photo: r.files?.[0]?.url ?? r.files?.[0]?.fileUrl ?? r.files?.[0]?.path ?? null,
-  avatar: null
+/* ================= 내 memberNo 계산 ================= */
+const token = computed(() => localStorage.getItem('token') || '')
+function parseJwt(t) {
+  try {
+    const part = t.split('.')[1]
+    if (!part) return null
+    const padded = part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (part.length % 4 || 4)) % 4)
+    return JSON.parse(
+      decodeURIComponent(
+        atob(padded)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+    )
+  } catch { return null }
+}
+const myMemberNo = computed(() => {
+  const p = parseJwt(token.value)
+  return p?.memberNo ?? null
 })
 
+/* ================= 서버 응답 정규화 ================= */
+/* ================= 서버 응답 정규화 ================= */
+const normalize = r => ({
+  id: r.reviewNo,
+
+  // ✅ memberNo 여러 케이스 대응
+  memberNo:
+    r?.member?.memberNo ??
+    r?.writer?.memberNo ??
+    r?.author?.memberNo ??
+    r?.memberNo ??
+    r?.writerNo ??
+    r?.authorId ??
+    null,
+
+  nickname:
+    r?.member?.memberName ??
+    r?.writer?.name ??
+    r?.author?.name ??
+    r?.memberName ??
+    '익명',
+
+  content: r.reviewContent ?? r.reviewTitle ?? '',
+  likes: r.reviewLike ?? 0,
+
+  createdAt: r.reviewDate
+    ? new Date(r.reviewDate).toISOString()
+    : new Date().toISOString(),
+
+  photo:
+    r.files?.[0]?.url ??
+    r.files?.[0]?.fileUrl ??
+    r.files?.[0]?.path ??
+    null,
+
+  avatar:
+    r?.member?.profileImage?.url ??
+    r?.writer?.avatarUrl ??
+    r?.author?.avatarUrl ??
+    r?.avatar ??
+    null,
+
+  isLiked: r.isLiked ?? false,
+})
+
+/* ================= 페이지 데이터 로드 ================= */
 async function fetchPage({ append = false } = {}) {
   const mySeq = ++reqSeq
   if (append) {
@@ -88,24 +149,28 @@ async function fetchPage({ append = false } = {}) {
     if (kw) {
       res = await searchPhotoReviews({ keyword: kw, page: page.value, size: size.value })
     } else if (al) {
-      if (sort.value === 'likes') {
-        res = await fetchPhotoReviewsByAlcoholLike({ alcoholNo: al, page: page.value, size: size.value })
-      } else {
-        res = await fetchPhotoReviewsByAlcohol({ alcoholNo: al, page: page.value, size: size.value })
-      }
+      res = sort.value === 'likes'
+        ? await fetchPhotoReviewsByAlcoholLike({ alcoholNo: al, page: page.value, size: size.value })
+        : await fetchPhotoReviewsByAlcohol({ alcoholNo: al, page: page.value, size: size.value })
     } else {
-      if (sort.value === 'likes') {
-        res = await fetchPhotoReviewsByLike({ page: page.value, size: size.value })
-      } else {
-        res = await fetchPhotoReviewsByDate({ page: page.value, size: size.value })
-      }
+      res = sort.value === 'likes'
+        ? await fetchPhotoReviewsByLike({ page: page.value, size: size.value })
+        : await fetchPhotoReviewsByDate({ page: page.value, size: size.value })
     }
 
     if (mySeq !== reqSeq) return
 
     const rows = Array.isArray(res?.content) ? res.content.map(normalize) : []
     items.value = append ? items.value.concat(rows) : rows
-    hasNext.value = res?.hasNext ?? false
+
+    if (typeof res?.hasNext === 'boolean') {
+      hasNext.value = res.hasNext
+    } else if (typeof res?.last === 'boolean') {
+      hasNext.value = !res.last
+    } else {
+      hasNext.value = rows.length === size.value
+    }
+
     if (hasNext.value) page.value += 1
   } finally {
     loading.value = false
@@ -113,39 +178,38 @@ async function fetchPage({ append = false } = {}) {
   }
 }
 
+/* ================= 핸들러 ================= */
 function onSearch() {
   searchKeyword.value = inputValue.value.trim()
   fetchPage({ append: false })
   inputValue.value = ''
 }
-
 function onClickLatest() {
-  sort.value = 'latest'
-  fetchPage({ append: false })
+  if (sort.value !== 'latest') {
+    sort.value = 'latest'
+    fetchPage({ append: false })
+  }
 }
-
 function onClickLikes() {
-  sort.value = 'likes'
-  fetchPage({ append: false })
+  if (sort.value !== 'likes') {
+    sort.value = 'likes'
+    fetchPage({ append: false })
+  }
 }
 
+/* ================= 무한 스크롤 세팅 ================= */
 onMounted(() => {
   observer = new IntersectionObserver(
-    entries => {
-      if (entries[0].isIntersecting) fetchPage({ append: true })
-    },
+    entries => { if (entries[0].isIntersecting) fetchPage({ append: true }) },
     { root: null, rootMargin: '300px', threshold: 0.1 }
   )
-  const el = sentinel.value
-  if (el) observer.observe(el)
+  if (sentinel.value) observer.observe(sentinel.value)
   fetchPage({ append: false })
 })
 
 onBeforeUnmount(() => {
-  if (observer && sentinel.value) observer.unobserve(sentinel.value)
+  if (observer) observer.disconnect()
 })
-
-const sentinel = ref(null)
 </script>
 
 <style scoped>

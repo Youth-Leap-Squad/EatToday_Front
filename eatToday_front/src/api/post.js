@@ -1,3 +1,4 @@
+// src/api/post.js
 import api from '@/api/index'
 
 /* -------------------- 헬퍼 -------------------- */
@@ -65,7 +66,6 @@ function normalizeItem(x) {
     avatar: resolveAssetUrl(x.avatar ?? x.authorAvatar ?? ''),
     content: x.content ?? x.boardContent ?? x.contentHtml ?? '',
     createdAt: x.createdAt ?? x.boardDate ?? null,
-    // ✅ 승인 판정 유연화
     approved: asBool(x.confirmedYn ?? x.confirmed ?? x.approved),
   }
 }
@@ -82,11 +82,11 @@ export const fetchPosts = async ({ page = 0, size = 12, sort = 'view' } = {}) =>
 
 /** ✅ 주종별 승인된 게시글 목록 */
 export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {}) => {
-    try {
+  try {
     const { data } = await api.get(`/${alcoholNo}/foods`, { params: { page, size } })
     let list = (Array.isArray(data) ? data : []).map(normalizeItem)
     if (list.length === 0) {
-      // ✅ 승인글이 없으면 전체에서 해당 주종만 클라이언트 필터 (임시 폴백)
+      // 승인글이 없으면 전체에서 해당 주종만 클라이언트 필터 (임시 폴백)
       const { data: all } = await api.get('/foods/all', { params: { page, size: 200 } })
       const filtered = (Array.isArray(all) ? all : []).filter(
         x => Number(x.alcoholNo ?? x.alcohol_no) === Number(alcoholNo)
@@ -95,7 +95,6 @@ export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {
     }
     return { list, page: { totalPages: 1, number: page, size } }
   } catch (e) {
-    // 500 등 백엔드 오류 시에도 안전하게 빈 리스트와 에러 전달
     console.error('[fetchPostsByAlcohol] fail:', e)
     return { list: [], page: { totalPages: 1, number: page, size }, error: e }
   }
@@ -103,9 +102,9 @@ export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {
 
 /** 단건 조회 */
 export const fetchPost = async (id) => {
-  const r = await api.get(`/foods/${id}`);
-  return normalizeItem(r.data);
-};
+  const r = await api.get(`/foods/${id}`)
+  return normalizeItem(r.data)
+}
 
 /** 작성 */
 export const createPost = async ({
@@ -196,13 +195,60 @@ export const increaseView = async (boardNo) => {
   await api.patch(`/command/foods/${boardNo}/view`)
 }
 
-export const createComment = async (boardNo, content) => {
-  const { data } = await api.post(`/command/foods/${boardNo}/comments`, { content })
-  return data   // 서버가 반환하는 CommentResponse
+/* -------------------- ✅ 여기부터 핵심 수정 -------------------- */
+
+/** ✅ 댓글 작성: JSON(content) → JSON(fcContent) → FormData 순 폴백 */
+export const createComment = async (boardNo, text) => {
+  const content = (text ?? '').trim()
+  const url = `/command/foods/${boardNo}/comments`
+
+  // 1) 기본: content
+  try {
+    const { data } = await api.post(url, { content }, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+    return data
+  } catch (e1) {
+    const code = e1?.response?.status
+    if (code !== 400 && code !== 415 && code !== 422) throw e1
+    // 2) 대체 키: fcContent
+    try {
+      const { data } = await api.post(url, { fcContent: content }, {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      return data
+    } catch {
+      // 3) 마지막 폴백: multipart/form-data
+      const fd = new FormData()
+      fd.append('content', content)
+      const { data } = await api.post(url, fd)
+      return data
+    }
+  }
 }
 
+/** ✅ 반응 토글: PATCH → 실패 시 POST 폴백 */
 export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
-  // 서버는 POST(add) / PATCH(change) 둘 다 제공 → change로 일원화
-  const { data } = await api.patch(`/command/foods/${boardNo}/reactions`, { likesType })
-  return data // ReactionResponse (likesNo1..likesNo4 포함)
+  const payload = { likesType: Number(likesType) }
+
+  try {
+    const { data } = await api.patch(`/command/foods/${boardNo}/reactions`, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+    // 일부 서버는 204를 응답할 수 있음 → 그땐 재조회
+    if (data == null || data === '') {
+      const r = await api.get(`/foods/${boardNo}/reactions`)
+      return Array.isArray(r.data) ? r.data[0] : r.data
+    }
+    return data
+  } catch (e) {
+    const code = e?.response?.status
+    if (code === 400 || code === 404 || code === 409) {
+      const { data } = await api.post(`/command/foods/${boardNo}/reactions`, payload, {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      return data
+    }
+    throw e
+  }
 }

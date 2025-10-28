@@ -33,10 +33,10 @@
         <img :src="finalWinner.image" class="win-img">
 
         <p class="win-name">{{ finalWinner.name }}</p>      <!-- ✅ 이름 표시 -->
-        <p class="win-desc">선택한 술과 당신의 찐 안주 조합이 완성되었어요! 😋</p>
+        <p class="win-desc">선택한 술과 당신의 빼이보릿 안주가 찰떡궁합이네요~!! 😋</p>
 
         <button class="again-btn" @click="goHome">다른 종류의 술로 월드컵 게임 다시하기</button>
-        <button class="rank-btn" @click="goRank">순위 조회하기</button>
+        <button class="rank-btn" @click="goRank">주간 월드컵 게임 순위 조회하기</button>
       </div>
     </div>
 
@@ -104,41 +104,41 @@ export default {
     }
     /* 사진 추가해야됨 (안주게시글 사진과 동일해야함) */
     const sojuFoods = [
-      { name: "삼겹살", image: new URL("@/assets/images/삼겹살.jpg", import.meta.url).href },
-      { name: "회", image: new URL("@/assets/images/회.jpg", import.meta.url).href },
-      { name: "닭발", image: new URL("@/assets/images/닭발.jpg", import.meta.url).href },
-      { name: "골뱅이무침", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "두부김치", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "파전", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "곱창", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "볶음김치", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "삼겹살2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "회2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "닭발2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "골뱅이무침2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "두부김치2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "파전2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "곱창2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "볶음김치2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
+      { name: "삼겹살", image: new URL("@/assets/images/food/samgyeopsal.jpg", import.meta.url).href },
+      { name: "매운닭꼬치", image: new URL("@/assets/images/food/chickenskewer.jpg", import.meta.url).href },
+      { name: "닭발", image: new URL("@/assets/images/food/chicken.jpg", import.meta.url).href },
+      { name: "육회비빔밥", image: new URL("@/assets/images/food/yukhoe.jpg", import.meta.url).href },
+      { name: "오징어볶음", image: new URL("@/assets/images/food/squid.jpg", import.meta.url).href },
+      { name: "소세지야채볶음", image: new URL("@/assets/images/food/sausage.jpg", import.meta.url).href },
+      { name: "홍합탕", image: new URL("@/assets/images/food/mussel.jpg", import.meta.url).href },
+      { name: "낙지볶음", image: new URL("@/assets/images/food/nakji.jpg", import.meta.url).href },
+      { name: "오돌뼈", image: new URL("@/assets/images/food/odol.jpg", import.meta.url).href },
+      { name: "순대볶음", image: new URL("@/assets/images/food/soondae.jpg", import.meta.url).href },
+      { name: "계란말이", image: new URL("@/assets/images/food/eggroll.jpg", import.meta.url).href },
+      { name: "골뱅이무침", image: new URL("@/assets/images/food/golbaeng.jpg", import.meta.url).href },
+      { name: "김치찌개", image: new URL("@/assets/images/food/kimchistew.jpg", import.meta.url).href },
+      { name: "두부김치", image: new URL("@/assets/images/food/dubukimchi.jpg", import.meta.url).href },
+      { name: "불족발", image: new URL("@/assets/images/food/jokbal.jpg", import.meta.url).href },
+      { name: "문어숙회", image: new URL("@/assets/images/food/octopus.jpg", import.meta.url).href },
     ];
 
     const wineFoods = [
-      { name: "치즈 플래터", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "스테이크", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "카나페", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "연어샐러드", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "초콜릿", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "살라미", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "바게트", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "과일 플래터2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "치즈 플래터2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "스테이크2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "카나페2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "연어샐러드2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "초콜릿2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "살라미2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "바게트2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href },
-      { name: "과일 플래터2", image: new URL("@/assets/images/맥주-Photoroom.png", import.meta.url).href }
+      { name: "회", image: new URL("@/assets/images/food/sashimi.jpg", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "브루케스타", image: new URL("@/assets/images/food/bruschetta.jpg", import.meta.url).href },
+      { name: "감바스", image: new URL("@/assets/images/food/gambas.jpg", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "회무침", image: new URL("@/assets/images/food/hoemuchim.jpg", import.meta.url).href },
+      { name: "치즈감바스", image: new URL("@/assets/images/food/cheesegambas.jpg", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
+      { name: "수정", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }
     ];
 
     this.roundList = this.alcohol === "소주" ? sojuFoods : wineFoods;

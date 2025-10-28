@@ -56,6 +56,7 @@
           v-for="(r, i) in reviewsRows"
           :key="r.id ?? i"
           :member-no="r.memberNo"
+          :board-id="r.boardId" 
           :my-member-no="myMemberNo"
           :photo-src="r.photo"
           :avatar-src="r.avatar"
@@ -70,16 +71,16 @@
       <!-- 게시물 탭(예시) -->
       <section class="grid" v-else>
         <PhotoReviewCard
-          v-for="(p, i) in posts"
-          :key="i"
-          :member-no="myMemberNo"
+          v-for="(r, i) in reviewsRows"
+          :key="r.id ?? i"
+          :member-no="r.memberNo"
           :my-member-no="myMemberNo"
-          :photo-src="p.photoSrc"
-          :avatar-src="p.avatarSrc"
-          :nickname="nickname"
-          :content="p.content"
-          :like-count="p.likeCount"
-          :is-liked="p.isLiked"
+          :photo-src="r.photo || undefined"     
+          :avatar-src="r.avatar || undefined"   
+          :nickname="r.nickname"
+          :content="r.content"
+          :like-count="r.likes"
+          :is-liked="r.isLiked"
           @toggle-like="onToggleLike(i, $event)"
         />
       </section>
@@ -171,6 +172,7 @@ const reviewsRows = ref([])         // 카드 데이터
 // ✅ 사진/아바타에 기본 이미지 fallback 적용
 const normalize = r => {
   const rawPhoto =
+    r?.files?.[0]?.prFileUrl ??   // ★ 추가: 백엔드에서 만든 최종 URL
     r?.files?.[0]?.url ??
     r?.files?.[0]?.fileUrl ??
     r?.files?.[0]?.path ??
@@ -185,13 +187,14 @@ const normalize = r => {
 
   return {
     id: r.reviewNo,
-    memberNo: r?.member?.memberNo ?? null,
+    boardId: r.boardNo ?? r.boardId ?? null,
+    memberNo: r?.member?.memberNo ?? null, // DTO에 memberNo 추가된 상태
     nickname: r?.member?.memberName ?? '익명',
     content: r.reviewContent ?? r.reviewTitle ?? '',
     likes: r.reviewLike ?? 0,
     isLiked: r.isLiked ?? false,
-    photo: rawPhoto || defaultPhoto1,   // ← 기본 리뷰 이미지
-    avatar: rawAvatar || avatarLg       // ← 기본 프로필 이미지
+    photo: rawPhoto,           // 비어있으면 카드에서 기본이미지로 대체
+    avatar: rawAvatar
   }
 }
 

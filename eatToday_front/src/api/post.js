@@ -107,15 +107,13 @@ export const fetchPost = async (id) => {
 
 }
 
-/** 작성 */
 export const createPost = async ({
   category,
   alcoholNo = 1,
   title,
   subtitle,
   contentHtml,
-  mainImageFile,
-  contentImageFiles = [],
+  contentImageFiles = [],   // ✅ mainImageFile 제거
 }) => {
   const meta = {
     alcoholNo: Number(alcoholNo || 1),
@@ -123,10 +121,15 @@ export const createPost = async ({
     boardContent: contentHtml ?? '',
     foodExplain: subtitle ?? '',
   }
+
   const fd = new FormData()
   fd.append('meta', JSON.stringify(meta))
-  if (mainImageFile instanceof File) fd.append('image', mainImageFile)
-  contentImageFiles.filter(f => f instanceof File).forEach(f => fd.append('images', f))
+
+  // ✅ 본문 이미지들만 추가
+  contentImageFiles
+    .filter(f => f instanceof File)
+    .forEach(f => fd.append('images', f))
+
   const { data } = await api.post('/command/foods', fd)
   return data
 }

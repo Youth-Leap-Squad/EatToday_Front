@@ -44,9 +44,16 @@
       class="mt24"
       :comments="comments"
       placeholder="맛은 어땠나요? 댓글을 남겨보세요 :)"
+      :current-user-no="meNo"
+      :post-author-no="post?.authorNo"
+      @go-user="goUserPage"
       @add="addComment"
+      @update="updateComment"
+      @delete="deleteComment"
+      @report="reportComment"
     />
 
+    <!-- 포토리뷰 미니 -->
     <PhotoReviewMiniListByBoard
       class="mt24"
       :board-no="
@@ -73,9 +80,8 @@
 import ScrapButton from "@/components/post/ScrapButton.vue";
 import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
-import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
 import PhotoReviewMiniListByBoard from '@/views/review/PhotoReviewMiniListByBoard.vue'
-import { fetchPost, toggleReaction, createComment } from '@/api/post';
+import { fetchPost, toggleReaction } from '@/api/post';
 import http from '@/api/index';
 
 const SCRAP_KEY = "scraps";
@@ -86,7 +92,7 @@ function getScraps() {
 
 export default {
   name: "PostDetail",
-  components: { ScrapButton, ReactionChips, CommentBox, PhotoReviewCard, PhotoReviewMiniListByBoard },
+  components: { ScrapButton, ReactionChips, CommentBox, PhotoReviewMiniListByBoard },
   data() {
     return {
       scrapped: false,
@@ -99,6 +105,7 @@ export default {
         { key: "yummy",   emoji: "🤤", label: "먹고싶어요",   count: 0, me:false },
       ],
       comments: [],
+      meNo: null, // 로그인 사용자 번호를 주입하세요(토큰 파싱/프로필 호출 등).
     };
   },
   computed: {
@@ -137,7 +144,6 @@ export default {
   methods: {
     /** 게시글 + 댓글 + 반응 불러오기 */
     async loadPostFromApi() {
-    
       try {
         const id = Number(this.$route.params.id);
         if (Number.isNaN(id)) return this.$router.replace("/post");
@@ -146,28 +152,19 @@ export default {
         this.post = await fetchPost(id);
 
         if (this.post) {
-        this.post.author =
-        this.post.author ??
-        this.post.memberId ??
-        this.post.member?.memberId ??
-        '익명'
-    }
-
-        // 댓글
-        try {
-          const { data } = await http.get(`/foods/${id}/comments`);
-          this.comments = (data || []).map(c => ({
-            id: c.foodCommentNo ?? c.id,
-            author: c.memberId ?? c.memberNo ?? "익명",
-            date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
-            text: c.content ?? c.fcContent,
-          }));
-        } catch (e) {
-          console.warn("댓글 로드 실패:", e.message);
-          this.comments = [];
+          this.post.author =
+            this.post.author ??
+            this.post.memberId ??
+            this.post.member?.memberId ??
+            '익명';
+          // 상세 페이지에서 작성자 이동을 위해 authorNo 보정
+          this.post.authorNo = this.post.authorNo ?? this.post.memberNo ?? this.post.member?.memberNo ?? null;
         }
 
-        // 반응
+        // 댓글 (조회는 쿼리 API로 가정: GET /foods/{id}/comments)
+        await this.reloadComments(id);
+
+        // 반응 (조회는 쿼리 API로 가정: GET /foods/{id}/reactions)
         try {
           const { data } = await http.get(`/foods/${id}/reactions`);
           if (Array.isArray(data) && data[0]) {
@@ -178,10 +175,13 @@ export default {
               r.likesNo3 ?? r.likes_no_3 ?? 0,
               r.likesNo4 ?? r.likes_no_4 ?? 0,
             ].map(n => Number(n || 0));
-            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i] }));
+            const storedKey = localStorage.getItem('reaction:post:'+id) || ''
+            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i], me: x.key === storedKey }));
           }
         } catch (e) {
           console.warn("반응 로드 실패:", e.message);
+          const storedKey = localStorage.getItem('reaction:post:'+id) || ''
+          if (storedKey) this.reactions = this.reactions.map(x => ({ ...x, me: x.key === storedKey }))
         }
 
       } catch (e) {
@@ -190,21 +190,32 @@ export default {
       }
     },
 
-    /** 댓글 추가 */
+    async reloadComments(boardId) {
+      try {
+        const { data } = await http.get(`/foods/${boardId}/comments`);
+        this.comments = (data || []).map(c => ({
+          id: c.foodCommentNo ?? c.id,
+          author: c.memberNickname ?? c.memberId ?? c.memberNo ?? "익명",
+          writerId: c.memberNo ?? c.member?.memberNo ?? c.memberId ?? null,
+          date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
+          text: c.content ?? c.fcContent,
+          isAuthor: (c.memberNo ?? c.member?.memberNo) === (this.post?.authorNo ?? -1),
+        }));
+      } catch (e) {
+        console.warn("댓글 로드 실패:", e.message);
+        this.comments = [];
+      }
+    },
+
+    /** 댓글 추가 -> POST /command/foods/{id}/comments */
     async addComment(text) {
       const content = (text || "").trim();
       if (!content) return alert("댓글 내용을 입력해주세요.");
       const id = Number(this.$route.params.id);
 
       try {
-        await createComment(id, content);
-        const { data } = await http.get(`/foods/${id}/comments`);
-        this.comments = (data || []).map(c => ({
-          id: c.foodCommentNo ?? c.id,
-          author: c.memberId ?? c.memberNo ?? "익명",
-          date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
-          text: c.content ?? c.fcContent,
-        }));
+        await http.post(`/command/foods/${id}/comments`, { content });
+        await this.reloadComments(id);
       } catch (e) {
         const code = e?.response?.status;
         if (code === 401 || code === 403) {
@@ -212,6 +223,39 @@ export default {
           this.$router.push({ path: "/login", query: { redirect: this.$route.fullPath } });
         } else {
           alert("댓글 등록에 실패했어요. 네트워크 상태를 확인해주세요.");
+        }
+      }
+    },
+
+    /** 댓글 수정 -> PATCH /command/comments/{commentId} */
+    async updateComment({ id: commentId, text }) {
+      const boardId = Number(this.$route.params.id);
+      try {
+        await http.patch(`/command/comments/${commentId}`, { content: text });
+        await this.reloadComments(boardId);
+      } catch (e) {
+        const code = e?.response?.status;
+        if (code === 401 || code === 403) {
+          alert("본인 댓글만 수정할 수 있어요. 로그인 후 다시 시도해주세요.");
+        } else {
+          alert("댓글 수정에 실패했습니다.");
+        }
+      }
+    },
+
+    /** 댓글 삭제 -> DELETE /command/comments/{commentId} */
+    async deleteComment(commentId) {
+      if (!confirm("댓글을 삭제할까요?")) return;
+      const boardId = Number(this.$route.params.id);
+      try {
+        await http.delete(`/command/comments/${commentId}`);
+        await this.reloadComments(boardId);
+      } catch (e) {
+        const code = e?.response?.status;
+        if (code === 401 || code === 403) {
+          alert("본인 댓글만 삭제할 수 있어요. 로그인 후 다시 시도해주세요.");
+        } else {
+          alert("댓글 삭제에 실패했습니다.");
         }
       }
     },
@@ -250,12 +294,19 @@ export default {
           count: counts[i],
           me: r.key === key,
         }));
+        try { localStorage.setItem('reaction:post:'+id, key) } catch {}
       } catch (e) {
         const msg = e?.response?.data?.message || "반응 반영에 실패했어요. 다시 시도해주세요.";
         alert(msg);
       } finally {
         this.reacting = false;
       }
+    },
+
+    /** 작성자/사용자 페이지 이동 (필요 시 구현) */
+    goUserPage(memberNo) {
+      if (!memberNo) return;
+      // 예: this.$router.push(`/profile/${memberNo}`);
     },
   },
 };
@@ -277,4 +328,3 @@ export default {
 .mt24 { margin-top: 24px; }
 .empty { text-align: center; padding: 48px 0; color: #7a6f63; }
 </style>
-

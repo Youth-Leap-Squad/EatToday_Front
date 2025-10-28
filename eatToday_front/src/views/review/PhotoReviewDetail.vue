@@ -1,6 +1,6 @@
 <!-- src/views/review/PhotoReviewDetail.vue -->
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   fetchReviewDetail,
@@ -20,7 +20,6 @@ const input = ref('')
 const editingId = ref(null)
 const editText = ref('')
 
-/** ✅ 로그인 체크 */
 function requireLogin() {
   const token =
     localStorage.getItem('accessToken') ||
@@ -34,14 +33,12 @@ function requireLogin() {
   return true
 }
 
-/** ✅ 시간 표시 */
 function timeAgo(isoOrTs) {
   const ts = typeof isoOrTs === 'number' ? isoOrTs : Date.parse(isoOrTs)
   const h = Math.max(1, Math.floor((Date.now() - ts) / 3600000))
   return `${h}시간 전`
 }
 
-/** ✅ 데이터 로드 */
 async function load() {
   try {
     const r = await fetchReviewDetail(reviewNo)
@@ -58,14 +55,239 @@ async function load() {
   }
 }
 
+/* ---------------- 이미지 URL 해석기 ---------------- */
+// 백엔드 오리진(필요 시 .env에 VITE_API_ORIGIN=http://localhost:7777 설정)
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8080'
+const FRONT_ORIGIN = window.location.origin
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|bmp|webp|svg|heic|heif|avif)$/i
+const RAW_URL_KEYS = [
+  'prFileUrl',
+  'prFilePath',
+  'prFileFullPath',
+  'prFileOriginName',
+  'prFileOriginalName',
+  'prFileStoredName',
+  'prStoredFileName',
+  'prOriginFileName',
+  'prFileServerName',
+  'fileUrl',
+  'fileUrlPath',
+  'filePath',
+  'file_full_path',
+  'fileFullPath',
+  'urlOrPath',
+  'url',
+  'path',
+  'pr_file_url',
+  'pr_file_path',
+  'file_path',
+  'originName',
+  'originalName',
+  'originFileName',
+  'storedName',
+  'saveName',
+  'saveFileName',
+  'savedFileName',
+  'savePath',
+  'directory',
+  'location'
+]
+const FILE_COLLECTION_KEYS = [
+  'files',
+  'file',
+  'fileList',
+  'reviewFiles',
+  'reviewFile',
+  'reviewFileList',
+  'photoReviewFiles',
+  'photoReviewFile',
+  'photoReviewFileList',
+  'photoReviewFileDtoList',
+  'photoReviewFileDtos',
+  'photoReviewFileResponses',
+  'photoReviewFileResponseList',
+  'photoFiles',
+  'photoFile',
+  'photoFileList',
+  'fileResponses',
+  'fileResponseList',
+  'attachments',
+  'attachmentList',
+  'images',
+  'imageList',
+  'imageUrls',
+  'imagePaths',
+  'thumbnails',
+  'thumbnailList'
+]
+
+function resolveImg(rawUrl) {
+  const url = String(rawUrl || '').replace(/\\/g, '/').trim()
+  if (!url) return ''
+  if (url.startsWith('data:')) return url
+  if (/^https?:\/\//i.test(url)) return url
+
+  // Windows 절대경로 C:/... → 경로 부분만 사용
+  if (/^[a-zA-Z]:\//.test(url)) {
+    return resolveImg(url.slice(2))
+  }
+
+  const lower = url.toLowerCase()
+
+  // 로컬 파일 시스템 절대경로(C:/.../photo_review/...) → API_ORIGIN + /photo_review/...
+  const photoMarker = '/photo_review/'
+  const photoIdx = lower.lastIndexOf(photoMarker)
+  if (photoIdx !== -1) {
+    return API_ORIGIN + url.slice(photoIdx)
+  }
+  const photoIdx2 = lower.lastIndexOf('photo_review/')
+  if (photoIdx2 !== -1) {
+    return API_ORIGIN + '/' + url.slice(photoIdx2)
+  }
+  const photoIdx3 = lower.lastIndexOf('photoreview/')
+  if (photoIdx3 !== -1) {
+    return API_ORIGIN + '/' + url.slice(photoIdx3)
+  }
+
+  // 프론트 public에 있는 상대경로: /images/... 혹은 images/...
+  const imgMarker = '/images/'
+  const imgIdx = lower.lastIndexOf(imgMarker)
+  if (imgIdx !== -1) {
+    return FRONT_ORIGIN + url.slice(imgIdx)
+  }
+  const imgIdx2 = lower.lastIndexOf('images/')
+  if (imgIdx2 !== -1) {
+    return FRONT_ORIGIN + '/' + url.slice(imgIdx2)
+  }
+
+  // 그 외 상대경로는 API_ORIGIN 기준으로 처리
+  const normalized = url.startsWith('/') ? url : '/' + url
+  return API_ORIGIN + normalized
+}
+
+// 파일 DTO가 어떤 키를 쓰든 안전하게 URL 뽑기
+function pickRawFilePath(file) {
+  if (!file) return ''
+  if (typeof file === 'string') return file
+
+  for (const key of RAW_URL_KEYS) {
+    const val = file[key]
+    if (typeof val === 'string' && val.trim()) return val
+  }
+
+  const entries = Object.entries(file).filter(
+    ([, val]) => typeof val === 'string' && val.trim()
+  )
+
+  // 1) 값 자체가 경로/파일명 포함 문자열
+  const withExt = entries
+    .map(([k, v]) => [k, v.trim()])
+    .filter(([, v]) => IMAGE_EXT_RE.test(v))
+
+  const withSlash = withExt.find(([, v]) => v.includes('/') || v.includes('\\'))
+  if (withSlash) return withSlash[1]
+
+  // 2) 경로와 파일명이 분리돼 있다면 조합
+  if (withExt.length) {
+    const filename = withExt[0][1].replace(/^\.?[/\\]+/, '')
+    const pathCandidate = entries
+      .map(([, v]) => v)
+      .find(v => /photo[\W_]?review/i.test(v) || /upload/i.test(v) || v.endsWith('/') || v.includes('\\'))
+
+    if (pathCandidate) {
+      const cleanedPath = pathCandidate.replace(/\\/g, '/').replace(/\/+$/, '')
+      return `${cleanedPath}/${filename}`
+    }
+    return filename
+  }
+
+  return ''
+}
+
+function fileUrl(f) {
+  return resolveImg(pickRawFilePath(f))
+}
+function fileKey(f) {
+  return f?.prFileNo ?? f?.fileNo ?? f?.id ?? `${fileUrl(f)}`
+}
+
+function extractFiles(record) {
+  if (!record || typeof record !== 'object') return []
+
+  const results = []
+  const queue = []
+  const seen = new WeakSet()
+
+  for (const key of FILE_COLLECTION_KEYS) {
+    const value = record[key]
+    if (value) queue.push(value)
+  }
+  while (queue.length) {
+    const current = queue.shift()
+    if (!current) continue
+
+    if (typeof current === 'string') {
+      if (current.trim()) results.push(current)
+      continue
+    }
+
+    if (Array.isArray(current)) {
+      queue.push(...current)
+      continue
+    }
+
+    if (typeof current === 'object') {
+      if (seen.has(current)) continue
+      seen.add(current)
+
+      const hasFileLikeKey = RAW_URL_KEYS.some(
+        key => typeof current[key] === 'string' && current[key].trim()
+      )
+      if (hasFileLikeKey) {
+        results.push(current)
+      }
+
+      for (const key of FILE_COLLECTION_KEYS) {
+        const nested = current[key]
+        if (nested) queue.push(nested)
+      }
+    }
+  }
+
+  return results
+}
+
+const galleryFiles = computed(() => {
+  if (!review.value) return []
+  const direct = [
+    review.value.thumbnailUrl,
+    review.value.thumbnailPath,
+    review.value.imageUrl,
+    review.value.imgUrl,
+    review.value.imagePath,
+    review.value.imgPath,
+    review.value.photoUrl,
+    review.value.mainImage,
+    review.value.mainImageUrl,
+    review.value.coverUrl,
+    review.value.thumbnail,
+    review.value.thumbnailImage,
+    review.value.fileUrl,
+    review.value.filePath,
+    review.value.file_path,
+    review.value.previewUrl,
+    review.value.firstImage
+  ].filter(v => typeof v === 'string' && v.trim())
+  return [...direct, ...extractFiles(review.value)]
+})
+/* --------------------------------------------------- */
+
 onMounted(load)
 
-/** ✅ 댓글 등록 */
 async function submitComment() {
   if (!requireLogin()) return
   const text = input.value?.trim()
   if (!text) return alert('댓글을 입력해 주세요.')
-
   try {
     await addComment(reviewNo, { memberNo: 1, content: text })
     comments.value = await listComments(reviewNo)
@@ -76,39 +298,26 @@ async function submitComment() {
   }
 }
 
-/** ✅ 댓글 수정 시작 */
 function startEdit(c) {
   const id = Number(c.prcNo ?? c.commentNo ?? c.id)
-  if (!Number.isFinite(id)) {
-    alert('댓글 ID가 유효하지 않습니다.')
-    return
-  }
+  if (!Number.isFinite(id)) { alert('댓글 ID가 유효하지 않습니다.'); return }
   editingId.value = id
   editText.value = c.prcDetail ?? c.content ?? ''
 }
 
-/** ✅ 수정 취소 */
 function cancelEdit() {
   editingId.value = null
   editText.value = ''
 }
 
-/** ✅ 댓글 저장 */
 async function saveEdit() {
   if (!requireLogin()) return
   const id = Number(editingId.value)
-  if (!Number.isFinite(id)) {
-    alert('댓글 ID가 유효하지 않습니다.')
-    return
-  }
-  const text = editText.value?.trim()
-  if (!text) {
-    cancelEdit()
-    return
-  }
-
+  if (!Number.isFinite(id)) { alert('댓글 ID가 유효하지 않습니다.'); return }
+  const text = (editText.value ?? '').trim()
+  if (!text) { cancelEdit(); return }
   try {
-    await updateComment(id, { memberNo: 1, content: text })
+    await updateComment(id, { memberNo: 1, prcDetail: text, reviewNo })
     comments.value = await listComments(reviewNo)
     cancelEdit()
   } catch (e) {
@@ -117,15 +326,10 @@ async function saveEdit() {
   }
 }
 
-/** ✅ 댓글 삭제 */
 async function removeComment(c) {
   if (!requireLogin()) return
   const id = Number(c.prcNo ?? c.commentNo ?? c.id)
-  if (!Number.isFinite(id)) {
-    alert('댓글 ID가 유효하지 않습니다.')
-    return
-  }
-
+  if (!Number.isFinite(id)) { alert('댓글 ID가 유효하지 않습니다.'); return }
   try {
     await deleteComment(id, 1)
     comments.value = await listComments(reviewNo)
@@ -138,7 +342,6 @@ async function removeComment(c) {
 
 <template>
   <section v-if="review" class="page">
-    <!-- 상단 -->
     <header class="top">
       <button class="back" @click="router.back()">←</button>
       <div class="titlebox">
@@ -155,19 +358,18 @@ async function removeComment(c) {
 
     <!-- 이미지 -->
     <div class="photo-box">
-      <template v-if="review.files && review.files.length">
+      <template v-if="galleryFiles.length">
         <img
-          v-for="f in review.files"
-          :key="f.fileNo || f.id"
-          :src="f.urlOrPath || f.url || f.fileUrl || f.file_path || f.path"
+          v-for="f in galleryFiles"
+          :key="fileKey(f)"
+          :src="fileUrl(f)"
           class="photo"
-          alt=""
+          :alt="review.reviewTitle || review.title || '리뷰 이미지'"
         />
       </template>
       <div v-else class="photo placeholder">이미지 없음</div>
     </div>
 
-    <!-- 본문 -->
     <article class="content">
       <p style="white-space: pre-wrap">{{ review.reviewContent || review.content }}</p>
     </article>
@@ -192,12 +394,10 @@ async function removeComment(c) {
           <div class="right">
             <div class="who">{{ c.memberEmail || c.authorName || '익명' }}</div>
 
-            <!-- 수정 중이 아닐 때 -->
             <div v-if="editingId !== (c.prcNo ?? c.commentNo ?? c.id)" class="bubble">
               {{ c.prcDetail ?? c.content }}
             </div>
 
-            <!-- 수정 중일 때 -->
             <div v-else class="edit-row">
               <input v-model="editText" />
               <div class="edit-actions">

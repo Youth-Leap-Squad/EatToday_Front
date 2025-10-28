@@ -14,6 +14,184 @@ const error = ref('')
 const count = 6
 const loungePath = '/rounge'
 
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8080'
+const FRONT_ORIGIN = window.location.origin
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|bmp|webp|svg|heic|heif|avif)$/i
+const RAW_URL_KEYS = [
+  'thumbnailUrl',
+  'thumbnailPath',
+  'prFileUrl',
+  'prFilePath',
+  'prFileFullPath',
+  'prFileOriginName',
+  'prFileOriginalName',
+  'prFileStoredName',
+  'prStoredFileName',
+  'prOriginFileName',
+  'prFileServerName',
+  'fileUrl',
+  'fileUrlPath',
+  'filePath',
+  'file_full_path',
+  'fileFullPath',
+  'urlOrPath',
+  'url',
+  'path',
+  'pr_file_url',
+  'pr_file_path',
+  'file_path',
+  'originName',
+  'originalName',
+  'originFileName',
+  'storedName',
+  'saveName',
+  'saveFileName',
+  'savedFileName',
+  'savePath',
+  'directory',
+  'location'
+]
+const FILE_COLLECTION_KEYS = [
+  'files',
+  'file',
+  'fileList',
+  'reviewFiles',
+  'reviewFile',
+  'reviewFileList',
+  'photoReviewFiles',
+  'photoReviewFile',
+  'photoReviewFileList',
+  'photoReviewFileDtoList',
+  'photoReviewFileDtos',
+  'photoReviewFileResponses',
+  'photoReviewFileResponseList',
+  'photoFiles',
+  'photoFile',
+  'photoFileList',
+  'fileResponses',
+  'fileResponseList',
+  'attachments',
+  'attachmentList',
+  'images',
+  'imageList',
+  'imageUrls',
+  'imagePaths',
+  'thumbnails',
+  'thumbnailList'
+]
+
+function resolveImg(rawUrl) {
+  const url = String(rawUrl || '').replace(/\\/g, '/').trim()
+  if (!url) return ''
+  if (url.startsWith('data:')) return url
+  if (/^https?:\/\//i.test(url)) return url
+
+  if (/^[a-zA-Z]:\//.test(url)) {
+    return resolveImg(url.slice(2))
+  }
+
+  const lower = url.toLowerCase()
+
+  const photoMarker = '/photo_review/'
+  const photoIdx = lower.lastIndexOf(photoMarker)
+  if (photoIdx !== -1) return API_ORIGIN + url.slice(photoIdx)
+  const photoIdx2 = lower.lastIndexOf('photo_review/')
+  if (photoIdx2 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx2)
+  const photoIdx3 = lower.lastIndexOf('photoreview/')
+  if (photoIdx3 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx3)
+
+  const imgMarker = '/images/'
+  const imgIdx = lower.lastIndexOf(imgMarker)
+  if (imgIdx !== -1) return FRONT_ORIGIN + url.slice(imgIdx)
+  const imgIdx2 = lower.lastIndexOf('images/')
+  if (imgIdx2 !== -1) return FRONT_ORIGIN + '/' + url.slice(imgIdx2)
+
+  const normalized = url.startsWith('/') ? url : '/' + url
+  return API_ORIGIN + normalized
+}
+
+function pickRawFilePath(file) {
+  if (!file) return ''
+  if (typeof file === 'string') return file
+
+  for (const key of RAW_URL_KEYS) {
+    const val = file[key]
+    if (typeof val === 'string' && val.trim()) return val
+  }
+
+  const entries = Object.entries(file).filter(
+    ([, val]) => typeof val === 'string' && val.trim()
+  )
+
+  const withExt = entries
+    .map(([k, v]) => [k, v.trim()])
+    .filter(([, v]) => IMAGE_EXT_RE.test(v))
+
+  const withSlash = withExt.find(([, v]) => v.includes('/') || v.includes('\\'))
+  if (withSlash) return withSlash[1]
+
+  if (withExt.length) {
+    const filename = withExt[0][1].replace(/^\.?[/\\]+/, '')
+    const pathCandidate = entries
+      .map(([, v]) => v)
+      .find(v => /photo[\W_]?review/i.test(v) || /upload/i.test(v) || v.endsWith('/') || v.includes('\\'))
+    if (pathCandidate) {
+      const cleanedPath = pathCandidate.replace(/\\/g, '/').replace(/\/+$/, '')
+      return `${cleanedPath}/${filename}`
+    }
+    return filename
+  }
+
+  return ''
+}
+
+function extractFiles (record) {
+  if (!record || typeof record !== 'object') return []
+
+  const results = []
+  const queue = []
+  const seen = new WeakSet()
+
+  for (const key of FILE_COLLECTION_KEYS) {
+    const value = record[key]
+    if (value) queue.push(value)
+  }
+
+  while (queue.length) {
+    const current = queue.shift()
+    if (!current) continue
+
+    if (typeof current === 'string') {
+      if (current.trim()) results.push(current)
+      continue
+    }
+
+    if (Array.isArray(current)) {
+      queue.push(...current)
+      continue
+    }
+
+    if (typeof current === 'object') {
+      if (seen.has(current)) continue
+      seen.add(current)
+
+      const hasFileLikeKey = RAW_URL_KEYS.some(
+        key => typeof current[key] === 'string' && current[key].trim()
+      )
+      if (hasFileLikeKey) {
+        results.push(current)
+      }
+
+      for (const key of FILE_COLLECTION_KEYS) {
+        const nested = current[key]
+        if (nested) queue.push(nested)
+      }
+    }
+  }
+
+  return results
+}
+
 /** 로그인 체크 (로컬스토리지 여러 키 지원) */
 function isLoggedIn () {
   const t =
@@ -31,17 +209,38 @@ function requireLogin () {
   return true
 }
 
-function normalize(list = []) {
-  return list.map(r => {
-    const id = Number(r?.reviewNo)
-    const title = r?.reviewTitle ?? r?.title ?? '제목 없음'
-    const f0 = r?.files?.[0] ?? {}
-    const imgUrl =
-      r?.thumbnailUrl ??
-      r?.imgUrl ??
-      f0?.urlOrPath ?? f0?.url ?? f0?.fileUrl ?? f0?.file_path ?? f0?.filePath ?? null
-    return { id: Number.isFinite(id) ? id : null, title, imgUrl }
-  }).filter(it => it.id !== null)
+function normalize (list = []) {
+  return list
+    .map(r => {
+      const id = Number(r?.reviewNo)
+      const title = r?.reviewTitle ?? r?.title ?? '제목 없음'
+      const [f0] = extractFiles(r)
+      const directCandidates = [
+        r?.thumbnailUrl,
+        r?.thumbnailPath,
+        r?.imageUrl,
+        r?.imgUrl,
+        r?.imagePath,
+        r?.imgPath,
+        r?.photoUrl,
+        r?.mainImage,
+        r?.mainImageUrl,
+        r?.coverUrl,
+        r?.thumbnail,
+        r?.thumbnailImage,
+        r?.fileUrl,
+        r?.filePath,
+        r?.file_path,
+        r?.previewUrl,
+        r?.firstImage
+      ]
+      const directUrl = directCandidates
+        .map(resolveImg)
+        .find(v => typeof v === 'string' && v.length > 0)
+      const imgUrl = directUrl || resolveImg(pickRawFilePath(f0))
+      return { id: Number.isFinite(id) ? id : null, title, imgUrl }
+    })
+    .filter(it => it.id !== null)
 }
 
 async function load () {

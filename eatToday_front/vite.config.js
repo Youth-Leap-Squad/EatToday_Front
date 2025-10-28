@@ -20,7 +20,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      // (필요시) 포토리뷰도 8080으로
       '/photoReview': {
         target: 'http://localhost:8080',
         changeOrigin: true,

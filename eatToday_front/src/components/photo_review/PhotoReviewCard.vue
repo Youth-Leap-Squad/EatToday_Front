@@ -40,7 +40,11 @@ const linkTo = computed(() => {
 
 // ★ 리뷰 상세 이동 경로: /reviews/:id
 const reviewTo = computed(() => {
-  return props.reviewId != null ? `/reviews/${props.reviewId}` : null
+  if (props.reviewId == null) return null
+  return {
+    path: `/reviews/${props.reviewId}`,
+    state: { imgUrl: props.photoSrc || '' }
+  }
 })
 
 function onToggleLike() {

@@ -107,15 +107,8 @@ async function submit(){
   fileList.value.forEach(f => fd.append('files', f))
 
   try {
-    const { data } = await commandApi.post('/command/photo-reviews', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    const detail =
-      data && typeof data === 'object'
-        ? { ...payload, ...data }
-        : typeof data === 'number'
-          ? { ...payload, reviewNo: data }
-          : payload
+    const { data } = await commandApi.post('/command/photo-reviews', fd)
+    const detail = buildCreatedDetail(data, payload)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('photo-review:created', { detail }))
     }
@@ -123,8 +116,26 @@ async function submit(){
     router.push(`/boards/${boardNo}`)
   } catch (e) {
     console.error('등록 실패:', e?.response?.data || e)
-    alert('등록 실패: ' + (e.response?.data?.message || e.message))
+    const serverMessage = e?.response?.data?.message || e?.response?.data?.error || e?.message
+    alert('등록 실패: ' + (typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage)))
   }
+}
+
+function buildCreatedDetail(res, fallback) {
+  const base = { ...fallback }
+  const detail = res && typeof res === 'object'
+    ? { ...res }
+    : typeof res === 'number'
+      ? { reviewNo: res }
+      : {}
+  if (!Number.isFinite(Number(detail.reviewNo)) && Number.isFinite(Number(res))) {
+    detail.reviewNo = Number(res)
+  }
+  detail.boardNo = Number(detail.boardNo ?? base.boardNo)
+  detail.reviewTitle = detail.reviewTitle ?? detail.title ?? base.reviewTitle
+  detail.reviewContent = detail.reviewContent ?? detail.content ?? base.reviewContent
+  detail.memberNo = Number(detail.memberNo ?? base.memberNo ?? getMemberNo())
+  return { ...base, ...detail }
 }
 </script>
 

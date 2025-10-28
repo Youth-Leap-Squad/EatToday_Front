@@ -397,6 +397,57 @@ function normalize (list = []) {
         console.warn('[PhotoReviewMiniList] 이미지 경로 없음:', r)
       }
 
+      const rawNames = [
+        r?.member_id,
+        r?.memberId,
+        r?.member_nickname,
+        r?.memberNickname,
+        r?.member_name,
+        r?.memberName,
+        r?.nickname,
+        r?.nickName,
+        r?.userNickname,
+        r?.userName,
+        r?.name,
+        r?.authorName,
+        r?.author_name,
+        r?.writerName,
+        r?.writer_name,
+        r?.reviewWriter,
+        r?.review_writer,
+        r?.reviewWriterName,
+        r?.review_writer_name,
+        r?.memberEmail,
+        r?.member_email,
+        r?.email,
+        r?.member?.member_id,
+        r?.member?.memberId,
+        r?.member?.member_nickname,
+        r?.member?.memberNickname,
+        r?.member?.member_name,
+        r?.member?.memberName,
+        r?.member?.nickname,
+        r?.member?.name,
+        r?.author?.name,
+        r?.author?.nickname,
+        r?.writer?.name,
+        r?.writer?.nickname
+      ]
+      const nameCandidates = rawNames
+        .map(v => (typeof v === 'string' ? v.trim() : ''))
+        .filter(name => {
+          if (!name) return false
+          const lower = name.toLowerCase()
+          if (lower === 'user' || lower === 'guest' || lower === '익명' || lower === 'anonymous') return false
+          return true
+        })
+
+      const memberNoValue = Number(r?.memberNo ?? r?.member_no)
+      const nickname =
+        nameCandidates[0] ||
+        (Number.isFinite(memberNoValue) ? `회원#${memberNoValue}` : '') ||
+        '작성자'
+
       // ... 반환 객체는 기존과 동일
       return {
         id: Number(
@@ -408,9 +459,9 @@ function normalize (list = []) {
           r?.reviewTitle ?? r?.title ?? r?.subject ??
           (r?.menuName ? `${r.menuName} 리뷰` : '제목 없음'),
         imgUrl,
-        nickname:
-          r?.memberName ?? r?.member?.memberName ?? r?.writerName ?? r?.writer?.name ??
-          r?.authorName ?? r?.author?.name ?? r?.nickname ?? r?.memberId ?? 'user',
+        nickname,
+        memberId: nameCandidates[0] || (Number.isFinite(memberNoValue) ? `회원#${memberNoValue}` : null),
+        memberNo: Number.isFinite(memberNoValue) ? memberNoValue : null,
         likes: Number(
           r?.likeCount ?? r?.reviewLike ?? r?.likes ?? r?.reviewLikeCount ??
           r?.heartCount ?? r?.goodCount ?? r?.favoriteCount ?? r?.like_cnt ?? 0
@@ -477,7 +528,12 @@ function goCreate () {
 function goDetail (id) {
   if (!requireLogin()) return
   const n = Number(id)
-  if (Number.isFinite(n)) router.push(`/reviews/${n}`)
+  if (Number.isFinite(n)) {
+    router.push({
+      path: `/reviews/${n}`,
+      state: { imgUrl: items.value.find(it => it.id === n)?.imgUrl || '' }
+    })
+  }
 }
 function goLounge () {
   router.push(loungePath)

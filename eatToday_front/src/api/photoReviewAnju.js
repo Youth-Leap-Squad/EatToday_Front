@@ -45,30 +45,92 @@ function logErr(prefix, err) {
  * 유틸: 이미지 경로 정규화 (프론트/백 모두 커버)
  * ------------------------------------------------------ */
 const FRONT_ORIGIN = window.location.origin;
+const IMAGE_EXT_RE_RESOLVE = /\.(png|jpe?g|gif|bmp|webp|svg|heic|heif|avif)$/i;
+
 export function resolveImg(rawUrl) {
-  const url = String(rawUrl || '').replace(/\\/g, '/').trim();
+  // null, undefined, 빈 문자열 처리
+  if (!rawUrl) return '';
+  
+  // 문자열로 변환하고 백슬래시를 슬래시로 통일, 공백 제거
+  let url = String(rawUrl).replace(/\\/g, '/').trim();
   if (!url) return '';
-  if (url.startsWith('data:') || /^https?:\/\//i.test(url)) return url;
+  
+  // 1. 이미 완전한 URL인 경우 (http://, https://, data:)
+  if (url.startsWith('data:') || /^https?:\/\//i.test(url)) {
+    return url;
+  }
+  
+  // 2. Windows 절대 경로 처리 (C:/, D:/ 등)
+  if (/^[a-zA-Z]:\//.test(url)) {
+    url = url.slice(2); // C:/path -> /path
+  }
+  
+  // 3. 더블 슬래시 정리 (//path -> /path)
+  url = url.replace(/\/+/g, '/');
+  
+  // 4. URL 디코딩 (인코딩된 한글 등 처리)
+  try {
+    // 이미 디코딩된 문자열인지 확인
+    if (url !== decodeURIComponent(url)) {
+      url = decodeURIComponent(url);
+    }
+  } catch (e) {
+    // 디코딩 실패 시 원본 사용
+  }
 
   const lower = url.toLowerCase();
 
-  // 백엔드 정적 매핑: /photo_review/**
-  if (lower.includes('/photo_review/')) {
-    return `${API_ORIGIN}${url.slice(lower.lastIndexOf('/photo_review/'))}`;
+  // 5. photo_review 경로 처리
+  if (lower.includes('/photo_review/') || lower.includes('photo_review/')) {
+    const startIndex = lower.lastIndexOf('photo_review/');
+    const relativePath = url.slice(startIndex);
+    return `${API_ORIGIN}/${relativePath}`;
   }
-  if (lower.includes('photoreview/')) {
-    return `${API_ORIGIN}${url.slice(lower.lastIndexOf('photoreview/'))}`;
+  
+  // 6. photoreview (띄어쓰기 없음) 경로 처리
+  if (lower.includes('/photoreview/') || lower.includes('photoreview/')) {
+    const startIndex = lower.lastIndexOf('photoreview/');
+    const relativePath = url.slice(startIndex);
+    return `${API_ORIGIN}/${relativePath}`;
+  }
+  
+  // 7. uploads 경로 처리
+  if (lower.includes('/uploads/') || lower.includes('uploads/')) {
+    const startIndex = lower.lastIndexOf('uploads/');
+    const relativePath = url.slice(startIndex);
+    return `${API_ORIGIN}/${relativePath}`;
   }
 
-  // 프론트 public 정적: /images/** 또는 images/**
+  // 8. images 경로 처리 (프론트엔드 정적 리소스)
   if (lower.includes('/images/')) {
     return `${FRONT_ORIGIN}${url.slice(lower.lastIndexOf('/images/'))}`;
   }
   if (lower.includes('images/')) {
     return `${FRONT_ORIGIN}/${url.slice(lower.lastIndexOf('images/'))}`;
   }
+  
+  // 9. static 또는 public 경로 처리
+  if (lower.includes('/static/') || lower.includes('static/')) {
+    const startIndex = lower.lastIndexOf('static/');
+    const relativePath = url.slice(startIndex);
+    return `${FRONT_ORIGIN}/${relativePath}`;
+  }
+  
+  if (lower.includes('/public/') || lower.includes('public/')) {
+    const startIndex = lower.lastIndexOf('public/');
+    const relativePath = url.slice(startIndex);
+    return `${FRONT_ORIGIN}/${relativePath}`;
+  }
+  
+  // 10. 이미지 확장자가 있는지 확인
+  const hasImageExt = IMAGE_EXT_RE_RESOLVE.test(url);
+  
+  // 11. 상대 경로 처리 (API 서버 기준)
+  if (hasImageExt || url.startsWith('/')) {
+    return `${API_ORIGIN}/${url.replace(/^\/+/, '')}`;
+  }
 
-  // 기타는 API_ORIGIN 기준
+  // 12. 기타는 API_ORIGIN 기준
   return `${API_ORIGIN}/${url.replace(/^\/+/, '')}`;
 }
 
@@ -263,19 +325,33 @@ export async function deleteComment(commentId, memberNo) {
 /* --------------------------------------------------------
  * 8) 좋아요 상태 조회(내 상태)
  *  기대 엔드포인트: GET /query/photo-reviews/{id}/likes/me
- *  return: { liked: boolean, likeCount?: number }
+ *  return: { liked: boolean, likeCount?: number } 또는 기본값 (404/401 시)
  * ------------------------------------------------------ */
 export async function fetchReviewLikeStatus(reviewNo) {
   const n = Number(reviewNo);
-  if (!Number.isFinite(n)) throw new Error('reviewNo가 유효합니다.');
+  if (!Number.isFinite(n)) throw new Error('reviewNo가 유효하지 않습니다.');
+  
   try {
     const { data } = await queryApi.get(`/query/photo-reviews/${n}/likes/me`);
     return data;
   } catch (err) {
-    // 404 등 미구현이면 null 반환
-    if (err?.response?.status === 404) return null;
+    const status = err?.response?.status;
+    
+    // 404: API 미구현 또는 데이터 없음
+    if (status === 404) {
+      console.warn(`좋아요 상태 API 404 (reviewNo: ${n}) - 기본값 반환`);
+      return { liked: false, isLiked: false, likeCount: 0 };
+    }
+    
+    // 401: 비로그인 상태
+    if (status === 401) {
+      console.warn(`좋아요 상태 조회 - 로그인 필요 (reviewNo: ${n})`);
+      return { liked: false, isLiked: false, likeCount: 0 };
+    }
+    
+    // 그 외 에러는 경고만 하고 기본값 반환
     logErr('fetchReviewLikeStatus', err);
-    return null;
+    return { liked: false, isLiked: false, likeCount: 0 };
   }
 }
 

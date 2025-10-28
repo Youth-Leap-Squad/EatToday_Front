@@ -75,7 +75,6 @@
 
         <!-- 댓글 작성 폼 -->
         <div class="comment-form">
-          <div class="me">🙂 {{ currentUserDisplay }}</div>
           <input
             class="comment-input"
             v-model="commentInput"
@@ -138,7 +137,8 @@ import {
   updateComment,
   deleteComment,
   fetchReviewLikeStatus,
-  toggleReviewLike
+  toggleReviewLike,
+  fetchMemberProfile
 } from '@/api/photoReviewAnju'
 import { getMyInfo, getProfileImageUrl } from '@/api/member'
 
@@ -208,40 +208,22 @@ const authorName = computed(() => {
     reviewData: r,
     member_id: r?.member_id,
     memberId: r?.memberId,
-    memberNickname: r?.memberNickname,
     memberName: r?.memberName
   })
   
-  // 1순위: 로드된 프로필 정보
-  if (authorProfile.value) {
-    const name = authorProfile.value.memberNickname || 
-                 authorProfile.value.member_nickname ||
-                 authorProfile.value.memberName || 
-                 authorProfile.value.member_name ||
-                 authorProfile.value.nickname || 
-                 authorProfile.value.name
-    
-    if (name) {
-      console.log('✅ 프로필에서 이름 찾음:', name)
-      return name
-    }
-  }
-  
-  // 2순위: 리뷰 데이터에서 직접
+  // 2순위: 리뷰 데이터에서 직접 (member_id 최우선)
   if (!r) return '익명'
   
-  // ✅ member_id 우선 체크 (스네이크 케이스)
+  // ✅ member_id를 닉네임으로 최우선 사용
   const directName = 
-    r.member_id ||           // ✅ 추가: 스네이크 케이스
+    r.member_id ||           // ✅ 최우선: member_id를 닉네임으로 사용
     r.memberId ||            // 카멜 케이스
-    r.member_nickname ||     // ✅ 추가: 스네이크 케이스
-    r.memberNickname ||      // 카멜 케이스
-    r.member_name ||         // ✅ 추가: 스네이크 케이스
+    r.member_name ||         // member_name
     r.memberName ||          // 카멜 케이스
     r.authorName || 
-    r.author_name ||         // ✅ 추가: 스네이크 케이스
+    r.author_name ||
     r.writerName ||
-    r.writer_name ||         // ✅ 추가: 스네이크 케이스
+    r.writer_name ||
     r.nickname || 
     r.name
   
@@ -252,11 +234,11 @@ const authorName = computed(() => {
   
   // 3순위: 중첩 객체
   const nestedName = 
-    r.member?.member_id ||        // ✅ 추가: 스네이크 케이스
+    r.member?.member_id ||        // ✅ 최우선
     r.member?.memberId ||
-    r.member?.member_nickname ||  // ✅ 추가: 스네이크 케이스
+    r.member?.member_nickname ||
     r.member?.memberNickname || 
-    r.member?.member_name ||      // ✅ 추가: 스네이크 케이스
+    r.member?.member_name ||
     r.member?.memberName || 
     r.author?.name || 
     r.writer?.name
@@ -264,6 +246,24 @@ const authorName = computed(() => {
   if (nestedName) {
     console.log('✅ 중첩 객체에서 이름 찾음:', nestedName)
     return nestedName
+  }
+  
+  // 1순위 (마지막으로 이동): 로드된 프로필 정보
+  // 프로필 정보는 있을 경우에만 사용 (백업용)
+  if (authorProfile.value) {
+    const name = authorProfile.value.memberId ||
+                 authorProfile.value.member_id ||
+                 authorProfile.value.memberNickname || 
+                 authorProfile.value.member_nickname ||
+                 authorProfile.value.memberName || 
+                 authorProfile.value.member_name ||
+                 authorProfile.value.nickname || 
+                 authorProfile.value.name
+    
+    if (name) {
+      console.log('✅ 프로필에서 이름 찾음:', name)
+      return name
+    }
   }
   
   // 4순위: memberNo만 있는 경우
@@ -277,28 +277,42 @@ const authorName = computed(() => {
   return '익명'
 })
 
+function profileImageFromMemberNo(memberNo) {
+  if (!Number.isFinite(memberNo)) return ''
+  const bust = Date.now()
+  const local = getProfileImageUrl(memberNo, bust)
+  if (local) return local
+  return joinOrigin(API_ORIGIN, `/members/profile-image/${memberNo}?bust=${bust}`)
+}
+
 const authorAvatar = computed(() => {
-  // 1순위: 로드된 프로필 이미지 URL
-  if (authorProfile.value?.memberNo) {
-    const memberNo = authorProfile.value.memberNo
-    return getProfileImageUrl(memberNo, Date.now())
+  const profile = authorProfile.value
+  if (profile?.profileImageUrl) {
+    return resolveImg(profile.profileImageUrl) || defaultAvatar
   }
-  
-  // 2순위: 리뷰 데이터에서 memberNo 추출하여 프로필 이미지 생성
+  if (Number.isFinite(profile?.memberNo)) {
+    return profileImageFromMemberNo(profile.memberNo)
+  }
+
   const memberNo = authorMemberNo.value
   if (Number.isFinite(memberNo)) {
-    return getProfileImageUrl(memberNo, Date.now())
+    return profileImageFromMemberNo(memberNo)
   }
-  
-  // 3순위: 리뷰 데이터의 이미지 URL
+
   const r = review.value
   if (!r) return defaultAvatar
-  
+
   const raw =
-    r.authorAvatar ?? r.avatar ?? r.profileImage ?? r.profileUrl ??
-    r.member?.profileImageUrl ?? r.member?.profileImage?.url ??
-    r.author?.avatarUrl ?? r.writer?.avatarUrl ?? ''
-  
+    r.authorAvatar ??
+    r.avatar ??
+    r.profileImage ??
+    r.profileUrl ??
+    r.member?.profileImageUrl ??
+    r.member?.profileImage?.url ??
+    r.author?.avatarUrl ??
+    r.writer?.avatarUrl ??
+    ''
+
   return resolveImg(raw) || defaultAvatar
 })
 
@@ -878,6 +892,21 @@ async function loadAuthorProfile(memberNo) {
         return
       } catch (err) {
         console.warn('⚠️ member_id로 프로필 조회 실패:', err)
+      }
+    }
+    
+    // 방법 3: memberNo 기반 프로필 조회
+    if (Number.isFinite(memberNo)) {
+      try {
+        console.log('🔄 memberNo로 프로필 조회:', memberNo)
+        const profile = await fetchMemberProfile(memberNo)
+        if (profile) {
+          authorProfile.value = profile
+          console.log('✅ memberNo 프로필 로드 완료:', profile)
+          return
+        }
+      } catch (err) {
+        console.warn('⚠️ memberNo로 프로필 조회 실패:', err)
       }
     }
     

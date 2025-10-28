@@ -185,7 +185,7 @@ export default {
         this.roundList = this.nextRound;
         this.nextRound = [];
         this.matchIndex = 0;
-
+        
         // 최종 우승자 결정
         if (this.roundList.length === 1) {
           this.finalWinner = food;
@@ -204,40 +204,27 @@ export default {
           const worldcupNo = 2;                           // 지금은 2주차 고정, 나중에 자동 계산 넣을 수 있음
           const alcoholIdMap = { "소주": 2, "와인": 8 };
           const alcoholId = alcoholIdMap[this.alcohol];
-          const foodId = this.foodIdMap[food.name];
+          const foodId = this.foodIdMap[food.name];     // 일단 DB에 저장x
 
-          // 월드컵 참여 DB 저장 + 포인트 지급  
+
           try {
-            const result = await joinWorldcup(memberNo, worldcupNo, alcoholId, foodId);
-            // alert(result.message);
-            alert(`🎉 월드컵 참여 완료!\n포인트가 지급되었습니다! (+30P)`);
-          } catch (err) {
-            // alert("⚠️ 이미 이번 주에 이 술로 월드컵을 진행했습니다!\n다른 술로는 참여 가능해요 😊");
-            alert("🙂 이미 참여한 적 있습니다.\n(포인트는 1주일 간 한 가지의 술에서만 1회 지급)");
-            // ✅ 추가: 이미 참여한 경우 이벤트 홈으로 리다이렉트
-            this.$router.push("/event");
-            return; // 이후 코드 실행 방지
+            await joinWorldcup(memberNo, worldcupNo, alcoholId, foodId);
+            alert("🎉 참여 완료! 포인트 +30 지급되었습니다!");
+          } catch (e) {
+            console.warn("DB 저장 실패 (일시적 문제일 수 있음) → 그래도 UI 진행");
           }
 
-          // ✅ localStorage에 결과 저장 (백엔드와 별개)
+          // ✅ 결과를 localStorage에 저장 → 주간순위 화면에서 반영됨
           const key = "worldcup_results";
           const stored = JSON.parse(localStorage.getItem(key)) || [];
-
-          // 중복 방지: 같은 주차+술 조합 제거
-          const filtered = stored.filter(
-            (item) => !(item.weekNo === worldcupNo && item.alcohol === this.alcohol)
-          );
-
-          filtered.push({
+          stored.push({
             weekNo: worldcupNo,
             alcohol: this.alcohol,
             winner: food.name,
-            date: new Date().toISOString(),
+            date: new Date().toISOString()
           });
-
-          localStorage.setItem(key, JSON.stringify(filtered));
-          console.log("✅ 우승 결과 localStorage 저장:", filtered);
-
+          localStorage.setItem(key, JSON.stringify(stored));
+          return;
         }
       } else {
         this.matchIndex++;

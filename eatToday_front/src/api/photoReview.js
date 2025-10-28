@@ -28,3 +28,20 @@ export async function fetchPhotoReviewsByAlcoholLike({ alcoholNo, page = 0, size
   const { data } = await api.get('/alcohol/like', { params: { alcoholNo, page, size } })
   return data
 }
+
+export async function fetchMyPhotoReviews({ page = 0, size = 6, token }) {
+  const res = await fetch(`/photoReview/member/me?page=${page}&size=${size}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('내 리뷰 조회 실패');
+  return res.json();
+}
+
+export async function fetchUserPhotoReviews({ memberNo, page = 0, size = 6, token }) {
+  const url = `/photoReview/member?memberNo=${memberNo}&page=${page}&size=${size}`;
+  const res = await fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+  if (!res.ok) throw new Error('특정 사용자 리뷰 조회 실패');
+  return res.json();
+}

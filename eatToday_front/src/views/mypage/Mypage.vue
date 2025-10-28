@@ -1,3 +1,4 @@
+<!-- src/views/mypage/Mypage.vue -->
 <template>
   <div class="mypage">
     <div class="inner">
@@ -11,14 +12,14 @@
               <img class="badge" :src="badgeImg" alt="badge" />
             </h1>
 
-            <!-- ✅ 다른 사람 페이지에서만 노출 -->
+            <!-- 다른 사람 페이지에서만 -->
             <div class="actions" v-if="!isMine">
               <button class="btn solid">팔로우</button>
               <RouterLink to="/dm" class="btn solid">메시지</RouterLink>
               <button class="btn report">신고</button>
             </div>
 
-            <!-- ✅ 내 마이페이지에서만 노출 -->
+            <!-- 내 마이페이지에서만 -->
             <div class="actions" v-else>
               <RouterLink to="/updateprofile" class="btn solid edit">내 정보 수정</RouterLink>
             </div>
@@ -49,11 +50,30 @@
 
       <hr class="line" />
 
-      <!-- 그리드(하단 콘텐츠 그대로 유지) -->
-      <section class="grid">
+      <!-- 리뷰 그리드 -->
+      <section class="grid" v-if="tab==='review'">
         <PhotoReviewCard
-          v-for="(p, i) in shown"
+          v-for="(r, i) in reviewsRows"
+          :key="r.id ?? i"
+          :member-no="r.memberNo"
+          :my-member-no="myMemberNo"
+          :photo-src="r.photo"
+          :avatar-src="r.avatar"
+          :nickname="r.nickname"
+          :content="r.content"
+          :like-count="r.likes"
+          :is-liked="r.isLiked"
+          @toggle-like="onToggleLike(i, $event)"
+        />
+      </section>
+
+      <!-- 게시물 탭(예시) -->
+      <section class="grid" v-else>
+        <PhotoReviewCard
+          v-for="(p, i) in posts"
           :key="i"
+          :member-no="myMemberNo"
+          :my-member-no="myMemberNo"
           :photo-src="p.photoSrc"
           :avatar-src="p.avatarSrc"
           :nickname="nickname"
@@ -63,6 +83,9 @@
           @toggle-like="onToggleLike(i, $event)"
         />
       </section>
+
+      <p v-if="loading" class="center">불러오는 중…</p>
+      <p v-else-if="!loading && tab==='review' && reviewsRows.length===0" class="center">리뷰가 없습니다.</p>
     </div>
 
     <!-- 팔로우/팔로잉 모달 -->
@@ -90,35 +113,37 @@ import silverBadge from '@/assets/images/silver.png'
 import goldBadge from '@/assets/images/gold.png'
 
 import { findMyLevel } from '@/api/member'
+import { fetchMyPhotoReviews, fetchUserPhotoReviews } from '@/api/photoReview'
 
 const route = useRoute()
 
-/* ---------------- JWT 파싱/내 memberNo ---------------- */
+/* -------- JWT 파싱 / 내 memberNo -------- */
 const token = computed(() => localStorage.getItem('token') || '')
-
 function parseJwt(t) {
   try {
     const part = t.split('.')[1]
     if (!part) return null
     const padded = part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (part.length % 4 || 4)) % 4)
-    return JSON.parse(decodeURIComponent(atob(padded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')))
-  } catch {
-    return null
-  }
+    return JSON.parse(
+      decodeURIComponent(
+        atob(padded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+      )
+    )
+  } catch { return null }
 }
 const myMemberNo = computed(() => {
   const p = parseJwt(token.value)
   return p?.memberNo ?? null
 })
 
-/* ---------------- 타겟 멤버(내/다른사람) ---------------- */
+/* -------- 타겟 멤버(내/다른사람) -------- */
 const targetMemberNo = computed(() => {
   const p = Number(route.params.memberNo)
   return Number.isFinite(p) && p > 0 ? p : myMemberNo.value
 })
 const isMine = computed(() => targetMemberNo.value === myMemberNo.value)
 
-/* ---------------- 프로필 표시 데이터 ---------------- */
+/* -------- 프로필 표시 데이터 -------- */
 const nickname = ref('')
 const levelLabel = ref('')
 const badgeImg = ref(goldBadge)
@@ -138,32 +163,79 @@ async function loadProfile() {
   badgeImg.value = pickBadge(levelLabel.value)
 }
 
-/* ---------------- 하단 콘텐츠(원래 그대로 유지) ---------------- */
-const follower = 0
-const following = 0
-const reviews = 0
+/* -------- 리뷰 리스트 로딩 -------- */
+const loading = ref(false)
+const reviews = ref(0)              // 상단 카운트
+const reviewsRows = ref([])         // 카드 데이터
 
+// ✅ 사진/아바타에 기본 이미지 fallback 적용
+const normalize = r => {
+  const rawPhoto =
+    r?.files?.[0]?.url ??
+    r?.files?.[0]?.fileUrl ??
+    r?.files?.[0]?.path ??
+    r?.files?.[0]?.fileName ??
+    ''
+
+  const rawAvatar =
+    r?.member?.profileImage?.url ??
+    r?.member?.avatarUrl ??
+    r?.member?.profilePath ??
+    ''
+
+  return {
+    id: r.reviewNo,
+    memberNo: r?.member?.memberNo ?? null,
+    nickname: r?.member?.memberName ?? '익명',
+    content: r.reviewContent ?? r.reviewTitle ?? '',
+    likes: r.reviewLike ?? 0,
+    isLiked: r.isLiked ?? false,
+    photo: rawPhoto || defaultPhoto1,   // ← 기본 리뷰 이미지
+    avatar: rawAvatar || avatarLg       // ← 기본 프로필 이미지
+  }
+}
+
+async function loadReviews() {
+  if (!token.value) return
+  loading.value = true
+  try {
+    const fn = isMine.value ? fetchMyPhotoReviews : fetchUserPhotoReviews
+    const res = await fn({
+      memberNo: isMine.value ? undefined : targetMemberNo.value,
+      page: 0,
+      size: 12,
+      token: token.value
+    })
+    const rows = Array.isArray(res?.content) ? res.content.map(normalize) : []
+    reviewsRows.value = rows
+    reviews.value = typeof res?.totalElements === 'number' ? res.totalElements : rows.length
+  } finally {
+    loading.value = false
+  }
+}
+
+/* -------- 게시물(예시 더미) -------- */
 const posts = reactive([
   { photoSrc: defaultPhoto1, avatarSrc: avatarLg, content: '일요일은 내가 요리사!', likeCount: 100, isLiked: false },
   { photoSrc: defaultPhoto2, avatarSrc: avatarLg, content: '주말에 와인 먹고 왔어요!!', likeCount: 11, isLiked: false },
   { photoSrc: defaultPhoto3, avatarSrc: avatarLg, content: '용용선생 노량진찐!!', likeCount: 11, isLiked: false }
 ])
 
-const followerUsers = reactive(Array.from({ length: 30 }, (_, i) => `user${i + 1}`))
-const followingUsers = reactive(Array.from({ length: 35 }, (_, i) => `user${i + 21}`))
-
-const tab = ref('review')
-const shown = computed(() => posts)
-
+/* -------- 좋아요 토글(프론트 반영용) -------- */
 function onToggleLike(index, payload) {
-  posts[index].isLiked = payload.liked
-  posts[index].likeCount = payload.count
+  const list = tab.value === 'review' ? reviewsRows.value : posts
+  list[index].isLiked = payload.liked
+  if (tab.value === 'review') list[index].likes = payload.count
+  else list[index].likeCount = payload.count
 }
 
-/* ---------------- 모달 ---------------- */
+/* -------- 모달 -------- */
+const follower = 0
+const following = 0
+const followerUsers = reactive(Array.from({ length: 30 }, (_, i) => `user${i + 1}`))
+const followingUsers = reactive(Array.from({ length: 35 }, (_, i) => `user${i + 21}`))
 const showFollowModal = ref(false)
 const followType = ref('followers')
-
 function openFollow(type) {
   followType.value = type
   showFollowModal.value = true
@@ -171,9 +243,18 @@ function openFollow(type) {
 }
 watch(showFollowModal, v => { if (!v) document.body.style.overflow = 'auto' })
 
-/* ---------------- 라우트 변경 시 재로딩 ---------------- */
-watch(() => route.params.memberNo, loadProfile)
-onMounted(loadProfile)
+/* -------- 탭 -------- */
+const tab = ref('review')
+
+/* -------- 라우트/타겟 변경 시 재로딩 -------- */
+watch(() => route.params.memberNo, () => {
+  loadProfile()
+  loadReviews()
+})
+onMounted(() => {
+  loadProfile()
+  loadReviews()
+})
 </script>
 
 <style scoped>
@@ -189,10 +270,9 @@ onMounted(loadProfile)
 
 .actions { display: flex; gap: 8px; margin-left: 8px; }
 .btn { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .05s ease; }
-.btn, .actions a { text-decoration: none; }
+.btn, .actions a { text-decoration: none; } /* 밑줄 제거 */
 .btn.solid { background: #F2D5A7; border: 1px solid #F2D5A7; color: #2B1F14; }
 .btn.solid.edit { background: #f0c97a; border-color: #f0c97a; }
-
 .btn.report { background: transparent; border: 1px solid #E2D8C7; color: #2B1F14; }
 
 .row-2 { display: inline-flex; align-items: center; margin-left: 6px; margin-top: -22px; }
@@ -210,4 +290,6 @@ onMounted(loadProfile)
 .line { border: none; border-top: 1.5px solid #D9D0C1; margin: 10px 0 20px; }
 
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px 46px; padding: 16px 6px 6px; }
+
+.center { text-align: center; margin-top: 12px; color: #2B1F14; font-weight: 600; }
 </style>

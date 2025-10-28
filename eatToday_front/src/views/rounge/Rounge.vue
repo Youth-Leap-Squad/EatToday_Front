@@ -17,6 +17,7 @@
         v-for="item in items"
         :key="item.id"
         :member-no="item.memberNo"
+        :board-id="item.boardId" 
         :my-member-no="myMemberNo"
         :photo-src="item.photo || undefined"     
         :avatar-src="item.avatar || undefined"   
@@ -87,6 +88,7 @@ const myMemberNo = computed(() => {
 /* ================= 서버 응답 정규화 ================= */
 const normalize = r => ({
   id: r.reviewNo,
+  boardId: r.boardNo ?? r.boardId ?? null, 
   memberNo:
     r?.member?.memberNo ??
     r?.memberNo ??

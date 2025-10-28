@@ -56,6 +56,7 @@
           v-for="(r, i) in reviewsRows"
           :key="r.id ?? i"
           :member-no="r.memberNo"
+          :board-id="r.boardId" 
           :my-member-no="myMemberNo"
           :photo-src="r.photo"
           :avatar-src="r.avatar"
@@ -186,6 +187,7 @@ const normalize = r => {
 
   return {
     id: r.reviewNo,
+    boardId: r.boardNo ?? r.boardId ?? null,
     memberNo: r?.member?.memberNo ?? null, // DTO에 memberNo 추가된 상태
     nickname: r?.member?.memberName ?? '익명',
     content: r.reviewContent ?? r.reviewTitle ?? '',

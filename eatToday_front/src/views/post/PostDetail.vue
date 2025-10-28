@@ -118,12 +118,21 @@ export default {
   methods: {
     /** 게시글 + 댓글 + 반응 불러오기 */
     async loadPostFromApi() {
+    
       try {
         const id = Number(this.$route.params.id);
         if (Number.isNaN(id)) return this.$router.replace("/post");
 
         // 게시글
         this.post = await fetchPost(id);
+
+        if (this.post) {
+        this.post.author =
+        this.post.author ??
+        this.post.memberId ??
+        this.post.member?.memberId ??
+        '익명'
+    }
 
         // 댓글
         try {

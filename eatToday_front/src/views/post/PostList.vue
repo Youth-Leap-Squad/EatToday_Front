@@ -76,16 +76,16 @@
         >
           <div class="thumb">
             <img :src="thumbOf(p)" alt="thumbnail" />
-            <span class="like-badge">♡ {{ (p.likes ?? 0).toLocaleString() }}</span>
+            <span class="like-badge">♥️ {{ (p.likes ?? 0).toLocaleString() }}</span>
           </div>
 
           <footer class="info">
             <div class="author">
               <img :src="p.avatar || defaultAvatar" class="avatar" alt="avatar" />
-              <div class="meta">
-                <strong class="name">{{ p.author || '익명' }}</strong>
-                <p class="title">{{ p.title || '(제목 없음)' }}</p>
-              </div>
+            <div class="meta">
+              <p class="name">{{ p.author ?? p.memberId ?? p.member?.memberId ?? '익명' }}</p>
+              <p class="title">{{ p.title || '(제목 없음)' }}</p>
+            </div>
             </div>
             <div class="stat">
               <span>👁 {{ (p.views ?? 0).toLocaleString() }}</span>
@@ -172,22 +172,50 @@ export default {
     },
   },
   methods: {
-    async load(page = 0) {
-      const { list, page: p } = await fetchPostsByAlcohol({
-        alcoholNo: this.alcoholNo, // 소주 고정이면 2로 고정
-        page,
-        size: this.page.size || 12,
-      })
-      if (page === 0) this.items = list
-      else this.items = [...this.items, ...list]
+      async load(page = 0) {
+        const { list, page: p } = await fetchPostsByAlcohol({
+          alcoholNo: this.alcoholNo,
+          page,
+          size: this.page.size || 12,
+        })
 
-      this.applySort()
-      this.page = {
-        totalPages: p.totalPages ?? 1,
-        number: page,
-        size: p.size ?? 12,
-      }
-    },
+        // ✅ 응답을 카드용으로 정규화
+        const normalize = (dto) => ({
+          id: dto.boardNo ?? dto.id,
+          title: dto.boardTitle ?? dto.title,
+          coverUrl: (dto.foodPictures?.[0]) || dto.coverUrl || '',
+          likes:
+            (dto.likeNo1 ?? 0) +
+            (dto.likeNo2 ?? 0) +
+            (dto.likeNo3 ?? 0) +
+            (dto.likeNo4 ?? 0) ||
+            dto.likes || 0,
+          views: dto.boardSeq ?? dto.views ?? 0,
+          comment: dto.commentCount ?? dto.comment ?? 0,
+
+          // 🔑 작성자(닉네임) 후보를 순서대로 시도
+          author:
+            dto.memberId ??
+            dto.member?.memberId ??
+            dto.writer ??
+            dto.author ??
+            null,
+
+          avatar: dto.memberAvatar || null,
+        })
+
+        const normed = Array.isArray(list) ? list.map(normalize) : []
+
+        if (page === 0) this.items = normed
+        else this.items = [...this.items, ...normed]
+
+        this.applySort()
+        this.page = {
+          totalPages: p.totalPages ?? 1,
+          number: page,
+          size: p.size ?? 12,
+        }
+      },
     applySort() {
       const byView = (a, b) => (b.views ?? 0) - (a.views ?? 0)
       const byLike = (a, b) => (b.likes ?? 0) - (a.likes ?? 0)

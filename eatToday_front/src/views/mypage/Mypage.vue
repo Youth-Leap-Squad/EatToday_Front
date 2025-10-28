@@ -27,7 +27,7 @@
             <div class="actions" v-if="!isMine">
               <button class="btn solid">팔로우</button>
               <RouterLink to="/dm" class="btn solid">메시지</RouterLink>
-              <button class="btn report">신고</button>
+              <button class="btn report" @click="showReport = true">신고</button>
             </div>
             <div class="actions" v-else>
               <RouterLink to="/updateprofile" class="btn solid edit">내 정보 수정</RouterLink>
@@ -100,6 +100,11 @@
       :users="followType === 'followers' ? followerUsers : followingUsers"
       @close="showFollowModal = false"
     />
+    <ReportModal
+      :open="showReport"
+      @close="showReport = false"
+      @submit="submitReport"
+    />
   </div>
 </template>
 
@@ -109,10 +114,10 @@ import { useRoute, RouterLink, useRouter } from 'vue-router'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
 import PostCard from '@/components/post/PostCard.vue'
 import Follow from '@/components/mypage/follow.vue'
+import ReportModal from '@/components/report/ReportModal.vue'
+import { createReport } from '@/api/createreport'
 import basicProfile from '@/assets/images/basic_profile.jpg'
 import defaultPhoto1 from '@/assets/images/photo_review/reviewexample.png'
-import defaultPhoto2 from '@/assets/images/photo_review/reviewexample.png'
-import defaultPhoto3 from '@/assets/images/photo_review/reviewexample.png'
 import bronzeBadge from '@/assets/images/bronze.png'
 import silverBadge from '@/assets/images/silver.png'
 import goldBadge from '@/assets/images/gold.png'
@@ -313,6 +318,8 @@ function openFollow(type) {
 
 const tab = ref('review')
 
+const showReport = ref(false)
+
 watch(showFollowModal, v => { if (!v) document.body.style.overflow = 'auto' })
 watch(() => route.params.memberNo, () => {
   loadProfile()
@@ -328,6 +335,23 @@ onMounted(() => {
   loadReviews()
   loadPosts()
 })
+const submitReport = async ({ title, content }) => {
+  try {
+    await createReport({
+      reporterId: myMemberNo.value,
+      reportedId: targetMemberNo.value,
+      title,
+      content,
+      // reportDate: dayjs().format('YYYY-MM-DD HH:mm')  // dayjs 쓰시면 이렇게
+    })
+    alert('신고가 접수되었습니다.')
+    showReport.value = false
+  } catch (e) {
+    const msg = e?.response?.data?.message || e?.response?.data || e?.message || '신고 전송 실패'
+    console.error('createReport error:', e?.response || e)
+    alert(msg)
+  }
+}
 </script>
 
 <style scoped>

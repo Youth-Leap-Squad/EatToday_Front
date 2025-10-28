@@ -87,4 +87,32 @@ export const getMyInfo = async (email) => {
 }
 
 
+export const uploadProfileImage = async (memberNo, file, { direct = false } = {}) => {
+  if (!memberNo) throw new Error('memberNo가 없습니다.')
+  if (!file) throw new Error('업로드할 파일이 없습니다.')
 
+  const fd = new FormData()
+  fd.append('memberNo', String(memberNo)) // @RequestParam("memberNo")
+  fd.append('file', file, file.name)      // @RequestPart("file")
+
+  if (!direct) {
+    const res = await api.post('/members/profile-image', fd) // 프록시 경유
+    return res.data
+  }
+
+  // ✅ 프록시 우회(문제 원인 단번에 분리)
+  const token = localStorage.getItem('token') || ''
+  const res = await fetch('http://localhost:8080/members/profile-image', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: fd,
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
+}
+
+// api/member.js
+export const getProfileImageUrl = (memberNo, bust = '') => {
+  const base = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '')
+  return `${base}/members/profile-image/${memberNo}${bust ? `?bust=${bust}` : ''}`
+}

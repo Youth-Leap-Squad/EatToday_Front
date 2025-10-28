@@ -1,18 +1,26 @@
 <!-- src/views/review/PhotoReviewMiniListByBoard.vue -->
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { fetchReviewsByBoard } from '@/api/photoReviewAnju'
 
 const route = useRoute()
 const router = useRouter()
 
-const boardNo = Number(route.params.boardNo) || 1
+const props = defineProps({
+  boardNo: { type: [Number, String], default: null },
+  limit: { type: Number, default: 6 }
+})
+
 const items = ref([])
 const loading = ref(false)
 const error = ref('')
-const count = 6
 const loungePath = '/rounge'
+
+const count = computed(() => {
+  const n = Number(props.limit)
+  return Number.isFinite(n) && n > 0 ? n : 6
+})
 
 const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8080'
 const FRONT_ORIGIN = window.location.origin
@@ -44,12 +52,29 @@ const RAW_URL_KEYS = [
   'originalName',
   'originFileName',
   'storedName',
+  'storedFileName',
+  'storedFilePath',
+  'stored_path',
+  'storedPath',
+  'storedUrl',
+  'stored_url',
   'saveName',
   'saveFileName',
   'savedFileName',
+  'saveFilePath',
+  'save_file_path',
+  'save_file_name',
   'savePath',
+  'uploadPath',
+  'uploadDir',
+  'uploadDirectory',
+  'uploadUrl',
   'directory',
-  'location'
+  'location',
+  'fileName',
+  'filename',
+  'originFilename',
+  'origin_file_name'
 ]
 const FILE_COLLECTION_KEYS = [
   'files',
@@ -68,6 +93,20 @@ const FILE_COLLECTION_KEYS = [
   'photoFiles',
   'photoFile',
   'photoFileList',
+  'photos',
+  'photo',
+  'photoList',
+  'imageRecords',
+  'imageDtos',
+  'imageObjects',
+  'media',
+  'fileDtoList',
+  'fileDto',
+  'fileDtos',
+  'prFiles',
+  'prFileList',
+  'prFileDtos',
+  'photoReviewFileDtoResponses',
   'fileResponses',
   'fileResponseList',
   'attachments',
@@ -79,6 +118,67 @@ const FILE_COLLECTION_KEYS = [
   'thumbnails',
   'thumbnailList'
 ]
+
+function joinOrigin(origin, segment) {
+  const base = String(origin || '').replace(/\/+$/, '')
+  const tail = String(segment || '').replace(/\\/g, '/').replace(/^\/+/, '')
+  return tail ? `${base}/${tail}` : ''
+}
+
+function parseBoardNo(value) {
+  const n = Number(value)
+  return Number.isFinite(n) && n >= 0 ? n : null
+}
+
+const activeBoardNo = ref(resolveBoardNo())
+const lastLoadedBoard = ref(null)
+
+function resolveBoardNo() {
+  return (
+    parseBoardNo(props.boardNo) ??
+    parseBoardNo(route.params.boardNo) ??
+    parseBoardNo(route.params.id) ??
+    parseBoardNo(route.params.reviewNo) ??
+    parseBoardNo(route.params.anjuNo) ??
+    1
+  )
+}
+
+function extractBoardNoFromRecord(record) {
+  if (!record || typeof record !== 'object') return null
+  return (
+    parseBoardNo(record.boardNo) ??
+    parseBoardNo(record.reviewBoardNo) ??
+    parseBoardNo(record.board_no) ??
+    parseBoardNo(record.anjuNo) ??
+    parseBoardNo(record.anju_no) ??
+    parseBoardNo(record.foodBoardNo) ??
+    parseBoardNo(record.foodNo) ??
+    parseBoardNo(record.food_id) ??
+    parseBoardNo(record.boardId) ??
+    parseBoardNo(record.id)
+  )
+}
+
+watch(
+  () => [
+    props.boardNo,
+    route.params.boardNo,
+    route.params.id,
+    route.params.reviewNo,
+    route.params.anjuNo
+  ],
+  () => {
+    const next = resolveBoardNo()
+    if (next !== activeBoardNo.value) {
+      activeBoardNo.value = next
+      load()
+    } else if (next !== lastLoadedBoard.value) {
+      load()
+    }
+  },
+  { immediate: true }
+)
 
 function resolveImg(rawUrl) {
   const url = String(rawUrl || '').replace(/\\/g, '/').trim()
@@ -94,20 +194,22 @@ function resolveImg(rawUrl) {
 
   const photoMarker = '/photo_review/'
   const photoIdx = lower.lastIndexOf(photoMarker)
-  if (photoIdx !== -1) return API_ORIGIN + url.slice(photoIdx)
+  if (photoIdx !== -1) return joinOrigin(API_ORIGIN, url.slice(photoIdx))
   const photoIdx2 = lower.lastIndexOf('photo_review/')
-  if (photoIdx2 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx2)
+  if (photoIdx2 !== -1) return joinOrigin(API_ORIGIN, url.slice(photoIdx2))
   const photoIdx3 = lower.lastIndexOf('photoreview/')
-  if (photoIdx3 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx3)
+  if (photoIdx3 !== -1) return joinOrigin(API_ORIGIN, url.slice(photoIdx3))
+  const photoIdx4 = lower.lastIndexOf('photoreview\\')
+  if (photoIdx4 !== -1) return joinOrigin(API_ORIGIN, url.slice(photoIdx4))
 
   const imgMarker = '/images/'
   const imgIdx = lower.lastIndexOf(imgMarker)
-  if (imgIdx !== -1) return FRONT_ORIGIN + url.slice(imgIdx)
+  if (imgIdx !== -1) return joinOrigin(FRONT_ORIGIN, url.slice(imgIdx))
   const imgIdx2 = lower.lastIndexOf('images/')
-  if (imgIdx2 !== -1) return FRONT_ORIGIN + '/' + url.slice(imgIdx2)
+  if (imgIdx2 !== -1) return joinOrigin(FRONT_ORIGIN, url.slice(imgIdx2))
 
   const normalized = url.startsWith('/') ? url : '/' + url
-  return API_ORIGIN + normalized
+  return joinOrigin(API_ORIGIN, normalized)
 }
 
 function pickRawFilePath(file) {
@@ -212,9 +314,61 @@ function requireLogin () {
 function normalize (list = []) {
   return list
     .map(r => {
-      const id = Number(r?.reviewNo)
-      const title = r?.reviewTitle ?? r?.title ?? '제목 없음'
-      const [f0] = extractFiles(r)
+      const rawId =
+        r?.reviewNo ??
+        r?.review_no ??
+        r?.prReviewNo ??
+        r?.pr_review_no ??
+        r?.photoReviewNo ??
+        r?.photo_review_no ??
+        r?.photoReviewId ??
+        r?.reviewId ??
+        r?.id ??
+        r?.prFileGroupNo
+      const id = Number(rawId)
+
+      const title =
+        r?.reviewTitle ??
+        r?.title ??
+        r?.subject ??
+        (r?.menuName ? `${r.menuName} 리뷰` : '제목 없음')
+
+      const nickname =
+        r?.memberName ??
+        r?.member?.memberName ??
+        r?.writerName ??
+        r?.writer?.name ??
+        r?.authorName ??
+        r?.author?.name ??
+        r?.nickname ??
+        r?.memberId ??
+        'user'
+
+      const likes =
+        Number(
+          r?.likeCount ??
+            r?.reviewLike ??
+            r?.likes ??
+            r?.reviewLikeCount ??
+            r?.heartCount ??
+            r?.goodCount ??
+            r?.favoriteCount ??
+            r?.like_cnt ??
+            0
+        ) || 0
+
+      const avatarRaw =
+        r?.member?.profileImageUrl ??
+        r?.member?.profileImage?.url ??
+        r?.writer?.avatarUrl ??
+        r?.author?.avatarUrl ??
+        r?.authorAvatar ??
+        r?.profileImage ??
+        r?.profileUrl ??
+        r?.avatar ??
+        ''
+
+      const fileEntries = extractFiles(r)
       const directCandidates = [
         r?.thumbnailUrl,
         r?.thumbnailPath,
@@ -223,32 +377,121 @@ function normalize (list = []) {
         r?.imagePath,
         r?.imgPath,
         r?.photoUrl,
+        r?.photo,
+        r?.photoSrc,
+        r?.photoURL,
+        r?.photoPath,
         r?.mainImage,
         r?.mainImageUrl,
+        r?.mainImagePath,
         r?.coverUrl,
+        r?.cover,
         r?.thumbnail,
         r?.thumbnailImage,
         r?.fileUrl,
         r?.filePath,
         r?.file_path,
         r?.previewUrl,
-        r?.firstImage
+        r?.firstImage,
+        r?.image,
+        r?.imageSrc,
+        r?.img,
+        r?.firstImageUrl,
+        r?.mediaUrl,
+        r?.mediaPath,
+        r?.media,
+        r?.resourceUrl
       ]
       const directUrl = directCandidates
         .map(resolveImg)
         .find(v => typeof v === 'string' && v.length > 0)
-      const imgUrl = directUrl || resolveImg(pickRawFilePath(f0))
-      return { id: Number.isFinite(id) ? id : null, title, imgUrl }
+      let imgUrl = directUrl
+
+      if (!imgUrl) {
+        const arrayCandidates = [
+          r?.imgUrls,
+          r?.imgUrlList,
+          r?.imageList,
+          r?.images,
+          r?.imageArray,
+          r?.photos,
+          r?.photoList,
+          r?.thumbnails,
+          r?.thumbnailList,
+          r?.mediaList
+        ]
+        for (const group of arrayCandidates) {
+          if (!Array.isArray(group)) continue
+          const str = group.find(v => typeof v === 'string' && v.trim())
+          if (str) {
+            const resolved = resolveImg(str)
+            if (resolved) {
+              imgUrl = resolved
+              break
+            }
+          }
+          const obj = group.find(v => v && typeof v === 'object')
+          if (obj) {
+            const raw = pickRawFilePath(obj)
+            const resolved = resolveImg(raw)
+            if (resolved) {
+              imgUrl = resolved
+              break
+            }
+          }
+        }
+      }
+
+      if (!imgUrl) {
+        for (const entry of fileEntries) {
+          const resolved = resolveImg(pickRawFilePath(entry))
+          if (resolved) {
+            imgUrl = resolved
+            break
+          }
+        }
+      }
+
+      if (!imgUrl && import.meta.env.DEV) {
+        console.warn('[PhotoReviewMiniList] 이미지 경로 없음:', r)
+      }
+
+      return {
+        id: Number.isFinite(id) ? id : null,
+        title,
+        imgUrl,
+        nickname,
+        likes: likes < 0 ? 0 : likes,
+        avatar: resolveImg(avatarRaw)
+      }
     })
     .filter(it => it.id !== null)
 }
 
 async function load () {
+  const board = parseBoardNo(activeBoardNo.value)
+  if (!board) {
+    items.value = []
+    lastLoadedBoard.value = null
+    return
+  }
   loading.value = true
   error.value = ''
   try {
-    const list = await fetchReviewsByBoard(boardNo)
-    items.value = normalize(list).slice(0, count)
+    const data = await fetchReviewsByBoard(board)
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.content)
+      ? data.content
+      : Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data?.list)
+      ? data.list
+      : []
+    items.value = normalize(list).slice(0, count.value)
+    lastLoadedBoard.value = board
   } catch (e) {
     error.value = e?.response?.data?.message || e?.message || '로드 실패'
   } finally {
@@ -259,15 +502,20 @@ async function load () {
 /** 등록 직후 이벤트로 최상단에 끼워 넣기 */
 function handleCreated (e) {
   const r = e.detail
-  if (Number(r.boardNo) !== boardNo) return
+  const eventBoardNo = extractBoardNoFromRecord(r)
+  if (eventBoardNo && eventBoardNo !== activeBoardNo.value) return
   const [norm] = normalize([r])
-  if (!norm) return
-  items.value = [norm, ...items.value].slice(0, count)
+  if (!norm) {
+    load()
+    return
+  }
+  items.value = [norm, ...items.value].slice(0, count.value)
 }
 
 function goCreate () {
   if (!requireLogin()) return
-  router.push(`/boards/${boardNo}/reviews/new`)
+  const board = parseBoardNo(activeBoardNo.value)
+  if (board) router.push(`/boards/${board}/reviews/new`)
 }
 function goDetail (id) {
   if (!requireLogin()) return
@@ -279,7 +527,6 @@ function goLounge () {
 }
 
 onMounted(() => {
-  load()
   window.addEventListener('photo-review:created', handleCreated)
 })
 onBeforeUnmount(() => {
@@ -306,8 +553,35 @@ onBeforeUnmount(() => {
         @click="goDetail(it.id)"
         :aria-label="`리뷰 #${it.id} 상세로 이동`"
       >
-        <img v-if="it.imgUrl" :src="it.imgUrl" alt="사진 리뷰 썸네일" loading="lazy" decoding="async" />
-        <div v-else class="placeholder">이미지 없음</div>
+        <div class="photo-box">
+          <img
+            v-if="it.imgUrl"
+            :src="it.imgUrl"
+            alt="사진 리뷰 썸네일"
+            loading="lazy"
+            decoding="async"
+          />
+          <div v-else class="photo-placeholder">이미지 없음</div>
+        </div>
+
+        <div class="card-body">
+          <div class="profile">
+            <div class="avatar" v-if="it.avatar">
+              <img :src="it.avatar" alt="작성자" loading="lazy" decoding="async" />
+            </div>
+            <div class="avatar avatar-ph" v-else>👤</div>
+            <div class="meta-text">
+              <div class="nickname">{{ it.nickname }}</div>
+              <div class="title" :title="it.title">{{ it.title }}</div>
+            </div>
+          </div>
+
+          <div class="likes">
+            <span class="heart">♡</span>
+            <span class="count">{{ it.likes }}</span>
+          </div>
+        </div>
+
       </button>
     </div>
 
@@ -318,16 +592,31 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.wrap{max-width:1100px;margin:16px auto;padding:0 16px}
-.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px}
-.head h2{margin:0;font-size:18px;font-weight:900;color:#2e2318}
-.create{background:#d2b382;color:#2a1f16;border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
-.loading,.error,.empty{padding:24px 0;text-align:center}
+.wrap{max-width:1100px;margin:24px auto;padding:0 18px}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.head h2{margin:0;font-size:22px;font-weight:900;color:#2e2318}
+.create{display:inline-flex;align-items:center;gap:6px;background:#d4b487;color:#2d2216;border:none;border-radius:999px;padding:8px 18px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.create:hover{background:#caa77a}
+.loading,.error,.empty{padding:36px 0;text-align:center;color:#6b5b4a;font-weight:700}
 .error{color:#b01212}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
-.card{width:100%;aspect-ratio:16/10;border:1px solid #e6dccb;background:#f4ecdf;border-radius:12px;overflow:hidden;padding:0;cursor:pointer}
-.card img{width:100%;height:100%;object-fit:cover;display:block}
-.placeholder{width:100%;height:100%;display:grid;place-items:center;color:#9a8b7a;font-size:12px}
-.more{display:flex;justify-content:center;margin:16px 0 6px}
-.more-btn{background:#fff;color:#2a1f16;border:1px solid #d9c7a7;border-radius:999px;padding:8px 18px;font-weight:900;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{display:flex;flex-direction:column;gap:12px;padding:16px;background:#f6efe2;border-radius:20px;border:1px solid #e6dac6;box-shadow:0 10px 22px rgba(48,34,20,0.08);text-align:left;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-4px);box-shadow:0 14px 26px rgba(48,34,20,0.12)}
+.photo-box{width:100%;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#ece2d3;display:flex;align-items:center;justify-content:center}
+.photo-box img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-placeholder{width:100%;height:100%;display:grid;place-items:center;color:#9a8b7a;font-weight:700}
+.card-body{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.profile{display:flex;align-items:center;gap:10px}
+.avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;background:#efe4d4;display:grid;place-items:center}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-ph{font-size:22px;color:#8f7a60}
+.meta-text{display:flex;flex-direction:column;gap:2px}
+.nickname{font-weight:900;color:#2f241b;font-size:14px}
+.title{font-weight:800;color:#3b2f22;font-size:13px;line-height:1.2;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.likes{display:flex;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:5px 12px;box-shadow:0 4px 11px rgba(0,0,0,0.08);font-weight:800;color:#2f241b;min-width:56px;justify-content:center}
+.heart{font-size:16px}
+.count{font-size:13px}
+.more{display:flex;justify-content:center;margin:24px 0 12px}
+.more-btn{background:#fff;color:#2a1f16;border:1px solid #d9c7a7;border-radius:999px;padding:10px 28px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+.more-btn:hover{background:#f4ecdf}
 </style>

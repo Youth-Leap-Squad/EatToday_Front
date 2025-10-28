@@ -3,8 +3,8 @@
     <img :src="image" alt="post image" class="card-img" />
     <div class="card-content">
       <div class="author">
-        <img :src="avatar" alt="author" class="avatar" />
-        <span>{{ author }}</span>
+        <img :src="avatar || '/image/user-profile/basic_profile.jpg'" alt="author" class="avatar" />
+        <span>{{ author || '익명' }}</span>
       </div>
       <p class="text">{{ text }}</p>
       <div class="likes">❤️ {{ likes }}</div>
@@ -18,7 +18,7 @@ export default {
   props: {
     image: String,
     author: String,
-    avatar: String,
+    avatar: String, // normalizeItem에서 이미 정규화됨(없으면 컴포넌트에서 기본값)
     text: String,
     likes: Number,
   },

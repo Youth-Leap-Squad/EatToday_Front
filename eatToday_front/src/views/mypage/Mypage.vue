@@ -220,10 +220,7 @@ const normalizeReview = r => {
     r?.files?.[0]?.fileUrl ??
     r?.files?.[0]?.path ??
     r?.files?.[0]?.fileName ?? ''
-  const rawAvatar =
-    r?.member?.profileImage?.url ??
-    r?.member?.avatarUrl ??
-    r?.member?.profilePath ?? ''
+
   return {
     id: r.reviewNo,
     reviewId: r.reviewNo ?? r.reviewId ?? null,
@@ -233,7 +230,10 @@ const normalizeReview = r => {
     likes: r.reviewLike ?? 0,
     isLiked: r.isLiked ?? false,
     photo: rawPhoto,
-    avatar: rawAvatar
+    // ✅ 멤버 번호가 있으면 프로필 사진 URL 생성
+    avatar: r?.member?.memberNo
+      ? getProfileImageUrl(r.member.memberNo)
+      : ''
   }
 }
 async function loadReviews() {
@@ -268,7 +268,12 @@ const normalizePost = p => ({
   views: Number(p.boardSeq) || Number(p.views) || 0,
   comment: Number(p.commentCount) || Number(p.comment) || 0,
   author: p.memberId ?? p.member?.memberId ?? p.writer ?? p.author ?? '',
-  avatar: p.memberAvatar ?? p.avatar ?? '',
+
+  // ✅ 멤버 번호 기반 프로필 사진 생성
+  avatar: p?.memberNo
+    ? getProfileImageUrl(p.memberNo)
+    : '',
+
   thumbnail:
     p.foodPicture ??
     p.thumbnail ??
@@ -304,8 +309,8 @@ function onToggleLike(index, payload) {
   list[index].likes = payload.count
 }
 
-const follower = 0
-const following = 0
+const follower = 50
+const following = 50
 const followerUsers = reactive(Array.from({ length: 30 }, (_, i) => `user${i + 1}`))
 const followingUsers = reactive(Array.from({ length: 35 }, (_, i) => `user${i + 21}`))
 const showFollowModal = ref(false)

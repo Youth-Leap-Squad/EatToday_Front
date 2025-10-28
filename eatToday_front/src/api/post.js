@@ -14,17 +14,41 @@ function firstImgFromHtml(html) {
   return m?.[1] || ''
 }
 
-/** 이미지 URL 정규화 */
+/** 이미지 URL 정규화 (본문/커버용) */
 function resolveAssetUrl(u) {
   if (!u) return ''
   if (typeof u === 'string' && u.includes(',')) u = u.split(',')[0].trim()
   if (/^https?:\/\//i.test(u)) return u
+  // 업로드/정적 경로들
+  if (u.startsWith('/uploads/')) return u
+  if (u.startsWith('/image/')) return u
   if (u.startsWith('/images/')) return u
   if (u.startsWith('/src/assets/')) {
     try { return new URL(`./${u}`, import.meta.url).href } catch { return '' }
   }
-  if (u.startsWith('/uploads/')) return u
+  // 나머지는 업로드로 간주
   return `/uploads/${u.replace(/^\/+/, '')}`
+}
+
+/** ✅ 프로필 URL 전용 정규화 (public/image/user-profile) */
+const PROFILE_DIR = '/image/user-profile'
+const DEFAULT_AVATAR = `${PROFILE_DIR}/basic_profile.jpg`
+
+function resolveProfileUrl(u) {
+  if (!u) return DEFAULT_AVATAR
+  // 배열/CSV 보호
+  if (typeof u === 'string' && u.includes(',')) u = u.split(',')[0].trim()
+  // 절대 URL 허용
+  if (/^https?:\/\//i.test(u)) return u
+  // 이미 목표 디렉터리
+  if (u.startsWith(PROFILE_DIR)) return u
+  // 과거 패턴 교정: /images/user_profile/*, /image/user_profile/* 등
+  u = u
+    .replace(/^\/?images\/user[_-]?profile\//i, `${PROFILE_DIR}/`)
+    .replace(/^\/?image\/user[_-]?profile\//i, `${PROFILE_DIR}/`)
+  // 파일명만 온 경우
+  if (!u.startsWith('/')) return `${PROFILE_DIR}/${u}`
+  return u
 }
 
 /** 백엔드 DTO → 프론트 표준 모델 */
@@ -54,6 +78,9 @@ function normalizeItem(x) {
     x.image ||
     firstImgFromHtml(x.content || x.boardContent || x.contentHtml)
 
+  // ✅ avatar 우선순위: profileImageUrl → memberAvatar → avatar
+  const rawAvatar = x.profileImageUrl ?? x.memberAvatar ?? x.avatar ?? null
+
   return {
     id,
     title: x.title ?? x.boardTitle ?? '(제목 없음)',
@@ -63,10 +90,12 @@ function normalizeItem(x) {
     likes: totalLikes,
     comment: Number(x.comment ?? x.commentCount ?? 0),
     coverUrl: resolveAssetUrl(rawCover),
-    avatar: resolveAssetUrl(x.avatar ?? x.authorAvatar ?? ''),
+    avatar: resolveProfileUrl(rawAvatar),
     content: x.content ?? x.boardContent ?? x.contentHtml ?? '',
     createdAt: x.createdAt ?? x.boardDate ?? null,
     approved: asBool(x.confirmedYn ?? x.confirmed ?? x.approved),
+    // 원본 DTO도 보관해두면 디테일에서 추가 활용 가능
+    raw: x,
   }
 }
 
@@ -104,17 +133,14 @@ export const fetchPostsByAlcohol = async ({ alcoholNo, page = 0, size = 12 } = {
 export const fetchPost = async (id) => {
   const r = await api.get(`/foods/${id}`)
   return normalizeItem(r.data)
-
 }
 
-/** 작성 */
 export const createPost = async ({
   category,
   alcoholNo = 1,
   title,
   subtitle,
   contentHtml,
-  mainImageFile,
   contentImageFiles = [],
 }) => {
   const meta = {
@@ -123,10 +149,15 @@ export const createPost = async ({
     boardContent: contentHtml ?? '',
     foodExplain: subtitle ?? '',
   }
+
   const fd = new FormData()
   fd.append('meta', JSON.stringify(meta))
-  if (mainImageFile instanceof File) fd.append('image', mainImageFile)
-  contentImageFiles.filter(f => f instanceof File).forEach(f => fd.append('images', f))
+
+  // 본문 이미지들만 추가
+  contentImageFiles
+    .filter(f => f instanceof File)
+    .forEach(f => fd.append('images', f))
+
   const { data } = await api.post('/command/foods', fd)
   return data
 }
@@ -197,14 +228,13 @@ export const increaseView = async (boardNo) => {
   await api.patch(`/command/foods/${boardNo}/view`)
 }
 
-/* -------------------- ✅ 여기부터 핵심 수정 -------------------- */
+/* -------------------- 댓글/반응 폴백 로직 유지 -------------------- */
 
-/** ✅ 댓글 작성: JSON(content) → JSON(fcContent) → FormData 순 폴백 */
+/** 댓글 작성 (여러 포맷 폴백) */
 export const createComment = async (boardNo, text) => {
   const content = (text ?? '').trim()
   const url = `/command/foods/${boardNo}/comments`
 
-  // 1) 기본: content
   try {
     const { data } = await api.post(url, { content }, {
       headers: { 'Content-Type': 'application/json' }
@@ -213,14 +243,12 @@ export const createComment = async (boardNo, text) => {
   } catch (e1) {
     const code = e1?.response?.status
     if (code !== 400 && code !== 415 && code !== 422) throw e1
-    // 2) 대체 키: fcContent
     try {
       const { data } = await api.post(url, { fcContent: content }, {
         headers: { 'Content-Type': 'application/json' }
       })
       return data
     } catch {
-      // 3) 마지막 폴백: multipart/form-data
       const fd = new FormData()
       fd.append('content', content)
       const { data } = await api.post(url, fd)
@@ -229,7 +257,7 @@ export const createComment = async (boardNo, text) => {
   }
 }
 
-/** ✅ 반응 토글: PATCH → 실패 시 POST 폴백 */
+/** 반응 토글 (PATCH → 실패 시 POST) */
 export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
   const payload = { likesType: Number(likesType) }
 
@@ -237,7 +265,6 @@ export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
     const { data } = await api.patch(`/command/foods/${boardNo}/reactions`, payload, {
       headers: { 'Content-Type': 'application/json' }
     })
-    // 일부 서버는 204를 응답할 수 있음 → 그땐 재조회
     if (data == null || data === '') {
       const r = await api.get(`/foods/${boardNo}/reactions`)
       return Array.isArray(r.data) ? r.data[0] : r.data
@@ -257,7 +284,6 @@ export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
 
 export async function fetchUserPosts({ memberNo, page = 0, size = 12, token }) {
   const headers = token ? { Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {}
-  // 백엔드가 배열을 바로 주는 케이스와 페이징 래퍼(content/totalElements)를 모두 지원
   const res = await api.get(`/members/${memberNo}/foods`, {
     headers,
     params: { page, size },

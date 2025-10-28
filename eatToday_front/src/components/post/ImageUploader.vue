@@ -1,7 +1,7 @@
 <template>
   <div class="up" @dragover.prevent @drop.prevent="onDrop">
     <input ref="file" type="file" accept="image/*" @change="onFile" hidden />
-    <button class="up-btn" type="button" @click="$refs.file.click()">＋ 대표 이미지</button>
+    <!-- <button class="up-btn" type="button" @click="$refs.file.click()">＋ 대표 이미지</button> -->
 
     <div v-if="preview" class="preview">
       <img :src="preview" alt="preview" />

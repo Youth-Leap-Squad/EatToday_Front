@@ -40,6 +40,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import RoungeHeader from '@/components/rounge/RoungeHeader.vue'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
+import { getProfileImageUrl } from '@/api/member'
 import {
   searchPhotoReviews,
   fetchPhotoReviewsByDate,
@@ -99,6 +100,7 @@ const normalize = r => ({
     '익명',
   content: r.reviewContent ?? r.reviewTitle ?? '',
   likes: r.reviewLike ?? 0,
+  avatar: r?.member?.memberNo ? getProfileImageUrl(r.member.memberNo) : '',
   createdAt: r.reviewDate ? new Date(r.reviewDate).toISOString() : new Date().toISOString(),
 
   // ★ prFileUrl 우선
@@ -108,11 +110,6 @@ const normalize = r => ({
     r?.files?.[0]?.fileUrl ??
     r?.files?.[0]?.path ??
     '',
-
-  avatar:
-    r?.member?.profileImage?.url ??
-    r?.avatar ??
-    ''
 })
 
 /* ================= 페이지 데이터 로드 ================= */

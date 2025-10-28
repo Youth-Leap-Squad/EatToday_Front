@@ -254,3 +254,13 @@ export const toggleReaction = async (boardNo, likesType /* 1~4 */) => {
     throw e
   }
 }
+
+export async function fetchUserPosts({ memberNo, page = 0, size = 12, token }) {
+  const headers = token ? { Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {}
+  // 백엔드가 배열을 바로 주는 케이스와 페이징 래퍼(content/totalElements)를 모두 지원
+  const res = await api.get(`/members/${memberNo}/foods`, {
+    headers,
+    params: { page, size },
+  })
+  return res.data
+}

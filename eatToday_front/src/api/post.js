@@ -30,6 +30,7 @@ function resolveAssetUrl(u) {
   return `/uploads/${u.replace(/^\/+/, '')}`
 }
 
+
 /** ✅ 프로필 URL 전용 정규화 (public/image/user-profile) */
 const PROFILE_DIR = '/image/user-profile'
 const DEFAULT_AVATAR = `${PROFILE_DIR}/basic_profile.jpg`

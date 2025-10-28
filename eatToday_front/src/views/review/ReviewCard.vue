@@ -23,7 +23,10 @@ watch(() => props.item?.likeCount, v => (likes.value = v ?? 0))
 function goDetail() {
   const id = props.item?.id || props.item?.reviewNo
   if (!id) return
-  router.push(`/reviews/${id}`)
+  router.push({
+    path: `/reviews/${id}`,
+    state: { imgUrl: props.item?.imgUrl || '' }
+  })
 }
 
 /* 좋아요 클릭 */

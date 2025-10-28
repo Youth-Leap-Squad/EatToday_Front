@@ -2,7 +2,7 @@
   <div class="wrap">
     <div class="toolbar">
       <input ref="multi" type="file" accept="image/*" multiple hidden @change="onPick" />
-      <button type="button" class="pick" @click="$refs.multi.click()">＋ 본문 이미지</button>
+      <button type="button" class="pick" @click="$refs.multi.click()">＋ 이미지 업로드</button>
       <small class="hint">여러 장 선택 가능</small>
     </div>
 

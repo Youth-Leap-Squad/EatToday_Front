@@ -66,14 +66,6 @@ watch(() => props.messages.length, async () => {
             <div class="sub">1:1 채팅</div>
           </div>
         </div>
-        <button
-          v-if="room && !room.isGroup"
-          class="follow"
-          :data-state="room.following ? 'on' : 'off'"
-          @click="toggleFollow"
-        >
-          {{ room.following ? '팔로잉' : '팔로우' }}
-        </button>
       </header>
 
       <div class="messages">

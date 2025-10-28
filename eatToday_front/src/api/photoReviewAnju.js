@@ -92,12 +92,11 @@ export async function fetchAnjuReviewsByLike({ anjuNo, page = 0, size = 10 }) {
 /** 리뷰 생성 */
 export async function createReview(review, files = []) {
   const fd = new FormData();
-  fd.append("review", new Blob([JSON.stringify(review)], { type: "application/json" }));
-  files.forEach((f) => fd.append("files", f));
+  fd.append('review', new Blob([JSON.stringify(review)], { type: 'application/json' }))
+  // 서버가 @RequestPart("files") List<MultipartFile> 로 받음 → "files" 이름 중요!
+  files.forEach(f => fd.append('files', f))
 
-  const { data } = await commandApi.post("/command/photo-reviews", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const { data } = await commandApi.post('/command/photo-reviews', fd)
   console.log("📤 리뷰 등록 응답:", data);
   return data;
 }
@@ -177,17 +176,20 @@ export async function addComment(reviewNo, { memberNo, content }) {
  * PATCH /command/prc/{prcNo}
  * body = { memberNo, content }
  */
-export async function updateComment(prcNo, { memberNo, content }) {
+export async function updateComment(prcNo, { memberNo, content, prcDetail, reviewNo }) {
   const id = Number(prcNo)
-  if (!Number.isFinite(id)) throw new Error('prcNo가 유효하지 않아요.')
+  if (!Number.isFinite(id)) throw new Error('prcNo가 유효하지 않습니다.')
 
-  const text = String(content ?? '').trim()
-  if (!text) throw new Error('수정 내용을 입력하세요.')
+  const text = String(prcDetail ?? content ?? '').trim()
+  if (!text) throw new Error('수정 내용을 입력해주세요.')
 
   const payload = {
     memberNo,
-    prcDetail: text,   // ✅ 핵심: content → prcDetail 로 전송
+    prcDetail: text,            // ✅ 서버가 기대하는 키로 전송
+    ...(Number.isFinite(Number(reviewNo)) ? { reviewNo: Number(reviewNo) } : {})
   }
+
+  console.log('[PATCH body]', payload) // ✅ 실제 전송 값 확인
 
   const token =
     localStorage.getItem('accessToken') ||

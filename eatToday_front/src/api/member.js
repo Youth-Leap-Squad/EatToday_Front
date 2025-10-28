@@ -50,7 +50,15 @@ export const updateMemberStatus = async (memberId, status) => {
 
 // 비밀번호 변경
 export const changePassword = async (currentPassword, newPassword) => {
-  const response = await api.post(`/members/change-password?currentPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`)
+  const params = new URLSearchParams()
+  params.append('currentPassword', currentPassword)
+  params.append('newPassword', newPassword)
+  
+  const response = await api.post('/members/change-password', params, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  })
   return response.data
 }
 

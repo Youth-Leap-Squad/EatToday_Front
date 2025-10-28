@@ -40,6 +40,14 @@
           </div>
         </div>
 
+        <!-- 포인트 -->
+        <div class="row">
+          <label for="points" class="label">포인트</label>
+          <div class="field">
+            <input id="points" :value="form.points || 0" type="text" class="input" readonly />
+          </div>
+        </div>
+
         <!-- 생년월일 -->
         <div class="row">
           <label for="birth" class="label">생년월일</label>
@@ -123,6 +131,7 @@ const getUserInfo = () => {
     birth: '',
     phone: '',
     active: true,
+    points: 0,
   }
 }
 
@@ -230,6 +239,7 @@ onMounted(async () => {
         birth: userInfo.memberBirth || '',
         phone: userInfo.memberPhone || '',
         active: userInfo.memberActive ?? true,
+        points: userInfo.memberLevel || 0,
       }
       
       console.log('설정된 form 값:', form.value)
@@ -242,7 +252,8 @@ onMounted(async () => {
     form.value = {
       ...form.value,
       email: userEmail,
-      nickname: emailLocal
+      nickname: emailLocal,
+      points: 0
     }
   }
 })
@@ -304,6 +315,12 @@ onMounted(async () => {
 }
 .input:focus {
   border-color: #dabb8b;
+}
+
+/* 포인트 입력 필드 (읽기 전용 스타일) */
+#points {
+  background: #f5f5f5;
+  cursor: default;
 }
 
 /* 버튼들 */

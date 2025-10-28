@@ -1,0 +1,333 @@
+<!-- src/views/review/PhotoReviewMiniListByBoard.vue -->
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { fetchReviewsByBoard } from '@/api/photoReviewAnju'
+
+const route = useRoute()
+const router = useRouter()
+
+const boardNo = Number(route.params.boardNo) || 1
+const items = ref([])
+const loading = ref(false)
+const error = ref('')
+const count = 6
+const loungePath = '/rounge'
+
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8080'
+const FRONT_ORIGIN = window.location.origin
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|bmp|webp|svg|heic|heif|avif)$/i
+const RAW_URL_KEYS = [
+  'thumbnailUrl',
+  'thumbnailPath',
+  'prFileUrl',
+  'prFilePath',
+  'prFileFullPath',
+  'prFileOriginName',
+  'prFileOriginalName',
+  'prFileStoredName',
+  'prStoredFileName',
+  'prOriginFileName',
+  'prFileServerName',
+  'fileUrl',
+  'fileUrlPath',
+  'filePath',
+  'file_full_path',
+  'fileFullPath',
+  'urlOrPath',
+  'url',
+  'path',
+  'pr_file_url',
+  'pr_file_path',
+  'file_path',
+  'originName',
+  'originalName',
+  'originFileName',
+  'storedName',
+  'saveName',
+  'saveFileName',
+  'savedFileName',
+  'savePath',
+  'directory',
+  'location'
+]
+const FILE_COLLECTION_KEYS = [
+  'files',
+  'file',
+  'fileList',
+  'reviewFiles',
+  'reviewFile',
+  'reviewFileList',
+  'photoReviewFiles',
+  'photoReviewFile',
+  'photoReviewFileList',
+  'photoReviewFileDtoList',
+  'photoReviewFileDtos',
+  'photoReviewFileResponses',
+  'photoReviewFileResponseList',
+  'photoFiles',
+  'photoFile',
+  'photoFileList',
+  'fileResponses',
+  'fileResponseList',
+  'attachments',
+  'attachmentList',
+  'images',
+  'imageList',
+  'imageUrls',
+  'imagePaths',
+  'thumbnails',
+  'thumbnailList'
+]
+
+function resolveImg(rawUrl) {
+  const url = String(rawUrl || '').replace(/\\/g, '/').trim()
+  if (!url) return ''
+  if (url.startsWith('data:')) return url
+  if (/^https?:\/\//i.test(url)) return url
+
+  if (/^[a-zA-Z]:\//.test(url)) {
+    return resolveImg(url.slice(2))
+  }
+
+  const lower = url.toLowerCase()
+
+  const photoMarker = '/photo_review/'
+  const photoIdx = lower.lastIndexOf(photoMarker)
+  if (photoIdx !== -1) return API_ORIGIN + url.slice(photoIdx)
+  const photoIdx2 = lower.lastIndexOf('photo_review/')
+  if (photoIdx2 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx2)
+  const photoIdx3 = lower.lastIndexOf('photoreview/')
+  if (photoIdx3 !== -1) return API_ORIGIN + '/' + url.slice(photoIdx3)
+
+  const imgMarker = '/images/'
+  const imgIdx = lower.lastIndexOf(imgMarker)
+  if (imgIdx !== -1) return FRONT_ORIGIN + url.slice(imgIdx)
+  const imgIdx2 = lower.lastIndexOf('images/')
+  if (imgIdx2 !== -1) return FRONT_ORIGIN + '/' + url.slice(imgIdx2)
+
+  const normalized = url.startsWith('/') ? url : '/' + url
+  return API_ORIGIN + normalized
+}
+
+function pickRawFilePath(file) {
+  if (!file) return ''
+  if (typeof file === 'string') return file
+
+  for (const key of RAW_URL_KEYS) {
+    const val = file[key]
+    if (typeof val === 'string' && val.trim()) return val
+  }
+
+  const entries = Object.entries(file).filter(
+    ([, val]) => typeof val === 'string' && val.trim()
+  )
+
+  const withExt = entries
+    .map(([k, v]) => [k, v.trim()])
+    .filter(([, v]) => IMAGE_EXT_RE.test(v))
+
+  const withSlash = withExt.find(([, v]) => v.includes('/') || v.includes('\\'))
+  if (withSlash) return withSlash[1]
+
+  if (withExt.length) {
+    const filename = withExt[0][1].replace(/^\.?[/\\]+/, '')
+    const pathCandidate = entries
+      .map(([, v]) => v)
+      .find(v => /photo[\W_]?review/i.test(v) || /upload/i.test(v) || v.endsWith('/') || v.includes('\\'))
+    if (pathCandidate) {
+      const cleanedPath = pathCandidate.replace(/\\/g, '/').replace(/\/+$/, '')
+      return `${cleanedPath}/${filename}`
+    }
+    return filename
+  }
+
+  return ''
+}
+
+function extractFiles (record) {
+  if (!record || typeof record !== 'object') return []
+
+  const results = []
+  const queue = []
+  const seen = new WeakSet()
+
+  for (const key of FILE_COLLECTION_KEYS) {
+    const value = record[key]
+    if (value) queue.push(value)
+  }
+
+  while (queue.length) {
+    const current = queue.shift()
+    if (!current) continue
+
+    if (typeof current === 'string') {
+      if (current.trim()) results.push(current)
+      continue
+    }
+
+    if (Array.isArray(current)) {
+      queue.push(...current)
+      continue
+    }
+
+    if (typeof current === 'object') {
+      if (seen.has(current)) continue
+      seen.add(current)
+
+      const hasFileLikeKey = RAW_URL_KEYS.some(
+        key => typeof current[key] === 'string' && current[key].trim()
+      )
+      if (hasFileLikeKey) {
+        results.push(current)
+      }
+
+      for (const key of FILE_COLLECTION_KEYS) {
+        const nested = current[key]
+        if (nested) queue.push(nested)
+      }
+    }
+  }
+
+  return results
+}
+
+/** 로그인 체크 (로컬스토리지 여러 키 지원) */
+function isLoggedIn () {
+  const t =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('Authorization')
+  return !!(t && t !== 'null' && t !== 'undefined')
+}
+function requireLogin () {
+  if (!isLoggedIn()) {
+    alert('로그인이 필요합니다.')
+    router.push({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+    return false
+  }
+  return true
+}
+
+function normalize (list = []) {
+  return list
+    .map(r => {
+      const id = Number(r?.reviewNo)
+      const title = r?.reviewTitle ?? r?.title ?? '제목 없음'
+      const [f0] = extractFiles(r)
+      const directCandidates = [
+        r?.thumbnailUrl,
+        r?.thumbnailPath,
+        r?.imageUrl,
+        r?.imgUrl,
+        r?.imagePath,
+        r?.imgPath,
+        r?.photoUrl,
+        r?.mainImage,
+        r?.mainImageUrl,
+        r?.coverUrl,
+        r?.thumbnail,
+        r?.thumbnailImage,
+        r?.fileUrl,
+        r?.filePath,
+        r?.file_path,
+        r?.previewUrl,
+        r?.firstImage
+      ]
+      const directUrl = directCandidates
+        .map(resolveImg)
+        .find(v => typeof v === 'string' && v.length > 0)
+      const imgUrl = directUrl || resolveImg(pickRawFilePath(f0))
+      return { id: Number.isFinite(id) ? id : null, title, imgUrl }
+    })
+    .filter(it => it.id !== null)
+}
+
+async function load () {
+  loading.value = true
+  error.value = ''
+  try {
+    const list = await fetchReviewsByBoard(boardNo)
+    items.value = normalize(list).slice(0, count)
+  } catch (e) {
+    error.value = e?.response?.data?.message || e?.message || '로드 실패'
+  } finally {
+    loading.value = false
+  }
+}
+
+/** 등록 직후 이벤트로 최상단에 끼워 넣기 */
+function handleCreated (e) {
+  const r = e.detail
+  if (Number(r.boardNo) !== boardNo) return
+  const [norm] = normalize([r])
+  if (!norm) return
+  items.value = [norm, ...items.value].slice(0, count)
+}
+
+function goCreate () {
+  if (!requireLogin()) return
+  router.push(`/boards/${boardNo}/reviews/new`)
+}
+function goDetail (id) {
+  if (!requireLogin()) return
+  const n = Number(id)
+  if (Number.isFinite(n)) router.push(`/reviews/${n}`)
+}
+function goLounge () {
+  router.push(loungePath)
+}
+
+onMounted(() => {
+  load()
+  window.addEventListener('photo-review:created', handleCreated)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('photo-review:created', handleCreated)
+})
+</script>
+
+<template>
+  <section class="wrap">
+    <header class="head">
+      <h2>사진 리뷰</h2>
+      <button class="create" @click="goCreate">+ 사진 등록</button>
+    </header>
+
+    <div v-if="loading" class="loading">불러오는 중...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-else-if="!items.length" class="empty">아직 등록된 사진이 없어요.</div>
+
+    <div v-else class="grid">
+      <button
+        v-for="it in items"
+        :key="it.id"
+        class="card"
+        @click="goDetail(it.id)"
+        :aria-label="`리뷰 #${it.id} 상세로 이동`"
+      >
+        <img v-if="it.imgUrl" :src="it.imgUrl" alt="사진 리뷰 썸네일" loading="lazy" decoding="async" />
+        <div v-else class="placeholder">이미지 없음</div>
+      </button>
+    </div>
+
+    <footer class="more">
+      <button class="more-btn" @click="goLounge">더보기</button>
+    </footer>
+  </section>
+</template>
+
+<style scoped>
+.wrap{max-width:1100px;margin:16px auto;padding:0 16px}
+.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px}
+.head h2{margin:0;font-size:18px;font-weight:900;color:#2e2318}
+.create{background:#d2b382;color:#2a1f16;border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+.loading,.error,.empty{padding:24px 0;text-align:center}
+.error{color:#b01212}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.card{width:100%;aspect-ratio:16/10;border:1px solid #e6dccb;background:#f4ecdf;border-radius:12px;overflow:hidden;padding:0;cursor:pointer}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.placeholder{width:100%;height:100%;display:grid;place-items:center;color:#9a8b7a;font-size:12px}
+.more{display:flex;justify-content:center;margin:16px 0 6px}
+.more-btn{background:#fff;color:#2a1f16;border:1px solid #d9c7a7;border-radius:999px;padding:8px 18px;font-weight:900;cursor:pointer}
+</style>

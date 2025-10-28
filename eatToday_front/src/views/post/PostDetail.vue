@@ -70,10 +70,10 @@ export default {
       scrapped: false,
       post: null,
       reactions: [
-        { key: "curious", emoji: "🤔", label: "궁금해요", count: 4,  me:false },
-        { key: "cheered", emoji: "👏", label: "맛있어요", count: 1,  me:false },
-        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 52, me:true  },
-        { key: "yummy",   emoji: "🤤", label: "먹고싶어요", count: 6,  me:false }
+        { key: "curious", emoji: "🤔", label: "궁금해요",     count: 0, me:false }, // 1
+        { key: "cheered", emoji: "👏", label: "맛있어요",     count: 0, me:false }, // 2
+        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 0, me:false }, // 3
+        { key: "yummy",   emoji: "🤤", label: "먹고싶어요",   count: 0, me:false }, // 4
       ],
       comments: [],
     };
@@ -90,49 +90,63 @@ export default {
       return this.post?.coverUrl || this.post?.mainImageUrl || this.post?.cover || this.post?.image || '';
     }
   },
-  async mounted() {
-    await this.loadPostFromApi();
-    this.initScrapState();
-    this.$nextTick(() => {
-      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }
-      catch (_) { window.scrollTo(0, 0); }
-    });
-  },
-  methods:{
-    async loadPostFromApi(){
-      try {
-        const rawId = this.$route.params.id
-        if (!rawId) { this.$router.replace('/post'); return; }
-        const id = Number(rawId)
-        if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
- const data = await fetchPost(id)
-        this.post = data;
-        
-        // 댓글 목록 로드 (댓글 API가 없으면 빈 배열)
+
+    async mounted() {
+        await this.loadPostFromApi();
+        const id = Number(this.$route.params.id)
+        if (!Number.isNaN(id)) {
+        const key = `viewed:${id}`
+        if (!sessionStorage.getItem(key)) {
+            try {
+            await http.patch(`/command/foods/${id}/view`)
+            if (this.post) this.post.views = Number(this.post.views || 0) + 1
+            } catch (_) {}
+            sessionStorage.setItem(key, '1')
+        }
+        }
+        this.initScrapState()
+        this.$nextTick(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }) } catch { /* noop */ } })
+    },
+    methods: {
+    async loadPostFromApi() {
         try {
-          const { data: comments } = await http.get(`/foods/${id}/comments`)
+        const rawId = this.$route.params.id;
+        if (!rawId) { this.$router.replace('/post'); return; }
+        const id = Number(rawId);
+        if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
+
+        const data = await fetchPost(id);
+        this.post = data;
+
+        // 댓글 목록 로드
+        try {
+          const { data: comments } = await http.get(`/foods/${id}/comments`);
           this.comments = (comments || []).map(c => ({
-            id: c.foodCommentNo,
-            author: c.memberId || '익명',
-            date: (c.fcDate || '').toString().slice(0,10),
-            text: c.fcContent
-          }))
+            id: c.foodCommentNo ?? c.id,
+            author: c.memberId ?? c.memberNo ?? '익명',
+            date: (c.createdAt ?? c.fcDate ?? '').toString().slice(0,10),
+            text: c.content ?? c.fcContent
+          }));
         } catch (e) {
-          console.warn('댓글 로드 실패:', e.message)
-          this.comments = []
+          console.warn('댓글 로드 실패:', e.message);
+          this.comments = [];
         }
 
-        // 반응 집계 (댓글 API가 없으면 기본값 사용)
+        // 반응 집계 로드
         try {
-          const { data: reacts } = await http.get(`/foods/${id}/reactions`)
+          const { data: reacts } = await http.get(`/foods/${id}/reactions`);
           if (Array.isArray(reacts) && reacts[0]) {
-            const r = reacts[0]
-            const counts = [r.likesNo1, r.likesNo2, r.likesNo3, r.likesNo4].map(n=>Number(n||0))
-            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i]}))
+            const r = reacts[0];
+            const counts = [
+              r.likesNo1 ?? r.likes_no_1 ?? 0,
+              r.likesNo2 ?? r.likes_no_2 ?? 0,
+              r.likesNo3 ?? r.likes_no_3 ?? 0,
+              r.likesNo4 ?? r.likes_no_4 ?? 0,
+            ].map(n => Number(n || 0));
+            this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i] }));
           }
         } catch (e) {
-          console.warn('반응 로드 실패:', e.message)
-          // 기본값 사용
+          console.warn('반응 로드 실패:', e.message);
         }
 
       } catch (e) {
@@ -140,29 +154,57 @@ export default {
         this.post = null;
       }
     },
-    initScrapState(){
+
+    async addComment(text) {
+      try {
+        const id = Number(this.$route.params.id);
+        await http.post(`/command/foods/${id}/comments`, { content: text });
+        // 저장 후 서버 목록 재조회
+        const { data: comments } = await http.get(`/foods/${id}/comments`);
+        this.comments = (comments || []).map(c => ({
+          id: c.foodCommentNo ?? c.id,
+          author: c.memberId ?? c.memberNo ?? '익명',
+          date: (c.createdAt ?? c.fcDate ?? '').toString().slice(0,10),
+          text: c.content ?? c.fcContent
+        }));
+      } catch (e) {
+        alert('댓글 등록에 실패했어요. 로그인 상태/네트워크를 확인해 주세요.');
+      }
+    },
+
+    initScrapState() {
       if (!this.post) return;
       const key = this.scrapKey;
       const list = getScraps();
       this.scrapped = list.some(s => s.postId === key);
     },
-    onToggleReaction(key){
-      const current = this.reactions.find(r => r.me)?.key || null;
-      this.reactions = this.reactions.map(r => {
-        if (r.key === key) {
-          if (r.me) return { ...r, me:false, count: Math.max(0, r.count-1) };
-          return { ...r, me:true, count: r.count+1 };
-        }
-        if (r.me && current && current !== key) {
-          return { ...r, me:false, count: Math.max(0, r.count-1) };
-        }
-        return { ...r, me:false };
-      });
+
+    likesTypeFromKey(key) {
+      return { curious: 1, cheered: 2, soju: 3, yummy: 4 }[key] ?? 1;
     },
-    addComment(text){
-      const id = Date.now();
-      const date = new Date().toISOString().slice(0,10);
-      this.comments.unshift({ id, author:"나", date, text });
+
+    async onToggleReaction(key) {
+      try {
+        const id = Number(this.$route.params.id);
+        const likesType = this.likesTypeFromKey(key);
+
+        // 서버 반영 (toggle/change)
+        const { data: resp } = await http.patch(`/command/foods/${id}/reactions`, { likesType });
+
+        // 서버 집계값으로 갱신
+        const counts = [
+          resp.likesNo1 ?? resp.likes_no_1 ?? 0,
+          resp.likesNo2 ?? resp.likes_no_2 ?? 0,
+          resp.likesNo3 ?? resp.likes_no_3 ?? 0,
+          resp.likesNo4 ?? resp.likes_no_4 ?? 0,
+        ].map(Number);
+        this.reactions = this.reactions.map((r, i) => ({ ...r, count: counts[i] }));
+
+        // 내 선택 표시(서버에 개별 선택 조회 API가 없다면 프론트에서만 표시 유지)
+        this.reactions = this.reactions.map(r => ({ ...r, me: r.key === key }));
+      } catch (e) {
+        alert('반응 반영에 실패했어요. 다시 시도해주세요.');
+      }
     },
   }
 };

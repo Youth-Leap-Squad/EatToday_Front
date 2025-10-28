@@ -34,6 +34,15 @@
 
     <p v-if="errorMessage" :class="errorMessage.includes('성공') ? 'success-message' : 'error-message'">{{ errorMessage }}</p>
 
+    <!-- 포인트 획득 모달 -->
+    <PointEarnedModal 
+      :visible="showPointModal"
+      :description="POINT_POLICY.LOGIN.description"
+      :points="POINT_POLICY.LOGIN.points"
+      @close="closePointModal"
+      :auto-close="false"
+    />
+
     <hr class="divider" />
 
     <!-- 여기! 회원가입 진입 -->
@@ -48,6 +57,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/api/member'
+import PointEarnedModal from '@/common/modal/PointEarnedModal.vue'
+import { POINT_POLICY } from '@/common/constants/pointPolicy'
 
 const router = useRouter()
 
@@ -57,6 +68,7 @@ const password = ref('')
 const rememberMe = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const showPointModal = ref(false)
 
 // 로그인 처리
 const handleLogin = async () => {
@@ -106,14 +118,8 @@ const handleLogin = async () => {
       // 성공 메시지 표시
       errorMessage.value = '로그인에 성공했습니다!'
       
-      // 1초 후 페이지로 이동 (관리자는 관리자 페이지로)
-      setTimeout(() => {
-        if (isAdmin) {
-            router.push('/admindashboard')
-        } else {
-          router.push('/')
-        }
-      }, 1000)
+      // 포인트 모달 표시 (로그인 포인트 획득)
+      showPointModal.value = true
     } else {
       console.error('토큰이 없습니다:', response)
     }
@@ -122,6 +128,18 @@ const handleLogin = async () => {
     console.error('로그인 에러:', error)
   } finally {
     isLoading.value = false
+  }
+}
+
+// 포인트 모달 닫기 후 페이지 이동
+const closePointModal = () => {
+  showPointModal.value = false
+  // 관리자는 관리자 페이지로, 일반 사용자는 홈으로
+  const isAdmin = localStorage.getItem('isAdmin') === 'true'
+  if (isAdmin) {
+    router.push('/admindashboard')
+  } else {
+    router.push('/')
   }
 }
 </script>

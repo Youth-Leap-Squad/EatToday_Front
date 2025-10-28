@@ -39,6 +39,25 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/query': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/command': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/prc': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
     },
   },
 })

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="header">
     <div class="header-container">
       <!-- 왼쪽: 로고 + 내비 -->
@@ -26,7 +26,7 @@
         <template v-else>
           <router-link to="/qna" class="cs-btn link-btn" active-class="router-link-active">고객센터</router-link>
           <router-link to="/mypage" class="mypage-btn link-btn" active-class="router-link-active">마이페이지</router-link>
-          <button class="scrap-btn">스크랩</button>
+          <router-link to="/post/scrap" class="scrap-btn link-btn" active-class="router-link-active">스크랩</router-link>
           <button class="logout-btn" @click="logout">로그아웃</button>
         </template>
       </div>
@@ -40,6 +40,14 @@ import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+
+const goScrap = () => {
+  if (!loginStatus.value) {
+    router.push({ path: '/login', query: { redirect: '/post/scrap' } })
+    return
+  }
+  router.push('/post/scrap')
+}
 
 // 로그인 여부 (localStorage에서 읽어옴)
 const loginStatus = ref(false)

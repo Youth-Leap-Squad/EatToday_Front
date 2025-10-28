@@ -12,7 +12,8 @@
           <router-link to="/admin/member" class="nav-item" active-class="active-link">회원관리</router-link>
           <router-link to="/admin/report" class="nav-item" active-class="active-link">신고 관리</router-link>
           <router-link to="/admin/post" class="nav-item" active-class="active-link">게시글 관리</router-link>
-          <router-link to="/admin/event" class="nav-item" active-class="active-link">이벤트관리</router-link>
+          <router-link to="/admin/event" class="nav-item" active-class="active-link">이벤트 관리</router-link>
+          <router-link to="/admin/qna" class="nav-item" active-class="active-link">문의 관리</router-link>
         </nav>
       </div>
 
@@ -30,6 +31,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const logout = () => {
+  localStorage.removeItem('token')
   localStorage.removeItem('isAdmin')
   router.push('/')
 }

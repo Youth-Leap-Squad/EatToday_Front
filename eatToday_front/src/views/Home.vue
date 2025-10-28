@@ -52,6 +52,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+
 import mainImg from "@/assets/images/main.png";
 
 import beer from "@/assets/images/alcohols/beer.png";
@@ -73,16 +74,17 @@ import chooseHighqualityliquor from "@/assets/images/alcohols/chooseHighqualityl
 import chooseHighball from "@/assets/images/alcohols/chooseHighball.png";
 import chooseWine from "@/assets/images/alcohols/chooseWine.png";
 
+
 const drinks = [
-  { label: "맥주", img: beer, hover: chooseBeer },
-  { label: "소주", img: soju, hover: chooseSoju },
-  { label: "막걸리", img: makgeolli, hover: chooseMakgeolli },
-  { label: "샴페인", img: champagne, hover: chooseChampagne },
-  { label: "사케", img: sake, hover: chooseSake },
-  { label: "고량주", img: highqualotyliquor, hover: chooseHighqualityliquor },
-  { label: "하이볼", img: highball, hover: chooseHighball },
-  { label: "와인", img: wine, hover: chooseWine },
-  { label: "기타", img: etc, hover: null },
+  { label: "맥주", img: beer, hover: chooseBeer, alcoholNo: 1 },
+  { label: "소주", img: soju, hover: chooseSoju, alcoholNo: 2 },
+  { label: "막걸리", img: makgeolli, hover: chooseMakgeolli, alcoholNo: 3 },
+  { label: "샴페인", img: champagne, hover: chooseChampagne,alcoholNo: 4 }, 
+  { label: "사케", img: sake, hover: chooseSake, alcoholNo: 5},        
+  { label: "고량주", img: highqualotyliquor, hover: chooseHighqualityliquor, alcoholNo: 6},
+  { label: "하이볼", img: highball, hover: chooseHighball, alcoholNo: 7},
+  { label: "와인", img: wine, hover: chooseWine, alcoholNo: 8 },
+  { label: "기타", img: etc, hover: null, alcoholNo: 9},
 ];
 
 const hovered = ref(null);
@@ -90,10 +92,14 @@ const letters = "E A T       T O D A Y".split("");
 const router = useRouter();
 
 function goDrink(d) {
-  if (d.label === "소주") {
-    router.push("/post/soju").then(() => {
+  if (d.alcoholNo) {
+    // 라우터에 등록한 주종별 페이지로 이동: /alcohol/:id
+    router.push({ name: "AlcoholList", params: { id: d.alcoholNo } }).then(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+  } else {
+    // 미지원 주종 클릭 시 동작 (원하면 안내 모달/토스트로 변경)
+    console.warn(`아직 미지원 주종: ${d.label}`);
   }
 }
 </script>
@@ -247,7 +253,6 @@ function goDrink(d) {
   width: 100%;
 }
 
-/* ================= DRINK SECTION ================= */
 .drink-section {
   width: 90%;
   margin: 40px auto 80px;
@@ -307,5 +312,4 @@ function goDrink(d) {
     height: 220px;
   }
 }
-
 </style>

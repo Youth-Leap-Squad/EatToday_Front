@@ -135,6 +135,36 @@ export async function deleteReview(reviewNo) {
   return data;
 }
 
+/** 좋아요 상태 조회 */
+export async function fetchReviewLikeStatus(reviewNo) {
+  const n = Number(reviewNo)
+  if (!Number.isFinite(n)) throw new Error('reviewNo가 유효하지 않습니다.')
+  try {
+    const { data } = await queryApi.get(`/query/photo-reviews/${n}/likes/me`)
+    return data
+  } catch (err) {
+    // 엔드포인트 미지원 시 graceful degrade
+    console.warn('[fetchReviewLikeStatus] fallback:', err?.response?.status || err)
+    return null
+  }
+}
+
+/** 좋아요 토글 */
+export async function toggleReviewLike(reviewNo, { memberNo }) {
+  const n = Number(reviewNo)
+  if (!Number.isFinite(n)) throw new Error('reviewNo가 유효하지 않습니다.')
+  if (!Number.isFinite(Number(memberNo))) throw new Error('memberNo가 유효하지 않습니다.')
+  try {
+    const { data } = await commandApi.post(`/command/photo-reviews/${n}/likes`, {
+      memberNo: Number(memberNo)
+    })
+    return data
+  } catch (err) {
+    console.warn('[toggleReviewLike] 실패:', err?.response?.data || err?.message || err)
+    throw err
+  }
+}
+
 /* =====================================================
    💬 사진 리뷰 댓글 관련 (PRC 엔드포인트)
 ===================================================== */
@@ -222,8 +252,18 @@ export async function deleteComment(prcNo, memberNo) {
   return data;
 }
 
+export const fetchLikeCount = (reviewNo) =>
+  api.get(`/query/photo-reviews/${reviewNo}/likes`).then(r => r.data.likeCount)
+
+export const hitLike = (reviewNo) =>
+  api.post(`/command/photo-reviews/${reviewNo}/likes`).then(r => r.data.likeCount)
+
+export const toggleLike = (reviewNo, liked) =>
+  api.post(`/command/photo-reviews/${reviewNo}/likes/toggle?liked=${liked}`)
+     .then(r => r.data.likeCount)
+
 /* =====================================================
-   📚 Export 묶음
+  Export 묶음
 ===================================================== */
 export default {
   fetchReviewsByBoard,

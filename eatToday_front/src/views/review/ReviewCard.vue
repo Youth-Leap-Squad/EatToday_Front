@@ -3,6 +3,10 @@
 import { ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { likeReview } from '@/mock/review.js' // 실제 API로 바꾸려면 여기만 교체
+import { fetchReviewDetail } from '@/api/photoReviewAnju'
+
+const detailThumbnailCache = new Map()
+const pendingDetailThumbnails = new Map()
 
 const router = useRouter()
 
@@ -34,6 +38,25 @@ async function onLike(e) {
 const API_ORIGIN = import.meta.env.VITE_API_ORIGIN || 'http://localhost:8080'
 const FRONT_ORIGIN = window.location.origin
 const IMAGE_EXT_RE = /\.(png|jpe?g|gif|bmp|webp|svg|heic|heif|avif)$/i
+const ORDER_KEYS = [
+  'sort',
+  'order',
+  'sequence',
+  'seq',
+  'fileOrder',
+  'fileSeq',
+  'fileSequence',
+  'fileSort',
+  'prFileSeq',
+  'prFileOrder',
+  'displayOrder',
+  'priority',
+  'position',
+  'index',
+  'idx',
+  'rownum',
+  'rnum'
+]
 const RAW_URL_KEYS = [
   'prFileUrl',
   'prFilePath',
@@ -59,12 +82,29 @@ const RAW_URL_KEYS = [
   'originalName',
   'originFileName',
   'storedName',
+  'storedFileName',
+  'storedFilePath',
+  'stored_path',
+  'storedPath',
+  'storedUrl',
+  'stored_url',
   'saveName',
   'saveFileName',
   'savedFileName',
+  'saveFilePath',
+  'save_file_path',
+  'save_file_name',
   'savePath',
+  'uploadPath',
+  'uploadDir',
+  'uploadDirectory',
+  'uploadUrl',
   'directory',
-  'location'
+  'location',
+  'fileName',
+  'filename',
+  'originFilename',
+  'origin_file_name'
 ]
 const FILE_COLLECTION_KEYS = [
   'files',
@@ -72,7 +112,6 @@ const FILE_COLLECTION_KEYS = [
   'fileList',
   'reviewFiles',
   'reviewFile',
-  'reviewFileList',
   'reviewFileList',
   'photoReviewFiles',
   'photoReviewFile',
@@ -84,6 +123,20 @@ const FILE_COLLECTION_KEYS = [
   'photoFiles',
   'photoFileList',
   'photoFile',
+  'photos',
+  'photo',
+  'photoList',
+  'imageRecords',
+  'imageDtos',
+  'imageObjects',
+  'media',
+  'fileDtoList',
+  'fileDto',
+  'fileDtos',
+  'prFiles',
+  'prFileList',
+  'prFileDtos',
+  'photoReviewFileDtoResponses',
   'fileResponses',
   'fileResponseList',
   'attachments',
@@ -95,6 +148,12 @@ const FILE_COLLECTION_KEYS = [
   'thumbnails',
   'thumbnailList'
 ]
+
+function joinOrigin(origin, segment) {
+  const base = String(origin || '').replace(/\/+$/, '')
+  const tail = String(segment || '').replace(/\\/g, '/').replace(/^\/+/, '')
+  return tail ? `${base}/${tail}` : ''
+}
 
 function resolveImg(rawUrl) {
   const url = String(rawUrl || '').replace(/\\/g, '/').trim()
@@ -112,30 +171,34 @@ function resolveImg(rawUrl) {
   const photoMarker = '/photo_review/'
   const photoIdx = lower.lastIndexOf(photoMarker)
   if (photoIdx !== -1) {
-    return API_ORIGIN + url.slice(photoIdx)
+    return joinOrigin(API_ORIGIN, url.slice(photoIdx))
   }
   const photoIdx2 = lower.lastIndexOf('photo_review/')
   if (photoIdx2 !== -1) {
-    return API_ORIGIN + '/' + url.slice(photoIdx2)
+    return joinOrigin(API_ORIGIN, url.slice(photoIdx2))
   }
   const photoIdx3 = lower.lastIndexOf('photoreview/')
   if (photoIdx3 !== -1) {
-    return API_ORIGIN + '/' + url.slice(photoIdx3)
+    return joinOrigin(API_ORIGIN, url.slice(photoIdx3))
+  }
+  const photoIdx4 = lower.lastIndexOf('photoreview\\')
+  if (photoIdx4 !== -1) {
+    return joinOrigin(API_ORIGIN, url.slice(photoIdx4))
   }
 
   // ✅ 프론트 public 정적 자원
   const imgMarker = '/images/'
   const imgIdx = lower.lastIndexOf(imgMarker)
   if (imgIdx !== -1) {
-    return FRONT_ORIGIN + url.slice(imgIdx)
+    return joinOrigin(FRONT_ORIGIN, url.slice(imgIdx))
   }
   const imgIdx2 = lower.lastIndexOf('images/')
   if (imgIdx2 !== -1) {
-    return FRONT_ORIGIN + '/' + url.slice(imgIdx2)
+    return joinOrigin(FRONT_ORIGIN, url.slice(imgIdx2))
   }
 
   const normalized = url.startsWith('/') ? url : '/' + url
-  return API_ORIGIN + normalized
+  return joinOrigin(API_ORIGIN, normalized)
 }
 
 function pickRawFilePath(file) {
@@ -219,47 +282,169 @@ function extractFiles(record) {
   return results
 }
 
-/* ✅ 대표 이미지 자동 추출 */
-const thumbnailUrl = computed(() => {
+function sortFileEntries(entries) {
+  return entries
+    .map((entry, idx) => {
+      if (!entry || typeof entry !== 'object') return { entry, order: idx, idx }
+      const numericOrder = ORDER_KEYS.map(key => Number(entry[key]))
+        .filter(n => Number.isFinite(n))
+        .sort((a, b) => a - b)[0]
+      const idKeys = [
+        'prFileNo',
+        'fileNo',
+        'id',
+        'fileId',
+        'file_no',
+        'fileSeq',
+        'seq'
+      ]
+      const numericId = idKeys.map(key => Number(entry[key]))
+        .filter(n => Number.isFinite(n))
+        .sort((a, b) => a - b)[0]
+      const order =
+        (Number.isFinite(numericOrder) ? numericOrder : null) ??
+        (Number.isFinite(numericId) ? numericId : null) ??
+        idx
+      return { entry, order, idx }
+    })
+    .sort((a, b) => (a.order === b.order ? a.idx - b.idx : a.order - b.order))
+    .map(item => item.entry)
+}
+
+function pickFirstImage(record) {
+  if (!record || typeof record !== 'object') return ''
+
   const directCandidates = [
-    props.item?.thumbnailUrl,
-    props.item?.thumbnailPath,
-    props.item?.imageUrl,
-    props.item?.imgUrl,
-    props.item?.imagePath,
-    props.item?.imgPath,
-    props.item?.photoUrl,
-    props.item?.mainImage,
-    props.item?.mainImageUrl,
-    props.item?.coverUrl,
-    props.item?.thumbnail,
-    props.item?.thumbnailImage,
-    props.item?.fileUrl,
-    props.item?.filePath,
-    props.item?.file_path,
-    props.item?.previewUrl,
-    props.item?.firstImage
+    record?.thumbnailUrl,
+    record?.thumbnailPath,
+    record?.imageUrl,
+    record?.imgUrl,
+    record?.imagePath,
+    record?.imgPath,
+    record?.photoUrl,
+    record?.photo,
+    record?.photoSrc,
+    record?.photoURL,
+    record?.photoPath,
+    record?.mainImage,
+    record?.mainImageUrl,
+    record?.mainImagePath,
+    record?.coverUrl,
+    record?.cover,
+    record?.thumbnail,
+    record?.thumbnailImage,
+    record?.fileUrl,
+    record?.filePath,
+    record?.file_path,
+    record?.previewUrl,
+    record?.firstImage,
+    record?.image,
+    record?.imageSrc,
+    record?.img,
+    record?.firstImageUrl,
+    record?.mediaUrl,
+    record?.mediaPath,
+    record?.media,
+    record?.resourceUrl
   ]
+
   for (const candidate of directCandidates) {
     const resolved = resolveImg(candidate)
     if (resolved) return resolved
   }
 
-  const [firstFile] = extractFiles(props.item)
-  if (firstFile) {
-    const resolved = resolveImg(pickRawFilePath(firstFile))
+  const arrayCandidates = [
+    record?.imgUrls,
+    record?.imgUrlList,
+    record?.imageList,
+    record?.images,
+    record?.imageArray,
+    record?.photos,
+    record?.photoList,
+    record?.thumbnails,
+    record?.thumbnailList,
+    record?.mediaList
+  ]
+  for (const group of arrayCandidates) {
+    if (!Array.isArray(group)) continue
+    const str = group.find(v => typeof v === 'string' && v.trim())
+    if (str) {
+      const resolved = resolveImg(str)
+      if (resolved) return resolved
+    }
+    const obj = group.find(v => v && typeof v === 'object')
+    if (obj) {
+      const resolved = resolveImg(pickRawFilePath(obj))
+      if (resolved) return resolved
+    }
+  }
+
+  const entries = sortFileEntries(extractFiles(record))
+  for (const entry of entries) {
+    const resolved = resolveImg(pickRawFilePath(entry))
     if (resolved) return resolved
   }
 
   return ''
-})
+}
+
+/* ✅ 대표 이미지 자동 추출 */
+const thumbnailUrl = computed(() => pickFirstImage(props.item))
+const thumbnail = ref('')
+
+async function resolveThumbnailFromDetail() {
+  const rawId = props.item?.id ?? props.item?.reviewNo ?? props.item?.review_id
+  const reviewId = Number(rawId)
+  if (!Number.isFinite(reviewId)) return ''
+
+  if (detailThumbnailCache.has(reviewId)) {
+    return detailThumbnailCache.get(reviewId) ?? ''
+  }
+  if (pendingDetailThumbnails.has(reviewId)) {
+    return pendingDetailThumbnails.get(reviewId)
+  }
+
+  const promise = (async () => {
+    try {
+      const detail = await fetchReviewDetail(reviewId)
+      const url = pickFirstImage(detail)
+      detailThumbnailCache.set(reviewId, url)
+      return url
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[ReviewCard] 상세 이미지 로드 실패:', reviewId, err)
+      }
+      detailThumbnailCache.set(reviewId, '')
+      return ''
+    } finally {
+      pendingDetailThumbnails.delete(reviewId)
+    }
+  })()
+
+  pendingDetailThumbnails.set(reviewId, promise)
+  return promise
+}
+
+watch(
+  () => [thumbnailUrl.value, props.item?.id, props.item?.reviewNo],
+  async () => {
+    const direct = thumbnailUrl.value
+    if (direct) {
+      thumbnail.value = direct
+      return
+    }
+    const fallback = await resolveThumbnailFromDetail()
+    thumbnail.value = fallback || ''
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <article class="card" @click="goDetail" tabindex="0" @keyup.enter="goDetail">
     <!-- ✅ 썸네일 -->
     <div class="thumb">
-      <img v-if="thumbnailUrl" :src="thumbnailUrl" alt="리뷰 이미지" />
+      <img v-if="thumbnail" :src="thumbnail" alt="리뷰 이미지" />
       <div v-else class="placeholder">이미지</div>
 
       <!-- 좋아요 배지 -->

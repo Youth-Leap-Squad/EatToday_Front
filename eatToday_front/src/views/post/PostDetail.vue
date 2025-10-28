@@ -46,6 +46,24 @@
       placeholder="맛은 어땠나요? 댓글을 남겨보세요 :)"
       @add="addComment"
     />
+
+    <PhotoReviewMiniListByBoard
+      class="mt24"
+      :board-no="
+        post?.boardNo ||
+        post?.anjuNo ||
+        post?.raw?.boardNo ||
+        post?.raw?.board_no ||
+        post?.raw?.board?.boardNo ||
+        post?.raw?.board?.board_no ||
+        post?.raw?.board?.id ||
+        post?.raw?.board?.boardId ||
+        post?.raw?.foodBoardNo ||
+        post?.raw?.foodNo ||
+        post?.id ||
+        $route.params.id
+      "
+    />
   </div>
 
   <div v-else class="empty">게시글 데이터를 불러오지 못했습니다. 목록에서 다시 시도해주세요.</div>
@@ -56,6 +74,7 @@ import ScrapButton from "@/components/post/ScrapButton.vue";
 import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
+import PhotoReviewMiniListByBoard from '@/views/review/PhotoReviewMiniListByBoard.vue'
 import { fetchPost, toggleReaction, createComment } from '@/api/post';
 import http from '@/api/index';
 
@@ -67,7 +86,7 @@ function getScraps() {
 
 export default {
   name: "PostDetail",
-  components: { ScrapButton, ReactionChips, CommentBox, PhotoReviewCard },
+  components: { ScrapButton, ReactionChips, CommentBox, PhotoReviewCard, PhotoReviewMiniListByBoard },
   data() {
     return {
       scrapped: false,
@@ -258,3 +277,4 @@ export default {
 .mt24 { margin-top: 24px; }
 .empty { text-align: center; padding: 48px 0; color: #7a6f63; }
 </style>
+

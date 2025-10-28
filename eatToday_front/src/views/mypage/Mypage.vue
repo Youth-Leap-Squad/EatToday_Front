@@ -72,7 +72,7 @@
           v-for="(r, i) in reviewsRows"
           :key="r.id ?? i"
           :member-no="r.memberNo"
-          :board-id="r.boardId"
+          :review-id="r.reviewId"
           :my-member-no="myMemberNo"
           :photo-src="r.photo"
           :avatar-src="r.avatar"
@@ -234,7 +234,7 @@ const normalize = r => {
 
   return {
     id: r.reviewNo,
-    boardId: r.boardNo ?? r.boardId ?? null,
+    reviewId: r.reviewNo ?? r.reviewId ?? null,
     memberNo: r?.member?.memberNo ?? null,
     nickname: r?.member?.memberName ?? '익명',
     content: r.reviewContent ?? r.reviewTitle ?? '',

@@ -314,99 +314,50 @@ function requireLogin () {
 function normalize (list = []) {
   return list
     .map(r => {
-      const rawId =
-        r?.reviewNo ??
-        r?.review_no ??
-        r?.prReviewNo ??
-        r?.pr_review_no ??
-        r?.photoReviewNo ??
-        r?.photo_review_no ??
-        r?.photoReviewId ??
-        r?.reviewId ??
-        r?.id ??
-        r?.prFileGroupNo
-      const id = Number(rawId)
+      // ... (id, title, nickname, likes, avatarRaw 계산은 그대로)
 
-      const title =
-        r?.reviewTitle ??
-        r?.title ??
-        r?.subject ??
-        (r?.menuName ? `${r.menuName} 리뷰` : '제목 없음')
+      // ✅ 0) files[] 최우선 처리
+      let imgUrl = firstImageFromFiles(r)
 
-      const nickname =
-        r?.memberName ??
-        r?.member?.memberName ??
-        r?.writerName ??
-        r?.writer?.name ??
-        r?.authorName ??
-        r?.author?.name ??
-        r?.nickname ??
-        r?.memberId ??
-        'user'
+      // ✅ 1) 파일에서 못 찾았으면 direct candidates
+      if (!imgUrl) {
+        const directCandidates = [
+          r?.thumbnailUrl,
+          r?.thumbnailPath,
+          r?.imageUrl,
+          r?.imgUrl,
+          r?.imagePath,
+          r?.imgPath,
+          r?.photoUrl,
+          r?.photo,
+          r?.photoSrc,
+          r?.photoURL,
+          r?.photoPath,
+          r?.mainImage,
+          r?.mainImageUrl,
+          r?.mainImagePath,
+          r?.coverUrl,
+          r?.cover,
+          r?.thumbnail,
+          r?.thumbnailImage,
+          r?.fileUrl,
+          r?.filePath,
+          r?.file_path,
+          r?.previewUrl,
+          r?.firstImage,
+          r?.image,
+          r?.imageSrc,
+          r?.img,
+          r?.firstImageUrl,
+          r?.mediaUrl,
+          r?.mediaPath,
+          r?.media,
+          r?.resourceUrl
+        ]
+        imgUrl = directCandidates.map(resolveImg).find(Boolean) || ''
+      }
 
-      const likes =
-        Number(
-          r?.likeCount ??
-            r?.reviewLike ??
-            r?.likes ??
-            r?.reviewLikeCount ??
-            r?.heartCount ??
-            r?.goodCount ??
-            r?.favoriteCount ??
-            r?.like_cnt ??
-            0
-        ) || 0
-
-      const avatarRaw =
-        r?.member?.profileImageUrl ??
-        r?.member?.profileImage?.url ??
-        r?.writer?.avatarUrl ??
-        r?.author?.avatarUrl ??
-        r?.authorAvatar ??
-        r?.profileImage ??
-        r?.profileUrl ??
-        r?.avatar ??
-        ''
-
-      const fileEntries = extractFiles(r)
-      const directCandidates = [
-        r?.thumbnailUrl,
-        r?.thumbnailPath,
-        r?.imageUrl,
-        r?.imgUrl,
-        r?.imagePath,
-        r?.imgPath,
-        r?.photoUrl,
-        r?.photo,
-        r?.photoSrc,
-        r?.photoURL,
-        r?.photoPath,
-        r?.mainImage,
-        r?.mainImageUrl,
-        r?.mainImagePath,
-        r?.coverUrl,
-        r?.cover,
-        r?.thumbnail,
-        r?.thumbnailImage,
-        r?.fileUrl,
-        r?.filePath,
-        r?.file_path,
-        r?.previewUrl,
-        r?.firstImage,
-        r?.image,
-        r?.imageSrc,
-        r?.img,
-        r?.firstImageUrl,
-        r?.mediaUrl,
-        r?.mediaPath,
-        r?.media,
-        r?.resourceUrl
-      ]
-      const directUrl = directCandidates
-        .map(resolveImg)
-        .find(v => typeof v === 'string' && v.length > 0)
-      let imgUrl = directUrl
-
+      // ✅ 2) 배열/중첩 객체에서 탐색
       if (!imgUrl) {
         const arrayCandidates = [
           r?.imgUrls,
@@ -423,32 +374,22 @@ function normalize (list = []) {
         for (const group of arrayCandidates) {
           if (!Array.isArray(group)) continue
           const str = group.find(v => typeof v === 'string' && v.trim())
-          if (str) {
-            const resolved = resolveImg(str)
-            if (resolved) {
-              imgUrl = resolved
-              break
-            }
-          }
+          if (str) { imgUrl = resolveImg(str); if (imgUrl) break }
           const obj = group.find(v => v && typeof v === 'object')
           if (obj) {
             const raw = pickRawFilePath(obj)
             const resolved = resolveImg(raw)
-            if (resolved) {
-              imgUrl = resolved
-              break
-            }
+            if (resolved) { imgUrl = resolved; break }
           }
         }
       }
 
+      // ✅ 3) files[] 전체 순회(이전 일반화 로직)
       if (!imgUrl) {
+        const fileEntries = extractFiles(r)
         for (const entry of fileEntries) {
           const resolved = resolveImg(pickRawFilePath(entry))
-          if (resolved) {
-            imgUrl = resolved
-            break
-          }
+          if (resolved) { imgUrl = resolved; break }
         }
       }
 
@@ -456,13 +397,29 @@ function normalize (list = []) {
         console.warn('[PhotoReviewMiniList] 이미지 경로 없음:', r)
       }
 
+      // ... 반환 객체는 기존과 동일
       return {
-        id: Number.isFinite(id) ? id : null,
-        title,
+        id: Number(
+          r?.reviewNo ?? r?.review_no ?? r?.prReviewNo ?? r?.pr_review_no ??
+          r?.photoReviewNo ?? r?.photo_review_no ?? r?.photoReviewId ??
+          r?.reviewId ?? r?.id ?? r?.prFileGroupNo
+        ) || null,
+        title:
+          r?.reviewTitle ?? r?.title ?? r?.subject ??
+          (r?.menuName ? `${r.menuName} 리뷰` : '제목 없음'),
         imgUrl,
-        nickname,
-        likes: likes < 0 ? 0 : likes,
-        avatar: resolveImg(avatarRaw)
+        nickname:
+          r?.memberName ?? r?.member?.memberName ?? r?.writerName ?? r?.writer?.name ??
+          r?.authorName ?? r?.author?.name ?? r?.nickname ?? r?.memberId ?? 'user',
+        likes: Number(
+          r?.likeCount ?? r?.reviewLike ?? r?.likes ?? r?.reviewLikeCount ??
+          r?.heartCount ?? r?.goodCount ?? r?.favoriteCount ?? r?.like_cnt ?? 0
+        ) || 0,
+        avatar: resolveImg(
+          r?.member?.profileImageUrl ?? r?.member?.profileImage?.url ??
+          r?.writer?.avatarUrl ?? r?.author?.avatarUrl ??
+          r?.authorAvatar ?? r?.profileImage ?? r?.profileUrl ?? r?.avatar ?? ''
+        )
       }
     })
     .filter(it => it.id !== null)
@@ -524,6 +481,36 @@ function goDetail (id) {
 }
 function goLounge () {
   router.push(loungePath)
+}
+
+function firstImageFromFiles(r) {
+  if (!r || !Array.isArray(r.files) || r.files.length === 0) return ''
+
+  // 대표는 첫 번째 파일 기준
+  const f = r.files[0]
+
+  // ✅ 1순위: URL이 이미 있으면 그대로
+  if (typeof f.prFileUrl === 'string' && f.prFileUrl.trim()) {
+    return resolveImg(f.prFileUrl)
+  }
+  if (typeof f.fileUrl === 'string' && f.fileUrl.trim()) {
+    return resolveImg(f.fileUrl)
+  }
+
+  // ✅ 2순위: rename(저장파일명)으로 /images/photo_review/{rename}
+  if (typeof f.prFileRename === 'string' && f.prFileRename.trim()) {
+    return resolveImg(`/images/photo_review/${f.prFileRename}`)
+  }
+
+  // ✅ 3순위: 물리경로에서 파일명만 추출
+  if (typeof f.prFilePath === 'string' && f.prFilePath.trim()) {
+    const name = f.prFilePath.replace(/\\/g, '/').split('/').pop()
+    if (name) return resolveImg(`/images/photo_review/${name}`)
+  }
+
+  // ✅ 4순위: 기타 키에서 경로/파일명 찾기
+  const raw = pickRawFilePath(f)
+  return resolveImg(raw)
 }
 
 onMounted(() => {

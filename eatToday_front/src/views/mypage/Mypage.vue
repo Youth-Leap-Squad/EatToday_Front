@@ -309,8 +309,8 @@ function onToggleLike(index, payload) {
   list[index].likes = payload.count
 }
 
-const follower = 0
-const following = 0
+const follower = 50
+const following = 50
 const followerUsers = reactive(Array.from({ length: 30 }, (_, i) => `user${i + 1}`))
 const followingUsers = reactive(Array.from({ length: 35 }, (_, i) => `user${i + 21}`))
 const showFollowModal = ref(false)

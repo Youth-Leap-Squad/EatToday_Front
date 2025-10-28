@@ -2,7 +2,7 @@
 <script setup>
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { commandApi } from '@/api/photoReviewAnju'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,19 +34,69 @@ function onFile(e){
 const title = ref('')
 const content = ref('')
 
-// (실서비스는 JWT 디코드 권장)
+function parseJwt(token) {
+  if (!token) return null
+  try {
+    const part = token.split('.')[1]
+    if (!part) return null
+    const padded = part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (part.length % 4 || 4)) % 4)
+    const json = decodeURIComponent(
+      atob(padded)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(json)
+  } catch {
+    return null
+  }
+}
+
+function currentToken() {
+  const raw =
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('Authorization')
+  return raw || ''
+}
+
 function getMemberNo(){
-  const v = Number(localStorage.getItem('memberNo'))
-  return Number.isFinite(v) ? v : 1
+  const stored = Number(localStorage.getItem('memberNo'))
+  if (Number.isFinite(stored)) return stored
+  const raw = currentToken()
+  if (!raw) return null
+  const payload = parseJwt(raw.startsWith('Bearer ') ? raw.slice(7) : raw)
+  const n = Number(payload?.memberNo ?? payload?.member_no)
+  if (Number.isFinite(n)) {
+    localStorage.setItem('memberNo', String(n))
+    return n
+  }
+  return Number.isFinite(n) ? n : null
+}
+
+function requireLogin() {
+  const token = currentToken()
+  if (!token || token === 'null' || token === 'undefined') {
+    alert('로그인이 필요합니다.')
+    router.push({ path: '/login', query: { redirect: router.currentRoute.value.fullPath } })
+    return false
+  }
+  return true
 }
 
 async function submit(){
+  if (!requireLogin()) return
+  const memberNo = getMemberNo()
+  if (!Number.isFinite(memberNo)) {
+    alert('회원 정보를 확인할 수 없습니다.')
+    return
+  }
   if (!title.value.trim()) return alert('제목을 입력해 주세요.')
   if (!content.value.trim()) return alert('내용을 입력해 주세요.')
 
   const payload = {
     boardNo,
-    memberNo: getMemberNo(),
+    memberNo,
     reviewTitle: title.value,
     reviewContent: content.value,
     reviewLike: 0
@@ -57,7 +107,9 @@ async function submit(){
   fileList.value.forEach(f => fd.append('files', f))
 
   try {
-    const { data } = await axios.post('http://localhost:8080/command/photo-reviews', fd, { withCredentials: true })
+    const { data } = await commandApi.post('/command/photo-reviews', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     const detail =
       data && typeof data === 'object'
         ? { ...payload, ...data }

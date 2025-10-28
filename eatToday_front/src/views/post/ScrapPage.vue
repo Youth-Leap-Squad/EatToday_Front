@@ -13,8 +13,17 @@
       <button class="btn">검색</button>
     </div>
 
+    <!-- ✅ 선택 액션 바: 폴더/아이템 동시 관리 -->
+    <div class="actions" v-if="selectedIds.size || selectedFolderNames.length">
+      <span class="sel-info">
+        폴더 {{ selectedFolderNames.length }}개 · 항목 {{ selectedIds.size }}개 선택
+      </span>
+      <button class="danger" @click="deleteSelectedAll">선택 삭제</button>
+      <button class="ghost" @click="clearSelectionAll">선택 해제</button>
+    </div>
+
     <section class="panel">
-      <!-- 상단 탭: 아래 폴더 리스트와 동일 데이터 사용 -->
+      <!-- 상단 탭 -->
       <div class="pills">
         <button
           v-for="f in folderList"
@@ -27,14 +36,15 @@
         </button>
       </div>
 
-      <!-- 폴더 트리 + 펼침 콘텐츠 -->
+      <!-- 폴더 트리 -->
       <ScrapFolderList
         :folders="folderList"
         :active="activeFolder"
         :expanded="expanded"
+        :selected-folders="selectedFolderNames"
         @select="selectFolder"
         @toggle="toggleExpand"
-        @remove="removeFolder"
+        @toggleFolderSelect="toggleFolderSelect"
       >
         <template #content="{ folder }">
           <div v-if="expanded[folder]" class="folder-grid">
@@ -42,7 +52,11 @@
               v-for="it in itemsOfFolder(folder)"
               :key="it.id"
               :item="it"
+              :selectable="true"
+              :selected="selectedIds.has(it.id)"
               @open="openPost"
+              @toggle="toggleSelect"
+              @delete="deleteOne"
             />
           </div>
         </template>
@@ -82,10 +96,11 @@ export default {
       activeFolder: "전체",
       expanded: { 전체: true },
       newFolderName: "",
+      selectedIds: new Set(),        // ✅ 선택된 스크랩 항목 ID들
+      selectedFolderNames: [],       // ✅ 선택된 폴더 이름들
     };
   },
   computed: {
-    // 상단/좌측 폴더가 공통으로 보는 단일 소스
     folderList() {
       const names = new Set(this.folders);
       this.scraps.forEach(s => names.add(s.folder || "기본"));
@@ -104,7 +119,7 @@ export default {
   },
   mounted() {
     this.load();
-    // (선택) 레거시 마이그레이션
+    // 레거시 마이그레이션
     try {
       const legacy = JSON.parse(localStorage.getItem('food_scraps') || '[]');
       if (Array.isArray(legacy) && legacy.length) {
@@ -119,7 +134,7 @@ export default {
       }
     } catch {}
 
-    // UI 상태 복원
+    // UI 복원
     try {
       const ui = JSON.parse(localStorage.getItem(UIKEY) || "{}");
       this.q = ui.q || "";
@@ -149,6 +164,7 @@ export default {
       localStorage.setItem(SCRAPS_KEY, JSON.stringify(this.scraps));
     },
 
+    /* ===== 폴더/탭/펼침 ===== */
     selectFromPill(name) {
       this.activeFolder = name;
       this.expanded = { ...this.expanded, [name]: true };
@@ -164,6 +180,7 @@ export default {
       this.persistUi();
     },
 
+    /* ===== 필터링 ===== */
     itemsOfFolder(name) {
       let arr = this.scraps.slice();
       if (name !== "전체") arr = arr.filter(s => (s.folder || "기본") === name);
@@ -178,6 +195,7 @@ export default {
       return arr.sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
     },
 
+    /* ===== 폴더 추가 ===== */
     addFolder() {
       const name = this.newFolderName.trim();
       if (!name) return alert("폴더명을 입력하세요.");
@@ -191,36 +209,90 @@ export default {
       this.persistUi();
     },
 
-    /** ✅ 폴더 삭제: 폴더 자체 + 폴더 내 스크랩 전부 삭제(스크랩 취소) */
-    removeFolder(name) {
-      if (name === "전체") return;
-      // 안전 정책: '기본' 삭제 방지 (원하면 주석 해제)
-      if (name === "기본") { alert("'기본' 폴더는 삭제할 수 없습니다."); return; }
+    /* ===== 폴더 선택/삭제 ===== */
+    toggleFolderSelect(name) {
+      if (name === '전체') return; // 전체는 선택 불가
+      const arr = new Set(this.selectedFolderNames);
+      if (arr.has(name)) arr.delete(name); else arr.add(name);
+      this.selectedFolderNames = Array.from(arr);
+    },
 
-      const countInFolder = this.scraps.filter(s => (s.folder || "기본") === name).length;
-      const ok = confirm(`'${name}' 폴더를 삭제할까요?\n해당 폴더 안의 ${countInFolder}개 스크랩도 모두 삭제됩니다.`);
+    deleteFolders(names) {
+      if (!names.length) return;
+      // 폴더별 포함 항목 ID 수집
+      const idsInFolders = new Set(
+        this.scraps.filter(s => names.includes(s.folder || "기본")).map(s => s.id)
+      );
+      const cntItems = idsInFolders.size;
+      const ok = confirm(
+        `선택한 폴더 ${names.length}개를 삭제할까요?\n해당 폴더 안의 ${cntItems}개 스크랩도 함께 삭제됩니다.`
+      );
       if (!ok) return;
 
       // 1) 폴더 목록에서 제거
-      this.folders = this.folders.filter(n => n !== name);
+      this.folders = this.folders.filter(n => !names.includes(n));
 
-      // 2) 폴더 내 스크랩 모두 제거 (= 스크랩 취소)
-      this.scraps = this.scraps.filter(s => (s.folder || "기본") !== name);
+      // 2) 해당 폴더 내 스크랩 제거
+      this.scraps = this.scraps.filter(s => !names.includes(s.folder || "기본"));
 
-      // 3) UI 상태 정리
-      const { [name]: _, ...rest } = this.expanded;
-      this.expanded = rest;
-      if (this.activeFolder === name) this.activeFolder = "전체";
+      // 3) 선택/펼침/활성 폴더 정리
+      const s = new Set(this.selectedIds);
+      idsInFolders.forEach(id => s.delete(id));
+      this.selectedIds = s;
+      const exp = { ...this.expanded };
+      names.forEach(n => delete exp[n]);
+      this.expanded = exp;
+      if (names.includes(this.activeFolder)) this.activeFolder = "전체";
 
-      // 4) 저장
+      // 4) 영속화
       this.persistFolders();
       this.persistScraps();
       this.persistUi();
     },
 
+    /* ===== 카드 선택/삭제 ===== */
+    toggleSelect(id) {
+      const s = new Set(this.selectedIds);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      this.selectedIds = s;
+    },
+    clearSelectionAll() {
+      this.selectedIds = new Set();
+      this.selectedFolderNames = [];
+    },
+    deleteOne(id) {
+      const it = this.scraps.find(s => s.id === id);
+      const title = it?.title ? `\n「${it.title}」` : "";
+      if (!confirm(`이 스크랩을 삭제할까요?${title}`)) return;
+
+      this.scraps = this.scraps.filter(s => s.id !== id);
+      this.persistScraps();
+      const s = new Set(this.selectedIds); s.delete(id); this.selectedIds = s;
+    },
+    deleteSelectedAll() {
+      const folderCnt = this.selectedFolderNames.length;
+      const itemCnt   = this.selectedIds.size;
+      if (!folderCnt && !itemCnt) return;
+
+      // 폴더 먼저 삭제(포함 항목도 정리)
+      if (folderCnt) this.deleteFolders(this.selectedFolderNames);
+
+      // 남은 개별 항목 삭제
+      if (itemCnt) {
+        const ok = confirm(`선택한 항목 ${this.selectedIds.size}개를 삭제할까요?`);
+        if (!ok) return;
+        const toDelete = this.selectedIds;
+        this.scraps = this.scraps.filter(s => !toDelete.has(s.id));
+        this.persistScraps();
+      }
+
+      this.clearSelectionAll();
+    },
+
+    /* ===== 이동 ===== */
     openPost(id) {
-    const it = this.scraps.find(s => s.id === id);
-    if (it?.postId) this.$router.push(it.postId); 
+      const it = this.scraps.find(s => s.id === id);
+      if (it?.postId) this.$router.push(it.postId);
     },
   }
 };
@@ -236,13 +308,23 @@ export default {
 .btn{border:none;background:#111;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
 .panel{border:1px solid var(--line);background:#f8f2e7;border-radius:14px;padding:14px 18px}
 
-/* 상단 탭 - 폴더 리스트와 동기화 */
+/* 선택 액션 바 */
+.actions{
+  display:flex;align-items:center;gap:10px;
+  margin:8px 0 10px;padding:8px 10px;
+  background:#fff7ea;border:1px solid #eadfcd;border-radius:10px
+}
+.sel-info{color:#6a5d51;font-weight:700}
+.danger{border:none;background:#c62828;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+.ghost{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+
+/* 상단 탭 */
 .pills{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}
 .pill{border:none;background:var(--pill);padding:8px 14px;border-radius:20px;cursor:pointer}
 .pill.on{background:#111;color:#fff}
 .pill .cnt{opacity:.75;margin-left:4px}
 
-/* 펼쳐진 폴더 안 카드 그리드 */
+/* 폴더 콘텐츠 그리드 */
 .folder-grid{
   display:grid;
   grid-template-columns: repeat(3, minmax(0,1fr));

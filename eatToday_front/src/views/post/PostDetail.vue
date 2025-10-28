@@ -13,7 +13,7 @@
       </div>
     </header>
 
-    <!-- 이미지 표시 - images 배열이 있으면 여러 이미지, 없으면 단일 이미지 -->
+    <!-- 이미지 -->
     <div class="hero-images" v-if="post.images && post.images.length > 0">
       <img class="hero" :src="img" alt="cover" v-for="(img, idx) in post.images" :key="idx" />
     </div>
@@ -21,6 +21,7 @@
 
     <article class="content" v-html="post.content || post.html || defaultHtml"></article>
 
+    <!-- 스크랩 -->
     <section class="action-bar">
       <ScrapButton
         v-model="scrapped"
@@ -33,10 +34,12 @@
       />
     </section>
 
+    <!-- 반응 -->
     <div class="chips-center mt16">
       <ReactionChips :items="reactions" @toggle="onToggleReaction" />
     </div>
 
+    <!-- 댓글 -->
     <CommentBox
       class="mt24"
       :comments="comments"
@@ -53,7 +56,7 @@ import ScrapButton from "@/components/post/ScrapButton.vue";
 import ReactionChips from "@/components/post/ReactionChips.vue";
 import CommentBox from "@/components/post/CommentBox.vue";
 import PhotoReviewCard from "@/components/post/PhotoReviewCard.vue";
-import { fetchPost } from '@/api/post';
+import { fetchPost, toggleReaction, createComment } from '@/api/post';
 import http from '@/api/index';
 
 const SCRAP_KEY = "scraps";
@@ -69,11 +72,12 @@ export default {
     return {
       scrapped: false,
       post: null,
+      reacting: false,
       reactions: [
-        { key: "curious", emoji: "🤔", label: "궁금해요",     count: 0, me:false }, // 1
-        { key: "cheered", emoji: "👏", label: "맛있어요",     count: 0, me:false }, // 2
-        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 0, me:false }, // 3
-        { key: "yummy",   emoji: "🤤", label: "먹고싶어요",   count: 0, me:false }, // 4
+        { key: "curious", emoji: "🤔", label: "궁금해요",     count: 0, me:false },
+        { key: "cheered", emoji: "👏", label: "맛있어요",     count: 0, me:false },
+        { key: "soju",    emoji: "🍶", label: "술술들어가요", count: 0, me:false },
+        { key: "yummy",   emoji: "🤤", label: "먹고싶어요",   count: 0, me:false },
       ],
       comments: [],
     };
@@ -91,52 +95,55 @@ export default {
     }
   },
 
-    async mounted() {
-        await this.loadPostFromApi();
-        const id = Number(this.$route.params.id)
-        if (!Number.isNaN(id)) {
-        const key = `viewed:${id}`
-        if (!sessionStorage.getItem(key)) {
-            try {
-            await http.patch(`/command/foods/${id}/view`)
-            if (this.post) this.post.views = Number(this.post.views || 0) + 1
-            } catch (_) {}
-            sessionStorage.setItem(key, '1')
-        }
-        }
-        this.initScrapState()
-        this.$nextTick(() => { try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }) } catch { /* noop */ } })
-    },
-    methods: {
+  async mounted() {
+    await this.loadPostFromApi();
+
+    // 조회수 증가 (1회만)
+    const id = Number(this.$route.params.id);
+    if (!Number.isNaN(id)) {
+      const key = `viewed:${id}`;
+      if (!sessionStorage.getItem(key)) {
+        try {
+          await http.patch(`/command/foods/${id}/view`);
+          if (this.post) this.post.views = Number(this.post.views || 0) + 1;
+        } catch (_) {}
+        sessionStorage.setItem(key, "1");
+      }
+    }
+
+    this.initScrapState();
+    this.$nextTick(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+  },
+
+  methods: {
+    /** 게시글 + 댓글 + 반응 불러오기 */
     async loadPostFromApi() {
-        try {
-        const rawId = this.$route.params.id;
-        if (!rawId) { this.$router.replace('/post'); return; }
-        const id = Number(rawId);
-        if (Number.isNaN(id)) { this.$router.replace('/post'); return; }
+      try {
+        const id = Number(this.$route.params.id);
+        if (Number.isNaN(id)) return this.$router.replace("/post");
 
-        const data = await fetchPost(id);
-        this.post = data;
+        // 게시글
+        this.post = await fetchPost(id);
 
-        // 댓글 목록 로드
+        // 댓글
         try {
-          const { data: comments } = await http.get(`/foods/${id}/comments`);
-          this.comments = (comments || []).map(c => ({
+          const { data } = await http.get(`/foods/${id}/comments`);
+          this.comments = (data || []).map(c => ({
             id: c.foodCommentNo ?? c.id,
-            author: c.memberId ?? c.memberNo ?? '익명',
-            date: (c.createdAt ?? c.fcDate ?? '').toString().slice(0,10),
-            text: c.content ?? c.fcContent
+            author: c.memberId ?? c.memberNo ?? "익명",
+            date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
+            text: c.content ?? c.fcContent,
           }));
         } catch (e) {
-          console.warn('댓글 로드 실패:', e.message);
+          console.warn("댓글 로드 실패:", e.message);
           this.comments = [];
         }
 
-        // 반응 집계 로드
+        // 반응
         try {
-          const { data: reacts } = await http.get(`/foods/${id}/reactions`);
-          if (Array.isArray(reacts) && reacts[0]) {
-            const r = reacts[0];
+          const { data } = await http.get(`/foods/${id}/reactions`);
+          if (Array.isArray(data) && data[0]) {
+            const r = data[0];
             const counts = [
               r.likesNo1 ?? r.likes_no_1 ?? 0,
               r.likesNo2 ?? r.likes_no_2 ?? 0,
@@ -146,32 +153,42 @@ export default {
             this.reactions = this.reactions.map((x, i) => ({ ...x, count: counts[i] }));
           }
         } catch (e) {
-          console.warn('반응 로드 실패:', e.message);
+          console.warn("반응 로드 실패:", e.message);
         }
 
       } catch (e) {
-        console.error(e);
+        console.error("게시글 로드 실패:", e);
         this.post = null;
       }
     },
 
+    /** 댓글 추가 */
     async addComment(text) {
+      const content = (text || "").trim();
+      if (!content) return alert("댓글 내용을 입력해주세요.");
+      const id = Number(this.$route.params.id);
+
       try {
-        const id = Number(this.$route.params.id);
-        await http.post(`/command/foods/${id}/comments`, { content: text });
-        // 저장 후 서버 목록 재조회
-        const { data: comments } = await http.get(`/foods/${id}/comments`);
-        this.comments = (comments || []).map(c => ({
+        await createComment(id, content);
+        const { data } = await http.get(`/foods/${id}/comments`);
+        this.comments = (data || []).map(c => ({
           id: c.foodCommentNo ?? c.id,
-          author: c.memberId ?? c.memberNo ?? '익명',
-          date: (c.createdAt ?? c.fcDate ?? '').toString().slice(0,10),
-          text: c.content ?? c.fcContent
+          author: c.memberId ?? c.memberNo ?? "익명",
+          date: (c.createdAt ?? c.fcDate ?? "").toString().slice(0,10),
+          text: c.content ?? c.fcContent,
         }));
       } catch (e) {
-        alert('댓글 등록에 실패했어요. 로그인 상태/네트워크를 확인해 주세요.');
+        const code = e?.response?.status;
+        if (code === 401 || code === 403) {
+          alert("로그인이 필요합니다. 로그인 후 다시 시도해주세요.");
+          this.$router.push({ path: "/login", query: { redirect: this.$route.fullPath } });
+        } else {
+          alert("댓글 등록에 실패했어요. 네트워크 상태를 확인해주세요.");
+        }
       }
     },
 
+    /** 스크랩 상태 동기화 */
     initScrapState() {
       if (!this.post) return;
       const key = this.scrapKey;
@@ -183,47 +200,52 @@ export default {
       return { curious: 1, cheered: 2, soju: 3, yummy: 4 }[key] ?? 1;
     },
 
+    /** 반응 클릭 */
     async onToggleReaction(key) {
+      if (this.reacting) return;
+      this.reacting = true;
+
       try {
         const id = Number(this.$route.params.id);
         const likesType = this.likesTypeFromKey(key);
+        const resp = await toggleReaction(id, likesType);
 
-        // 서버 반영 (toggle/change)
-        const { data: resp } = await http.patch(`/command/foods/${id}/reactions`, { likesType });
-
-        // 서버 집계값으로 갱신
         const counts = [
-          resp.likesNo1 ?? resp.likes_no_1 ?? 0,
-          resp.likesNo2 ?? resp.likes_no_2 ?? 0,
-          resp.likesNo3 ?? resp.likes_no_3 ?? 0,
-          resp.likesNo4 ?? resp.likes_no_4 ?? 0,
+          resp?.likesNo1 ?? resp?.likes_no_1 ?? 0,
+          resp?.likesNo2 ?? resp?.likes_no_2 ?? 0,
+          resp?.likesNo3 ?? resp?.likes_no_3 ?? 0,
+          resp?.likesNo4 ?? resp?.likes_no_4 ?? 0,
         ].map(Number);
-        this.reactions = this.reactions.map((r, i) => ({ ...r, count: counts[i] }));
 
-        // 내 선택 표시(서버에 개별 선택 조회 API가 없다면 프론트에서만 표시 유지)
-        this.reactions = this.reactions.map(r => ({ ...r, me: r.key === key }));
+        this.reactions = this.reactions.map((r, i) => ({
+          ...r,
+          count: counts[i],
+          me: r.key === key,
+        }));
       } catch (e) {
-        alert('반응 반영에 실패했어요. 다시 시도해주세요.');
+        const msg = e?.response?.data?.message || "반응 반영에 실패했어요. 다시 시도해주세요.";
+        alert(msg);
+      } finally {
+        this.reacting = false;
       }
     },
-  }
+  },
 };
 </script>
 
 <style scoped>
-/* 기존 스타일 유지 */
-.wrap{width:900px;margin:0 auto;padding:24px 0;color:#2b2b2b}
-.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-.head .title{font-size:28px;margin:4px 0 6px}
-.sub{color:#6f6257;font-size:14px;display:flex;gap:6px;flex-wrap:wrap}
-.hero{width:100%;max-height:460px;object-fit:cover;border-radius:16px;margin:18px 0}
-.hero-images{display:flex;flex-direction:column;gap:12px;margin:18px 0}
-.hero-images .hero{width:100%}
-.content{line-height:1.8}
-.content img{display:block;margin:18px auto;border-radius:14px;max-width:100%}
+.wrap { width: 900px; margin: 0 auto; padding: 24px 0; color: #2b2b2b; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.head .title { font-size: 28px; margin: 4px 0 6px; }
+.sub { color: #6f6257; font-size: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.hero { width: 100%; max-height: 460px; object-fit: cover; border-radius: 16px; margin: 18px 0; }
+.hero-images { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
+.hero-images .hero { width: 100%; }
+.content { line-height: 1.8; }
+.content img { display: block; margin: 18px auto; border-radius: 14px; max-width: 100%; }
 .action-bar { margin: 18px 0; width: 100%; text-align: center; }
-.chips-center{ display:flex; justify-content:center; }
-.mt16{margin-top:16px}
-.mt24{margin-top:24px}
-.empty{text-align:center;padding:48px 0;color:#7a6f63}
+.chips-center { display: flex; justify-content: center; }
+.mt16 { margin-top: 16px; }
+.mt24 { margin-top: 24px; }
+.empty { text-align: center; padding: 48px 0; color: #7a6f63; }
 </style>

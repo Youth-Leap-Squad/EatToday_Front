@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import defaultPhoto from '@/assets/images/photo_review/reviewexample.png'
-import defaultAvatar from '@/assets/images/photo_review/userexample.png'
+import defaultAvatar from '@/assets/images/basic_profile.jpg'
 import heart from '@/assets/images/photo_review/unfilledHeart.png'
 import heartFilled from '@/assets/images/photo_review/filledHeart.png'
 

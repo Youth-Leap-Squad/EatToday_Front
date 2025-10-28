@@ -4,7 +4,23 @@
     <div class="inner">
       <!-- 프로필 헤더 -->
       <section class="profile">
-        <img class="avatar-lg" :src="avatarLg" alt="avatar" />
+        <img
+          class="avatar-lg"
+          :class="{ clickable: isMine }"
+          :src="avatarSrc"
+          alt="avatar"
+          @click="onClickAvatar"
+          @error="e => { e.target.onerror = null; e.target.src = basicProfile }"
+        />
+        <!-- 업로드용 숨김 input (내 마이페이지에서만 작동) -->
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/*"
+          class="hidden-file"
+          @change="onPickAvatar"
+        />
+
         <div class="profile-main">
           <div class="row-1">
             <h1 class="nickname">
@@ -56,7 +72,7 @@
           v-for="(r, i) in reviewsRows"
           :key="r.id ?? i"
           :member-no="r.memberNo"
-          :board-id="r.boardId" 
+          :board-id="r.boardId"
           :my-member-no="myMemberNo"
           :photo-src="r.photo"
           :avatar-src="r.avatar"
@@ -75,8 +91,8 @@
           :key="r.id ?? i"
           :member-no="r.memberNo"
           :my-member-no="myMemberNo"
-          :photo-src="r.photo || undefined"     
-          :avatar-src="r.avatar || undefined"   
+          :photo-src="r.photo || undefined"
+          :avatar-src="r.avatar || undefined"
           :nickname="r.nickname"
           :content="r.content"
           :like-count="r.likes"
@@ -105,7 +121,7 @@ import { useRoute, RouterLink } from 'vue-router'
 import PhotoReviewCard from '@/components/photo_review/PhotoReviewCard.vue'
 import Follow from '@/components/mypage/follow.vue'
 
-import avatarLg from '@/assets/images/photo_review/userexample.png'
+import basicProfile from '@/assets/images/basic_profile.jpg'
 import defaultPhoto1 from '@/assets/images/photo_review/reviewexample.png'
 import defaultPhoto2 from '@/assets/images/photo_review/reviewexample.png'
 import defaultPhoto3 from '@/assets/images/photo_review/reviewexample.png'
@@ -113,7 +129,7 @@ import bronzeBadge from '@/assets/images/bronze.png'
 import silverBadge from '@/assets/images/silver.png'
 import goldBadge from '@/assets/images/gold.png'
 
-import { findMyLevel } from '@/api/member'
+import { findMyLevel, uploadProfileImage, getProfileImageUrl } from '@/api/member'
 import { fetchMyPhotoReviews, fetchUserPhotoReviews } from '@/api/photoReview'
 
 const route = useRoute()
@@ -149,6 +165,15 @@ const nickname = ref('')
 const levelLabel = ref('')
 const badgeImg = ref(goldBadge)
 
+/* -------- 아바타 이미지 소스(캐시 버스트 포함) -------- */
+/* getProfileImageUrl은 동기 URL 빌더여야 합니다. (예: `${base}/members/profile-image/${no}?bust=...`) */
+const avatarBust = ref('')
+const avatarSrc = computed(() => {
+  const no = targetMemberNo.value
+  return no ? getProfileImageUrl(no, avatarBust.value) : basicProfile
+})
+const fileInput = ref(null)
+
 function pickBadge(label) {
   const l = (label || '').toLowerCase()
   if (l.includes('gold') || l.includes('골드')) return goldBadge
@@ -164,15 +189,37 @@ async function loadProfile() {
   badgeImg.value = pickBadge(levelLabel.value)
 }
 
+/* -------- 아바타 업로드 UX -------- */
+function onClickAvatar() {
+  if (!isMine.value) return
+  fileInput.value?.click()
+}
+
+async function onPickAvatar(e) {
+  const file = e.target.files?.[0]
+  if (!file || !myMemberNo.value) return
+
+  try {
+    await uploadProfileImage(myMemberNo.value, file)
+    // 업로드 성공 시 캐시 버스트로 이미지 즉시 갱신
+    avatarBust.value = String(Date.now())
+  } catch (err) {
+    const msg = err?.response?.data?.message || err?.message || '업로드 실패'
+    alert(msg)
+    console.error(err)
+  } finally {
+    e.target.value = ''
+  }
+}
+
 /* -------- 리뷰 리스트 로딩 -------- */
 const loading = ref(false)
-const reviews = ref(0)              // 상단 카운트
-const reviewsRows = ref([])         // 카드 데이터
+const reviews = ref(0)
+const reviewsRows = ref([])
 
-// ✅ 사진/아바타에 기본 이미지 fallback 적용
 const normalize = r => {
   const rawPhoto =
-    r?.files?.[0]?.prFileUrl ??   // ★ 추가: 백엔드에서 만든 최종 URL
+    r?.files?.[0]?.prFileUrl ??
     r?.files?.[0]?.url ??
     r?.files?.[0]?.fileUrl ??
     r?.files?.[0]?.path ??
@@ -188,12 +235,12 @@ const normalize = r => {
   return {
     id: r.reviewNo,
     boardId: r.boardNo ?? r.boardId ?? null,
-    memberNo: r?.member?.memberNo ?? null, // DTO에 memberNo 추가된 상태
+    memberNo: r?.member?.memberNo ?? null,
     nickname: r?.member?.memberName ?? '익명',
     content: r.reviewContent ?? r.reviewTitle ?? '',
     likes: r.reviewLike ?? 0,
     isLiked: r.isLiked ?? false,
-    photo: rawPhoto,           // 비어있으면 카드에서 기본이미지로 대체
+    photo: rawPhoto,
     avatar: rawAvatar
   }
 }
@@ -219,9 +266,9 @@ async function loadReviews() {
 
 /* -------- 게시물(예시 더미) -------- */
 const posts = reactive([
-  { photoSrc: defaultPhoto1, avatarSrc: avatarLg, content: '일요일은 내가 요리사!', likeCount: 100, isLiked: false },
-  { photoSrc: defaultPhoto2, avatarSrc: avatarLg, content: '주말에 와인 먹고 왔어요!!', likeCount: 11, isLiked: false },
-  { photoSrc: defaultPhoto3, avatarSrc: avatarLg, content: '용용선생 노량진찐!!', likeCount: 11, isLiked: false }
+  { photoSrc: defaultPhoto1, avatarSrc: basicProfile, content: '일요일은 내가 요리사!', likeCount: 100, isLiked: false },
+  { photoSrc: defaultPhoto2, avatarSrc: basicProfile, content: '주말에 와인 먹고 왔어요!!', likeCount: 11, isLiked: false },
+  { photoSrc: defaultPhoto3, avatarSrc: basicProfile, content: '용용선생 노량진찐!!', likeCount: 11, isLiked: false }
 ])
 
 /* -------- 좋아요 토글(프론트 반영용) -------- */
@@ -253,7 +300,9 @@ const tab = ref('review')
 watch(() => route.params.memberNo, () => {
   loadProfile()
   loadReviews()
+  avatarBust.value = '' // 다른 사람 페이지로 이동 시 캐시 버스트 초기화
 })
+
 onMounted(() => {
   loadProfile()
   loadReviews()
@@ -266,6 +315,10 @@ onMounted(() => {
 
 .profile { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 18px; padding: 16px 10px 8px 10px; }
 .avatar-lg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 2px solid #E2D8C7; background: #fff; }
+.avatar-lg.clickable { cursor: pointer; box-shadow: 0 0 0 0 transparent; transition: box-shadow .15s ease; }
+.avatar-lg.clickable:hover { box-shadow: 0 0 0 3px rgba(242, 213, 167, .6); }
+.hidden-file { display: none; }
+
 .profile-main { display: grid; gap: 2px; }
 .row-1 { display: flex; align-items: center; gap: 12px; }
 .nickname { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 28px; font-weight: 900; color: #2B1F14; }
@@ -273,7 +326,7 @@ onMounted(() => {
 
 .actions { display: flex; gap: 8px; margin-left: 8px; }
 .btn { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .05s ease; }
-.btn, .actions a { text-decoration: none; } /* 밑줄 제거 */
+.btn, .actions a { text-decoration: none; }
 .btn.solid { background: #F2D5A7; border: 1px solid #F2D5A7; color: #2B1F14; }
 .btn.solid.edit { background: #f0c97a; border-color: #f0c97a; }
 .btn.report { background: transparent; border: 1px solid #E2D8C7; color: #2B1F14; }

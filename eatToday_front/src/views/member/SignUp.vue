@@ -239,7 +239,7 @@ const handleSignup = async () => {
       memberBirth: memberBirth.value,
       memberName: memberName.value,
       memberPhone: memberPhone.value,
-      memberId: ''
+      memberId: nickname.value
     }
     
     console.log('회원가입 요청 데이터:', signupData)

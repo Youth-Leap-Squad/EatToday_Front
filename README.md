@@ -478,6 +478,32 @@
 		  </p>
 </details>
 
+### 📷 사진 리뷰
+<details>
+	  <summary>메시지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EB%A9%94%EC%8B%9C%EC%A7%80.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>작성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>댓글 작성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EB%8C%93%EA%B8%80%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>댓글 수정&삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
+		  </p>
+</details>
+
 
 
 ## 🔭 회고록

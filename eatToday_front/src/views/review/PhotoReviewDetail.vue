@@ -21,13 +21,13 @@
         </button>
         
         <!-- 더보기 메뉴 -->
-        <details class="dot-menu">
+        <!-- <details class="dot-menu">
           <summary>⋯</summary>
           <div class="menu-pop">
             <button type="button">✈ 메시지 보내기</button>
             <button type="button" class="danger">🚨 신고</button>
           </div>
-        </details>
+        </details> -->
       </div>
 
       <!-- 리뷰 이미지 -->
@@ -166,7 +166,7 @@ const authorProfileLoading = ref(false)
 // ==================== Computed ====================
 const reviewId = computed(() => Number(route.params.reviewNo))
 
-const defaultAvatar = '/images/photo_review/userexample.png'
+const defaultAvatar = '/images/user_profile/basic_profile.jpg'
 
 const authorMemberNo = computed(() => {
   const r = review.value
@@ -601,6 +601,19 @@ function extractFiles(record) {
  */
 function pickFirstImage(record) {
   if (!record || typeof record !== 'object') return ''
+
+// 가장 흔한 더미 케이스: files[0].prFileRename만 있는 경우
+if (Array.isArray(record.files) && record.files.length > 0) {
+  const f = record.files[0]
+  if (typeof f?.prFileRename === 'string' && f.prFileRename.trim()) {
+    return resolveImg(`/images/photo_review/${f.prFileRename.trim()}`)
+  }
+  // prFilePath만 있고 파일명이 있는 경우에도 보완
+  if (typeof f?.prFilePath === 'string' && f.prFilePath.trim()) {
+    const name = f.prFilePath.replace(/\\/g,'/').split('/').pop()
+    if (name) return resolveImg(`/images/photo_review/${name}`)
+  }
+}
   
   console.log('🔎 pickFirstImage 시작, record:', record)
   

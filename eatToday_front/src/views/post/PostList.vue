@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿<template>
   <div class="container">
     <div class="topbar">
       <h2 class="page-title">{{ pageTitle }}</h2>

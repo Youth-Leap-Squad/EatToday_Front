@@ -208,28 +208,93 @@
 
 ## 🪄 스토리 보드
 
-  #### 메인 페이지
-  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-1.png" width = "800"/><br>
-  
-  <br>
+<details>
+     <summary><b>공통</b></summary><br>
+  <details>
+          <summary>header</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%97%A4%EB%8D%94.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>footer</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%91%B8%ED%84%B0.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
 
-  #### 매칭 페이지
-  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-2.png" width = "800"/><br>
-  
-  <br>
+<details>
+     <summary><b>사진 리뷰</b></summary><br>
+  <details>
+	  <summary>목록</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%AA%A9%EB%A1%9D.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>작성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EC%9E%91%EC%84%B1.png" width = "600"/><br>
+	          </p>
+  </details>
+	<details>
+        <summary>상세페이지</summary><br>
+	        <p alian="center">
+	        <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
 
-  #### 대시보드
-  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-3.png" width = "800"/><br>
-  
-  <br>
+<details>
+     <summary><b>이벤트</b></summary><br>
+	<p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9D%B4%EB%B2%A4%ED%8A%B8%ED%99%88%ED%99%94%EB%A9%B4.png" width = "600"/><br>
+	          </p>
+		<details>
+          <summary>월드컵</summary><br>
+			<details>
+          <summary>술 선택 화면</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84%20%EC%88%A0%EC%84%A0%ED%83%9D%20%ED%99%94%EB%A9%B4.png" width = "600"/><br>
+	          </p>
+  	</details>
+	<details>
+          <summary>게임 진행</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84%20%EC%A7%84%ED%96%89.png" width = "600"/><br>
+	          </p>
+  	</details>
+	<details>
+          <summary>최종 우승 안주</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84%20%EC%B5%9C%EC%A2%85%EC%9A%B0%EC%8A%B9%EC%95%88%EC%A3%BC.png" width = "600"/><br>
+	          </p>
+  	</details>
+				<details>
+          <summary>주간 월드컵 순위</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84%20%EC%A3%BC%EA%B0%84%EC%9B%94%EB%93%9C%EC%BB%B5%EC%88%9C%EC%9C%84.png" width = "600"/><br>
+	          </p>
+  	</details>
+  		</details>
+  			<details>
+	  			<summary>술BTI</summary><br>
+				<details>
+          <summary>설문지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%88%A0Bti%20%EC%84%A4%EB%AC%B8%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  	</details>
+		<details>
+          <summary>결과 화면</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%88%A0Bti%20%EA%B2%B0%EA%B3%BC%ED%99%94%EB%A9%B4.png" width = "600"/><br>
+	          </p>
+		</details>
+  </details>
+</details>
 
-  #### 전체 프로젝트 리스트
-  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-4.png" width = "800"/><br>
-  
-  <br>
-
-  #### 프로젝트 디테일 페이지
-  <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/storyboard-5.png" width = "800"/><br>
   
   <br><br>
 

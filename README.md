@@ -239,7 +239,7 @@
 
 <br>
 
-<img src ="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/WBS.png" width ="800" />
+<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
 
 <br><br>
 

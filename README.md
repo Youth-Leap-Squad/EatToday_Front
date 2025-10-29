@@ -252,7 +252,7 @@
 	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%9D%B4%EB%B2%A4%ED%8A%B8/%EC%9D%B4%EB%B2%A4%ED%8A%B8%ED%99%88%ED%99%94%EB%A9%B4.png" width = "600"/><br>
 	          </p>
 		<details>
-          <summary>월드컵</summary><br>
+          <summary>월드컵 게임</summary><br>
 			<details>
           <summary>술 선택 화면</summary><br>
 	          <p alian="center">
@@ -376,17 +376,6 @@
 	</details>
 </details>
 
-### 🎖️ 일일 미션
-<details>
-     <summary><b>일일 미션</b></summary><br>
-  <details>
-          <summary>일일 미션 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/dailymission/TEST_로그인 시 로그인 일일미션 달성 완료.gif" width = "600"/><br>
-	          </p>
-  </details>
-</details>
-
 ### 📜 게시글
 <details>
 	<summary><b>게시판</b></summary>
@@ -475,7 +464,19 @@
   </details>
 </details>
 
-
+### 🎖️ 이벤트
+<details>
+	  <summary>월드컵 게임</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>술BTI</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%88%A0Bti.gif" width = "600"/><br>
+		  </p>
+</details>
 
 
 

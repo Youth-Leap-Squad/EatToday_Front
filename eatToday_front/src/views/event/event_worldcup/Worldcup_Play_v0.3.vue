@@ -82,17 +82,17 @@ export default {
         "감바스": 2,
         "회무침": 34,
         "치즈감바스": 36,
-        "수정1":206,
-        "수정2":207,
-        "수정3":208,
-        "수정4":209,
-        "수정5":210,
-        "수정6":211,
-        "수정7":212,
-        "수정8":213,
-        "수정9":214,
-        "수정10":215,
-        "수정11":216
+        "스테이크":46,
+        "까망베르치즈구이":47,
+        "토마토파스타":48,
+        "브리오슈":49,
+        "리조또":50,
+        "프로슈토":51,
+        "과일치즈샐러드":52,
+        "연어카르파초":53,
+        "버섯크림파스타":54,
+        "스모크치킨":55,
+        "크로스티니":56
       }
     };
   },
@@ -156,17 +156,17 @@ export default {
     { name: "브루케스타", image: new URL("@/assets/images/food/bruschetta.jpg", import.meta.url).href },
     { name: "감바스", image: new URL("@/assets/images/food/gambas.jpg", import.meta.url).href },
     { name: "회무침", image: new URL("@/assets/images/food/hoemuchim.jpg", import.meta.url).href }, 
-    { name: "수정1", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정2", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정3", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정4", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정5", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href },
-    { name: "수정6", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정7", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정8", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정9", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정10", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href }, 
-    { name: "수정11", image: new URL("@/assets/images/food/맥주-Photoroom.png", import.meta.url).href } ];
+    { name: "스테이크", image: new URL("@/assets/images/food/Steak.jpg", import.meta.url).href }, 
+    { name: "까망베르치즈구이", image: new URL("@/assets/images/food/BakedCamembertCheese.jpg", import.meta.url).href }, 
+    { name: "토마토파스타", image: new URL("@/assets/images/food/TomatoPasta.jpg", import.meta.url).href }, 
+    { name: "브리오슈", image: new URL("@/assets/images/food/Brioche.jpg", import.meta.url).href }, 
+    { name: "리조또", image: new URL("@/assets/images/food/Risotto.jpg", import.meta.url).href }, 
+    { name: "프로슈토", image: new URL("@/assets/images/food/Prosciutto.jpg", import.meta.url).href }, 
+    { name: "과일치즈샐러드", image: new URL("@/assets/images/food/FruitCheeseSalad.jpg", import.meta.url).href }, 
+    { name: "연어카르파초", image: new URL("@/assets/images/food/SalmonCarpaccio.jpg", import.meta.url).href }, 
+    { name: "버섯크림파스타", image: new URL("@/assets/images/food/MushroomCreamPasta.jpg", import.meta.url).href }, 
+    { name: "크로스티니", image: new URL("@/assets/images/food/Crostini.jpg", import.meta.url).href }, 
+    { name: "스모크치킨", image: new URL("@/assets/images/food/SmokedChicken.jpg", import.meta.url).href } ];
 
     this.roundList = this.alcohol === "소주" ? sojuFoods : wineFoods;
     this.shuffle(this.roundList);

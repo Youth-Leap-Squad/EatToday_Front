@@ -55,6 +55,7 @@ export default {
       questions: [],
       total: 0,
       showPointModal: false,
+      POINT_POLICY,
 
       customAnswerTextsByQuestion: {
         1: { a: "시끌벅적한 술자리가 좋아! 🥳", b: "조용히 대화 나누는 분위기가 좋아 ☺️" },

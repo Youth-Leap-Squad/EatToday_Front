@@ -275,7 +275,9 @@ const normalizePost = p => ({
     : '',
 
   thumbnail:
-    p.foodPicture ??
+    (typeof p.foodPicture === 'string'
+    ? p.foodPicture.split(',')[0]
+    : p.foodPicture) ??
     p.thumbnail ??
     p.coverImage ??
     p.images?.[0]?.url ??

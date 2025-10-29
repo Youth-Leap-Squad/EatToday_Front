@@ -198,7 +198,7 @@
 
 ## 🧵 와이어 프레임
 
-🔗 <a href="https://www.figma.com/design/DFoNxHc5dAtUaaUI5UnRhN/PICK---%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=1-2643&t=zbqKVZG0o1h8KwfQ-1"> 와이어 프레임 자세히 보기 </a>
+🔗 <a href="https://www.figma.com/design/90WPzr1D3kITviLanI7y3Z/%EC%98%A4%EB%8A%98--%EB%AD%90%EB%9E%91-?node-id=1397-484&t=bzCRavLa4pprtiJd-1"> 와이어 프레임 자세히 보기 </a>
 
 <br>
 

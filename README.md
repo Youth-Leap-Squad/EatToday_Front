@@ -235,7 +235,7 @@
 
 ## 📰 WBS
 
-🔗 <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vScA7f_mLFChQQ5SMSU5AAC6-O3h8PYJg0H-dxRvMKHrePOtW3VIgnlNMcAEWP1Xy8O8LcMe4OFuCWe/pubhtml?gid=2031264111&single=true"> WBS 자세히 보기 </a>
+🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=1596719811#gid=1596719811"> WBS 자세히 보기 </a>
 
 <br>
 

@@ -202,7 +202,7 @@
 
 <br>
 
-<img src="[https://github.com/BE14-NoB/pick-frontend/blob/main/resources/와이어 프레임 최종본.png](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84.png)" alt="와이어-프레임-최종본" width="800"/><br>
+<img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84.png" alt="와이어-프레임-최종본" width="800"/><br>
 
 <br><br>
 

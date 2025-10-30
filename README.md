@@ -25,7 +25,7 @@
 
 #### [📋 와이어 프레임](#-와이어-프레임) <br> 
 
-#### [🗂️ 스토리보드](#-스토리-보드) <br>
+#### [🗂️ 스토리 보드](#-스토리-보드) <br>
 
 #### [🏗️ 기능 명세서](#-기능-명세서) <br>
 
@@ -189,9 +189,7 @@
 ![IntelliJ](https://img.shields.io/badge/IntelliJIDEA-4CAF50.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 ![HeidiSQL](https://img.shields.io/badge/HeidiSQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 
-<br>
-
-
+---
 
 
 ## 📋 와이어 프레임 
@@ -202,7 +200,7 @@
 
 <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84.png" alt="와이어-프레임-최종본" width="800"/><br>
 
-<br><br>
+---
 
 ## 🗂️ 스토리 보드 
 
@@ -421,7 +419,7 @@
   </details>
 </details>
   
-  <br><br>
+---
 
 ## 🏗️ 기능 명세서  
 
@@ -438,56 +436,11 @@
 	<br>
 	<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
 </details>
-<br>
 
--  [📄 요구사항 명세서 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/YLS_%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD_WBS_%ED%85%8C%EC%8A%A4%ED%8A%B8%20-%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C.pdf)
+---
 
 ## ✅ 테스트 케이스 
 
-
-### 🎖️ 이벤트
-<details>
-	  <summary>월드컵 게임</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84.gif" width = "600"/><br>
-		  </p>
-</details>
-<details>
-	  <summary>술BTI</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%88%A0Bti.gif" width = "600"/><br>
-		  </p>
-</details>
-
-### 📷 사진 리뷰
-<details>
-	  <summary>메시지</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EB%A9%94%EC%8B%9C%EC%A7%80.gif" width = "600"/><br>
-		  </p>
-</details>
-<details>
-	  <summary>작성</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
-		  </p>
-</details>
-<details>
-	  <summary>댓글 작성</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EB%8C%93%EA%B8%80%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
-		  </p>
-</details>
-<details>
-	  <summary>댓글 수정&삭제</summary><br>
-		  <p alian="center">
-		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
-		  </p>
-</details>
-<details>
-
-  </details>
-</details>
 
 ### 🎖️ 이벤트
 <details>
@@ -629,11 +582,13 @@
 		  </p>
 </details>
 
+---
+
 ## 🔌 결과 보고서
 
 -  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/%ED%94%84%EB%A1%A0%ED%8A%B8%20%EB%B0%9C%ED%91%9C.pdf)
 
-<br>
+---
 
 ## 🔭 회고록
 

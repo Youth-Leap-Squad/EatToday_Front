@@ -624,7 +624,11 @@
 
 ## 🔌 결과 보고서
 
--  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/19_2nd_backendproject_presentation.pdf)
+-  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/%ED%94%84%EB%A1%A0%ED%8A%B8%20%EB%B0%9C%ED%91%9C.pdf)
+
+<br>
+
+-  [📄 요구사항 명세서 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/YLS_%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD_WBS_%ED%85%8C%EC%8A%A4%ED%8A%B8%20-%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C.pdf)
 
 <br>
 

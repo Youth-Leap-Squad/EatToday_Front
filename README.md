@@ -432,9 +432,11 @@
 <br>
 <details>
 	  <summary>요구사항 명세서</summary><br>
-	🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=0#gid=0"> 요구사항 명세서 자세히 보기 </a>
+	🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=293580732#gid=293580732"> 요구사항 명세서 자세히 보기 </a>
 	<br>
-	<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
+	<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%EB%AA%85%EC%84%B8%EC%84%9C1.png" width ="800" />
+	<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%EB%AA%85%EC%84%B8%EC%84%9C2.png" width ="800" />
+	<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%EB%AA%85%EC%84%B8%EC%84%9C3.png" width ="800" />
 </details>
 
 ---

@@ -222,6 +222,12 @@
 	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%91%B8%ED%84%B0.png" width = "600"/><br>
 	          </p>
   </details>
+  <details>
+          <summary>home</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%99%88.png" width = "600"/><br>
+	          </p>
+  </details>
 </details>
 
 <details>
@@ -294,7 +300,78 @@
 		</details>
   </details>
 </details>
-
+<details>
+	<summary><b>라운지</b></summary><br>
+  <details>
+          <summary>라운지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%9D%BC%EC%9A%B4%EC%A7%80/%EB%9D%BC%EC%9A%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+	<summary><b>문의사항</b></summary><br>
+  <details>
+          <summary>고객센터</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B3%A0%EA%B0%9D%EC%84%BC%ED%84%B0.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>내 문의사항 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%82%B4%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%A1%B0%ED%9A%8C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>문의사항 작성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%9E%91%EC%84%B1.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>문의사항 수정 및 삭제</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%82%B4%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%88%98%EC%A0%95%20%EB%B0%8F%20%EC%82%AD%EC%A0%9C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>관리자 문의사항 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%A1%B0%ED%9A%8C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>관리자 문의사항 답변</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EB%8B%B5%EB%B3%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+     <summary><b>마이페이지</b></summary><br>
+  <details>
+          <summary>내 마이페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80/%EB%82%B4%20%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>다른사람 마이페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80/%EB%8B%A4%EB%A5%B8%EC%82%AC%EB%9E%8C%20%EB%A7%88%EC%9D%B4%20%ED%8E%98%EC%9D%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+     <summary><b>신고</b></summary><br>
+  <details>
+          <summary>신고 모달</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%8B%A0%EA%B3%A0/%EC%8B%A0%EA%B3%A0%20%EB%AA%A8%EB%8B%AC.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
   
   <br><br>
 

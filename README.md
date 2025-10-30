@@ -27,7 +27,7 @@
 
 #### [🗂️ 스토리보드](#-스토리-보드) <br>
 
-#### [🏗️ WBS](#-WBS) <br>
+#### [🏗️ 기능 명세서](#-기능-명세서) <br>
 
 #### [✅ 테스트 케이스](#-테스트-케이스) <br> 
 
@@ -423,17 +423,24 @@
   
   <br><br>
 
-## 🏗️ WBS  
+## 🏗️ 기능 명세서  
 
+<details>
+	  <summary>WBS</summary><br>
 🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=1596719811#gid=1596719811"> WBS 자세히 보기 </a>
-
+	<br>
+	<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
+</details>
+<br>
+<details>
+	  <summary>요구사항 명세서</summary><br>
+	🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=0#gid=0"> 요구사항 명세서 자세히 보기 </a>
+	<br>
+	<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
+</details>
 <br>
 
-<img src ="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/img/Front_WBS.png" width ="800" />
-
-<br><br>
-
-
+-  [📄 요구사항 명세서 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/YLS_%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD_WBS_%ED%85%8C%EC%8A%A4%ED%8A%B8%20-%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C.pdf)
 
 ## ✅ 테스트 케이스 
 
@@ -625,10 +632,6 @@
 ## 🔌 결과 보고서
 
 -  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/%ED%94%84%EB%A1%A0%ED%8A%B8%20%EB%B0%9C%ED%91%9C.pdf)
-
-<br>
-
--  [📄 요구사항 명세서 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/result/YLS_%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD_WBS_%ED%85%8C%EC%8A%A4%ED%8A%B8%20-%20%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD%20%EA%B8%B0%EB%8A%A5%20%EB%AA%85%EC%84%B8%EC%84%9C.pdf)
 
 <br>
 

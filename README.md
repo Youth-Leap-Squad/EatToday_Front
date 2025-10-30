@@ -643,8 +643,76 @@
 		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
 		  </p>
 </details>
-
-
+### 💬 문의사항
+<details>
+	  <summary>고객센터</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B3%A0%EA%B0%9D%EC%84%BC%ED%84%B0.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>문의사항 생성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%83%9D%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>문의사항 수정 및 삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%88%98%EC%A0%95%20%EB%B0%8F%20%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 조회</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%A1%B0%ED%9A%8C.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 답변</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%83%9D%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 수정 및 삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%82%AD%EC%A0%9C%20%EB%B0%8F%20%EB%B3%80%EA%B2%BD.gif" width = "600"/><br>
+		  </p>
+</details>
+### 🍻 라운지
+<details>
+	  <summary>라운지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/rounge/%EB%9D%BC%EC%9A%B4%EC%A7%80.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>라운지 페이지 이동</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/rounge/%EB%9D%BC%EC%9A%B4%EC%A7%80%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%EC%9D%B4%EB%8F%99.gif" width = "600"/><br>
+		  </p>
+</details>
+### 👤 마이페이지
+<details>
+	  <summary>마이페이지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/mypage/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>마이페이지 페이지 이동</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/mypage/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%EC%9D%B4%EB%8F%99.gif" width = "600"/><br>
+		  </p>
+</details>
+### 🚨 신고
+<details>
+	  <summary>신고</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/report/%EC%8B%A0%EA%B3%A0.gif" width = "600"/><br>
+		  </p>
+</details>
 
 ## 🔭 회고록
 

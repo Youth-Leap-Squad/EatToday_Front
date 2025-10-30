@@ -429,27 +429,8 @@
 		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
 		  </p>
 </details>
+<details>
 
-
-
-## 🔭 회고록
-
-
--  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/19_2nd_backendproject_presentation.pdf)
-<br>
-
-|   조원 이름	  |   회고   |
-|---------------|----------|
-|   **김윤지**   | 이번 프로젝트는 제게 개발자로서 한 단계 성장할 수 있는 중요한 경험이었습니다. DDD, ERD, MyBatis, JPA, MSA 등 낯설고 방대한 기술들을 실제로 적용하면서 처음에는 막막했지만 시간이 지날수록 두려움이 자신감으로 바뀌었습니다. 특히 게시글 기능을 담당하며 CRUD 구현 과정에서 JPA 매핑 오류와 MyBatis 쿼리 처리 문제로 어려움을 겪었지만 이를 해결하며 각 기술의 장단점을 체득할 수 있었습니다. 특히 게시글 도메인을 정의하고 ERD로 관계를 구조화하는 과정에서 데이터 흐름을 이해하는 능력이 크게 향상되었습니다. 또한 MSA 기반으로 서비스를 독립적으로 설계하면서 다른 팀원이 맡은 인증이나 추천 기능과 안정적으로 연동되도록 고민했던 경험은 협업적 관점에서 의미가 컸습니다. 프로젝트 초반 충분한 설계 덕분에 후반부 개발이 수월했음을 체감했고 문제 상황마다 팀원들과 의견을 나누며 해결책을 찾아가는 과정에서 함께 일하는 즐거움을 느낄 수 있었습니다. 동시에 오류를 마주할 때마다 끝까지 파고들어 해결한 경험은 제 스스로의 문제 해결 능력과 자신감을 키워주었습니다. 이번 프로젝트는 단순한 기능 구현을 넘어 협업 속에서 배우고 성장하는 개발자의 자세를 다질 수 있었던 값진 여정이었습니다. |
-|   **김진호**   | 두번째 프로젝트 이후 약 한달 동안의 시간이 있었는데, 10일 가량의 긴 연휴동안 지난 백엔드 프로젝트에서 부족했던 점들을 보완하고, 프론트엔드 수업을 들었다. HTML 과 CSS를 배우면서 웹 페이지의 구조와 시각적인 요소를 배우고, Node.js와 JavaScript를 통해 함수형 프로그래밍 언어와 이벤트, 비동기적 데이터 처리에 대해 배우고, 이것들을 SPA로 개발하기 위한 프레임워크인 Vue를 배웠다. 프론트엔드 파트에서         <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_사설매칭입장.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 프로젝트 매칭 페이지</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭페이지.gif" width = "600"/><br>
-	          </p>
   </details>
 </details>
 

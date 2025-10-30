@@ -222,6 +222,12 @@
 	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%91%B8%ED%84%B0.png" width = "600"/><br>
 	          </p>
   </details>
+  <details>
+          <summary>home</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%99%88.png" width = "600"/><br>
+	          </p>
+  </details>
 </details>
 
 <details>
@@ -294,7 +300,78 @@
 		</details>
   </details>
 </details>
-
+<details>
+	<summary><b>라운지</b></summary><br>
+  <details>
+          <summary>라운지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%9D%BC%EC%9A%B4%EC%A7%80/%EB%9D%BC%EC%9A%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+	<summary><b>문의사항</b></summary><br>
+  <details>
+          <summary>고객센터</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B3%A0%EA%B0%9D%EC%84%BC%ED%84%B0.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>내 문의사항 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%82%B4%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%A1%B0%ED%9A%8C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>문의사항 작성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%9E%91%EC%84%B1.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>문의사항 수정 및 삭제</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EB%82%B4%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%88%98%EC%A0%95%20%EB%B0%8F%20%EC%82%AD%EC%A0%9C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>관리자 문의사항 조회</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%A1%B0%ED%9A%8C.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>관리자 문의사항 답변</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EB%8B%B5%EB%B3%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+     <summary><b>마이페이지</b></summary><br>
+  <details>
+          <summary>내 마이페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80/%EB%82%B4%20%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>다른사람 마이페이지</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80/%EB%8B%A4%EB%A5%B8%EC%82%AC%EB%9E%8C%20%EB%A7%88%EC%9D%B4%20%ED%8E%98%EC%9D%B4%EC%A7%80.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+<details>
+     <summary><b>신고</b></summary><br>
+  <details>
+          <summary>신고 모달</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EC%8B%A0%EA%B3%A0/%EC%8B%A0%EA%B3%A0%20%EB%AA%A8%EB%8B%AC.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
   
   <br><br>
 
@@ -312,155 +389,48 @@
 
 ## 📱 테스트 케이스
 
-### 📄 공통 부분
+
+### 🎖️ 이벤트
 <details>
-     <summary><b>공통 부분</b></summary><br>
-  <details>
-          <summary>메인 페이지 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/common/mainpage.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>오류 페이지</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/common/TEST_오류_페이지.gif" width = "600"/><br>
-	          </p>
-  </details>
+	  <summary>월드컵 게임</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%9B%94%EB%93%9C%EC%BB%B5%EA%B2%8C%EC%9E%84.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>술BTI</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/event/%EC%88%A0Bti.gif" width = "600"/><br>
+		  </p>
 </details>
 
-### 👤 회원
+### 📷 사진 리뷰
 <details>
-     <summary><b>회원</b></summary><br>
-  <details>
-          <summary>회원가입</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/SignUp.gif" width = "600"/><br>
-	          </p>
-  </details>
-	<details>
-		<summary>로그인</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/Login.gif" width = "600"/><br>
-	          </p>
-	</details>
-	<details>
-		<summary>회원 정보 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberInfo.gif" width = "600"/><br>
-	          </p>
-	</details>
-	<details>
-		<summary>회원 정보 수정</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberInfo-fetch.gif" width = "600"/><br>
-	          </p>
-	</details>
-	<details>
-		<summary>프로필 페이지 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberProfile.gif" width = "600"/><br>
-	          </p>
-	</details>
-	<details>
-		<summary>깃허브 연결하기</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/info/TEST_회원_깃_인증하기.gif" width = "600"/><br>
-	          </p>
-	</details>
-	<details>
-		<summary>로그아웃</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/member/MemberLogout.gif" width = "600"/><br>
-	          </p>
-	</details>
+	  <summary>메시지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EB%A9%94%EC%8B%9C%EC%A7%80.gif" width = "600"/><br>
+		  </p>
 </details>
-
-### 📜 게시글
 <details>
-	<summary><b>게시판</b></summary>
-	<details>
-		<summary>자유 게시판 조회</summary>
-		<p alian="center">
-		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-게시판 사이드바-단일 게시글 조회.gif"  width="600"/>
-		</p>
-	</details>
-	<details>
-		<summary>단일 게시글 조회</summary>
-		<p alian="center">
-		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-게시판 사이드바-단일 게시글 조회.gif"  width="600"/>
-		</p>
-	</details>
-	<details>
-		<summary>게시글 쓰기 페이지</summary>
-		<p alian="center">
-		<img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/post/post-글쓰기창 진입.gif"  width="600"/>
-		</p>
-	</details>
+	  <summary>작성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
+		  </p>
 </details>
-
-### 🤼 매칭
 <details>
-     <summary><b>매칭</b></summary><br>
-  <details>
-          <summary>랜덤 매칭 생성</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/랜덤매칭생성.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>매칭 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/매칭조회.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>사설 매칭 생성</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사설매칭생성.gif" width = "600"/><br>
-	          </p>
-  </details>  
-  <details>
-          <summary>사설 매칭 입장</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사설매칭입장.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>사이드 바 매칭 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/사이드바로매칭조회.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 랜덤 매칭 생성</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_랜덤매칭생성.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 랜덤 매칭 조회</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_매칭조회.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 사설 매칭 생성</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_사설매칭생성.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 사설 매칭 입장</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭_사설매칭입장.gif" width = "600"/><br>
-	          </p>
-  </details>
-  <details>
-          <summary>헤더 프로젝트 매칭 페이지</summary><br>
-	          <p alian="center">
-	          <img src="https://github.com/BE14-NoB/pick-frontend/blob/main/resources/test_result/matching/프로젝트매칭페이지.gif" width = "600"/><br>
-	          </p>
+	  <summary>댓글 작성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%20%EB%8C%93%EA%B8%80%20%EC%9E%91%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>댓글 수정&삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+
   </details>
 </details>
 
@@ -503,8 +473,76 @@
 		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/photoReview/%EC%82%AC%EC%A7%84%EB%A6%AC%EB%B7%B0%EB%8C%93%EA%B8%80%EC%88%98%EC%A0%95%3A%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
 		  </p>
 </details>
-
-
+### 💬 문의사항
+<details>
+	  <summary>고객센터</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B3%A0%EA%B0%9D%EC%84%BC%ED%84%B0.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>문의사항 생성</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%83%9D%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>문의사항 수정 및 삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD%20%EC%88%98%EC%A0%95%20%EB%B0%8F%20%EC%82%AD%EC%A0%9C.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 조회</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%A1%B0%ED%9A%8C.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 답변</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%83%9D%EC%84%B1.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>관리자 문의사항 수정 및 삭제</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/qna/%EA%B4%80%EB%A6%AC%EC%9E%90%20%EB%AC%B8%EC%9D%98%20%EC%82%AD%EC%A0%9C%20%EB%B0%8F%20%EB%B3%80%EA%B2%BD.gif" width = "600"/><br>
+		  </p>
+</details>
+### 🍻 라운지
+<details>
+	  <summary>라운지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/rounge/%EB%9D%BC%EC%9A%B4%EC%A7%80.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>라운지 페이지 이동</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/rounge/%EB%9D%BC%EC%9A%B4%EC%A7%80%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%EC%9D%B4%EB%8F%99.gif" width = "600"/><br>
+		  </p>
+</details>
+### 👤 마이페이지
+<details>
+	  <summary>마이페이지</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/mypage/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif" width = "600"/><br>
+		  </p>
+</details>
+<details>
+	  <summary>마이페이지 페이지 이동</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/mypage/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%EC%9D%B4%EB%8F%99.gif" width = "600"/><br>
+		  </p>
+</details>
+### 🚨 신고
+<details>
+	  <summary>신고</summary><br>
+		  <p alian="center">
+		  <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/testcase/report/%EC%8B%A0%EA%B3%A0.gif" width = "600"/><br>
+		  </p>
+</details>
 
 ## 🔭 회고록
 
@@ -515,9 +553,9 @@
 |   조원 이름	  |   회고   |
 |---------------|----------|
 |   **김윤지**   | 이번 프로젝트는 제게 개발자로서 한 단계 성장할 수 있는 중요한 경험이었습니다. DDD, ERD, MyBatis, JPA, MSA 등 낯설고 방대한 기술들을 실제로 적용하면서 처음에는 막막했지만 시간이 지날수록 두려움이 자신감으로 바뀌었습니다. 특히 게시글 기능을 담당하며 CRUD 구현 과정에서 JPA 매핑 오류와 MyBatis 쿼리 처리 문제로 어려움을 겪었지만 이를 해결하며 각 기술의 장단점을 체득할 수 있었습니다. 특히 게시글 도메인을 정의하고 ERD로 관계를 구조화하는 과정에서 데이터 흐름을 이해하는 능력이 크게 향상되었습니다. 또한 MSA 기반으로 서비스를 독립적으로 설계하면서 다른 팀원이 맡은 인증이나 추천 기능과 안정적으로 연동되도록 고민했던 경험은 협업적 관점에서 의미가 컸습니다. 프로젝트 초반 충분한 설계 덕분에 후반부 개발이 수월했음을 체감했고 문제 상황마다 팀원들과 의견을 나누며 해결책을 찾아가는 과정에서 함께 일하는 즐거움을 느낄 수 있었습니다. 동시에 오류를 마주할 때마다 끝까지 파고들어 해결한 경험은 제 스스로의 문제 해결 능력과 자신감을 키워주었습니다. 이번 프로젝트는 단순한 기능 구현을 넘어 협업 속에서 배우고 성장하는 개발자의 자세를 다질 수 있었던 값진 여정이었습니다. |
-|   **김진호**   | 첫번째 프로젝트 이후 두달여만에 두번째 프로젝트를 진행했다. 자바와 Servlet, Spring 등을 배웠는데, 특히 MyBatis / JPA 부분과 Spring Security 부분이 잘 이해가 되지 않아 이것들로 프로젝트를 진행한다고 했을때는 잘 할수 있을까 하는 걱정이 들었는데 수업 영상을 두세번 돌려보다 보니 처음에는 이해가 되지 않았던 부분도 이해가 되기 시작했고, "대략적으로 프로젝트를 이렇게 하면 되겠다." 라는 생각이 들었다. 먼저 설계 부분에서는 DDD를 처음 해보았는데, 평소에 개발할 때  도메인 중심으로 생각하는 게 아니라 습관적으로API나 화면 흐름 중심적으로 생각하는 습관이 있어서 진짜 해결해야 할 문제를 놓치는 경우가 있었는데, DDD를 활용해서 복잡한 비즈니스 로직을 도메인 중심적으로 생각하는 법을 배웠다. 개발 부분에서는 팀원들과 Github를 이용한 협업규칙과 PR규칙등을 세우면서 branch 개념과 이슈 템플릿등에 대해 더 이해하게 되었다. 또, 내가 회원,관리자 파트와 Spring Security에 대해 제대로 이해하고 싶어서 이를 이용한 로그인/회원가입 인가/인증 파트를 맡았는데, 토큰 발급과 인증부분에서 애를 먹었다. 아직 한참 부족하고 더 노력해야겠다는 생각이 들었고 한편으로는 그래도 수업시간에는 "이걸 어떻게 하지" 라는 생각이 들었는데 막상 해보니 생각보다 할만 하다다고 느꼈고 강사님께서 말씀하셨던로 롤러코스터의 가장 높은 부분이 이정도면 다른 프로젝트에서는 더 잘 할 수 있겠다는 자신감을 가지게 된 프로젝트인 것 같다. 프론트 프로젝트 전까지 리펙토링과 구조 개선을 통해 프론트 프로젝트에서는 100%의 결과를 내야겠다고 생각했다. |
+|   **김진호**   | 두번째 프로젝트 이후 약 한달 동안의 시간이 있었는데, 10일 가량의 긴 연휴동안 지난 백엔드 프로젝트에서 부족했던 점들을 보완하고, 프론트엔드 수업을 들었다. HTML 과 CSS를 배우면서 웹 페이지의 구조와 시각적인 요소를 배우고, Node.js와 JavaScript를 통해 함수형 프로그래밍 언어와 이벤트, 비동기적 데이터 처리에 대해 배우고, 이것들을 SPA로 개발하기 위한 프레임워크인 Vue를 배웠다. 프론트엔드 프로젝트는 특히나 시간이 많이 부족해 보여서 최대한 처음에 프로젝트 구조를 잘 짜놔야겠다고 생각해서, 수업 내용과 다른 프로젝트들을 참고해서 폴더 구조를 만들었다. 예를들어, 팀원간 분업을 효율적으로 하기 위해 공통된 컴포넌트는 같이 관리/개발해서 코드 중복을 피하고 라우터 구조를 먼저 설계해서 그 라우터가 뿌려주는 페이지 구조에 맞춰 체계적으로 개발을 진행했다. 지금까지의 프로젝트와는 달리 사용자에게 직접 보이고, 상호작용하는 웹을 처음 만드는 과정은 굉장히 흥미로웠다. 단순히 백엔드와 연동하고 동작하는것에 집중하는것이 아니라, "내가 진짜 사용자라면 어떻게 생각할까"라는 생각을 가지고 우리 웹사이트의 철학과 킥/아하 모먼트등을 생각해서 UX/UI도 신경써서 만들었다. 짧은 시간이였지만 후회없이 최선을 다했고, 결과도 만족스러웠다.|
 |   **남우경**   | 쿼리와 DB에 관해 이해도가 있어 원활했던 첫번째 DB 프로젝트와 달리 두번째 벡엔드 프로젝트에서는 처음 배운 것들이 많아 조금은 두렵기도 했지만 기대감이 더 컸습니다. 새로운 것을 한다는 것과 평상시에 하고 싶었던 벡엔드 관련 개발을 한다는 것은 저에게 큰 기대감을 주었습니다. 개발을 어떤 방향으로 진행할 지와 관련하여 DDD, ERD, 요구사항 기능 등을 자세하게 작성하느랴 초반에 시간과 노력이 많은 소요가 있었지만 앞부분에서 틀을 잘 잡아놔야 개발이 원활하겠다는 마음가짐으로 진행하였고, 팀원들과 많은 의사소통을 통해 구체적으로 설정할 수 있었습니다. 앞서 설정한 것들을 기반으로 기능에 따라 조회 부분은 MyBatis로, 삽입/업데이트/삭제는 JPA로 개발을 시작하였는데 많은 시행착오가 있었습니다. 초반에 구성한 테이블로는 요구사항 기능 개발을 진행할 수 없어 테이블 구조를 변경한다거나 실행결과가 하고자 하는 방향에 맞게 출력되어야 함으로 고난도의 쿼리 및 코드 작성 등 이슈가 있었지만 차근차근 해결해 나아가면서 스스로 발전되고 있다고 느꼈습니다. 특히 MSA로 서버들을 구현하여 개발이 완료된 기능들을 http로 기능별 port번호를 입력해 출력값이 나타난 것에 대해 큰 보람을 느꼈습니다. 다음 프론트엔드 프로젝트에서는 두번째 프로젝트보다 개발자로서 더욱 발전된 역량을 나타낼 수 있도록 더 노력할 것입니다. |
-|   **이재근**   | 백엔드 개발은 저에게 조금은 멀게만 느껴졌습니다. 프론트엔드 위주로 프로젝트를 진행해왔던 터라, 이론으로 접하는 백엔드는 낯설었습니다. 하지만 실제로 백엔드 프로젝트를 직접 진행하면서, 오히려 그 두려움이 흥미와 이해로 바뀌는 과정을 경험할 수 있었습니다. 특히 DDD, ERD와 같은 초반 설계 단계의 중요성을 깊이 느꼈습니다. 단순히 코드를 짜는 것이 아니라 구조와 흐름을 설계하는 과정이 백엔드의 토대가 된다는 것을 몸소 체험할 수 있었습니다. 또한 Mybatis를 활용한 조회, JPA를 통한 삽입/삭제/수정 기능을 구현하며 직접 결과를 확인하는 순간, 백엔드 개발에 대한 자신감도 생겼습니다. 물론 아쉬움도 있었습니다. 프론트엔드와 실제로 연결해보며 더 구체적이고 현실적인 흐름을 확인하지 못한 점, 그리고 폴더 구조나 코드 아키텍처를 좀 더 리팩토링하지 못한 점은 다음 프로젝트에서 꼭 보완하고 싶습니다. 이번 경험을 통해 저는 단순히 프론트엔드 개발에 머무르지 않고, 백엔드까지 이해하며 더 넓은 시야를 가진 개발자로 성장할 수 있다는 가능성을 보았습니다. 앞으로 다가올 프로젝트에서는 이번 경험을 토대로 보다 발전된 모습의 개발자가 되기 위해 꾸준히 노력할 것입니다. |
+|   **이재근**   | 이번 프로젝트는 이전 프로젝트에서 구축한 백엔드를 기반으로 시작했다. 초기 단계에서 전체적인 화면 구성이나 웹의 컨셉은 정했었지만, 프론트엔드를 본격적으로 구현하면서 세부적인 화면 구성과 흐름이 달라진다는 걸 느꼈다. 이에 따라 프론트엔드 변경 사항을 반영하기 위해 백엔드 로직을 수정해야 하는 경우가 있었다. 이 과정에서 프론트, 백엔드, 디자인이 단순히 역할을 나누는 것이 아니라, 서로 유기적으로 맞물리며 발전해야 한다는 점을 몸소 느꼈다. 결국 이번 경험을 통해, 설계를 잘 하는 것도 물론 중요하지만 개발 과정에서의 지속적인 소통과 조율 또한 매우 중요하다는 것을 깨달았다. 프론트, 백엔드, 디자인이 조화롭게 어우러질 때 비로소 완성도 높은 서비스가 만들어진다는 점을 배울 수 있었고, 프로젝트 결과 또한 만족스러웠다. |
 |   **이현수** 	 | 이번 프로젝트에서는 처음으로 Vue를 사용해 보았다. 막연히 컴포넌트를 나눠서 개발한다는 말은 알고 있었지만, 실제로 화면을 쪼개고 상태를 흘려보내고, 재사용 가능한 조각으로 쌓아 올리는 과정을 거치면서 컴포넌트 단위 설계의 중요성을 느꼈다. 특히 리스트/상세/작성 같은 흐름을 구성할 때 UI를 기능별로 분리하지 않으면, 한 파일이 비대해지고 상태 관리가 꼬여 수정도 위험해진다는 사실을 뼈저리게 경험했다. 결과적으로 처음부터 과감하게 쪼개기—작은 책임을 가진 컴포넌트로 구획하기—명확한 props/emit 설계하기가 생산성과 유지보수성 모두에 이롭다는 걸 배웠다. 백엔드는 완벽하지 않아도 기본 골격과 계약(API 스펙)이 단단해야 프론트가 편하다는 것도 크게 느꼈다. 실제로 엔드포인트 주소, HTTP 메서드, 요청/응답 DTO, 에러 코드 규칙 등 최소한의 약속이 먼저 잡혀 있어야 Axios 모듈과 뷰 컴포넌트를 빠르게 붙일 수 있었다. 반대로 이 약속이 비어 있거나 중간에 자주 바뀌면, 프론트는 더미 데이터와 임시 분기문을 늘려가며 시간을 태우게 된다. 이번에 경험해 보니 초기 설계 단계에서 Swagger로 문서화하고, Postman으로 샘플 요청/응답을 확정해 두는 것만으로도 시행착오가 크게 줄었다. |
 
 ---

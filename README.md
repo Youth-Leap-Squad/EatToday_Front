@@ -23,7 +23,7 @@
 
 #### [🛠️ 기술 스택](#-기술-스택)  <br>
 
-#### [📋 와이어 프레임](#-와이어-프레임) <br>
+#### [📋 와이어 프레임](#-와이어-프레임) <br> 
 
 #### [🗂️ 스토리보드](#-스토리-보드) <br>
 
@@ -194,7 +194,7 @@
 
 
 
-## 🧵 와이어 프레임
+## 📋 와이어 프레임 
 
 🔗 <a href="https://www.figma.com/design/90WPzr1D3kITviLanI7y3Z/%EC%98%A4%EB%8A%98--%EB%AD%90%EB%9E%91-?node-id=1397-484&t=bzCRavLa4pprtiJd-1"> 와이어 프레임 자세히 보기 </a>
 
@@ -204,7 +204,7 @@
 
 <br><br>
 
-## 🪄 스토리 보드
+## 🗂️ 스토리 보드 
 
 <details>
      <summary><b>공통</b></summary><br>
@@ -224,6 +224,56 @@
           <summary>home</summary><br>
 	          <p alian="center">
 	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/%ED%99%88.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+
+<details>
+     <summary><b>회원/관리자</b></summary><br>
+  <details>
+          <summary>회원가입</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B3%B5%ED%86%B5/signup.png" width = "600"/><br>
+	          </p>
+  </details>
+</details>
+
+<details>
+     <summary><b>게시글</b></summary><br>
+  <details>
+          <summary>게시글스크랩</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EA%B2%8C%EC%8B%9C%EA%B8%80%EC%8A%A4%ED%81%AC%EB%9E%A9.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>게시글 작성</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EA%B2%8C%EC%8B%9C%EA%B8%80%EC%9E%91%EC%84%B1.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>내 게시글 확인</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EB%82%B4%EA%B2%8C%EC%8B%9C%EA%B8%80%ED%99%95%EC%9D%B8.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>다른 주류 게시글</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EB%8B%A4%EB%A5%B8%EC%A3%BC%EB%A5%98%EA%B2%8C%EC%8B%9C%ED%8C%90.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>안주 게시글</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EC%95%88%EC%A3%BC%EA%B2%8C%EC%8B%9C%ED%8C%90.png" width = "600"/><br>
+	          </p>
+  </details>
+  <details>
+          <summary>주류 게시글</summary><br>
+	          <p alian="center">
+	          <img src="https://github.com/Youth-Leap-Squad/EatToday_Front/blob/main/Readme/storyboard/%EA%B2%8C%EC%8B%9C%ED%8C%90/%EC%A3%BC%EB%A5%98%EA%B2%8C%EC%8B%9C%ED%8C%90.png" width = "600"/><br>
 	          </p>
   </details>
 </details>
@@ -373,7 +423,7 @@
   
   <br><br>
 
-## 📰 WBS
+## 🏗️ WBS  
 
 🔗 <a href="https://docs.google.com/spreadsheets/d/1wRZSPEhjhj0SsW3NB7papSM6vu2WulmTOoR9Q8WDOJY/edit?gid=1596719811#gid=1596719811"> WBS 자세히 보기 </a>
 
@@ -385,7 +435,7 @@
 
 
 
-## 📱 테스트 케이스
+## ✅ 테스트 케이스 
 
 
 ### 🎖️ 이벤트
@@ -572,7 +622,7 @@
 		  </p>
 </details>
 
-## 🔭 결과 보고서
+## 🔌 결과 보고서
 
 -  [📄 발표자료 (PDF 보기)](https://github.com/Youth-Leap-Squad/EatToday_store/blob/main/src/assets/img/19_2nd_backendproject_presentation.pdf)
 
